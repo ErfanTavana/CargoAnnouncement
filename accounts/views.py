@@ -320,5 +320,6 @@ def profile_view(request):
             #                         }))
             user.profile.is_completed = True
             user.save()
+            user.profile.save()
             return Response({'message': 'اطلاعات شما با موفقیت ذخیره شد'})
         return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

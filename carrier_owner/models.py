@@ -6,8 +6,6 @@ from django.utils import timezone
 import string
 import random
 from rest_framework.authtoken.models import Token
-# from Wagon.wag.models import RoadFleet , InnerCargo , InternationalCargo
-# from wag.models import *
 from accounts.models import GoodsOwner, CarrierOwner, Driver
 from django.db import models
 import datetime
@@ -16,7 +14,6 @@ from datetime import datetime, timezone
 from django.utils import timezone
 
 
-# Function to generate a random complex ID
 # Function to generate a random complex ID
 def generate_complex_id():
     id_length = 8  # Length of the generated complex ID
@@ -29,9 +26,9 @@ def generate_complex_id():
 # Abstract base class for common fields among different models
 class Base_Model(models.Model):
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    created_at = models.DateTimeField(auto_now_add=True, blank=True,null=True,verbose_name='تاریخ ایجاد')
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
-    is_ok = models.BooleanField(default=True, verbose_name='آیا تایید شده است؟')
+    is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
 
     class Meta:
@@ -51,9 +48,10 @@ class CommonCargo(Base_Model):
     goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='پروفایل صاحاب بار')
     # Common Fields
-    length = models.IntegerField(verbose_name="طول", default="", blank=True, null=True)
-    width = models.IntegerField(verbose_name="عرض", default="", blank=True, null=True)
-    height = models.IntegerField(verbose_name="ارتفاع", default="", blank=True, null=True)
+    length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
+
+    width = models.IntegerField(verbose_name="عرض", default=0, blank=True, null=True)
+    height = models.IntegerField(verbose_name="ارتفاع", default=0, blank=True, null=True)
     cargoType = models.CharField(max_length=800, verbose_name="عنوان محموله", default="", blank=True, null=True)
     pkgType = models.CharField(max_length=20, verbose_name='نوع بسته بندی', choices=(
         ("کیسه", "کیسه"),
@@ -157,134 +155,110 @@ class InternationalCargo(CommonCargo):
         verbose_name_plural = 'اعلام بار های خارجی'
 
 
-class RoadFleet(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
-    ownerType = models.CharField(max_length=100, verbose_name="نوع مالکیت", default="",
-                                 choices=(
-                                     ("مالکیتی", "مالکیتی"),
-                                     ("شرکتی", "شرکتی"),))
-
-    roomType = models.CharField(max_length=100, verbose_name="نوع اتاق", default="",
-                                choices=(
-                                    ("چادری", "چادری"),
-                                    ("روباز", "روباز"),
-                                    ("یخچالی", "یخچالی"),))
-
-    vehichleType = models.CharField(max_length=100, verbose_name="نوع وسیله حمل کننده", default="",
-                                    choices=(
-                                        ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
-                                        ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
-                                        ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
-                                    ))
-
-    # Semi-Heavy
-    semiHeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین ", default="",
-                                         choices=(
-                                             ("کامیون", "کامیون"),
-                                             ("خاور", "خاور"),
-                                             ("هیوندا", "هیوندا"),
-                                             ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
-                                             ("کامیونت", "کامیونت"),
-                                         ))
-    semiHeavyVehichleOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
-
-    # Heavy
-    HeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", default="",
-                                     choices=(
-                                         ("تریلی", "تریلی"),
-                                         ("ترانزیت", "ترانزیت"),
-                                         ("ده تن", "ده تن"),
-                                         ("کفی", "کفی"),
-                                         ("ترانزیت یخچالی", "ترانزیت یخچالی"),
-                                         ("بیست تن", "بیست تن"),
-                                         ("چادری سه محور", "چادری سه محور"),
-                                         ("کمپرسی", "کمپرسی"),
-                                         ("تریلی تانکر فاو", "تریلی تانکر فاو"),
-                                     ))
-    heavy_vehicle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
-
-    plaque_one_num_check = models.BooleanField(verbose_name="شماره پلاک واحد(تک پلاک)", default="")
-    plaque_one_num = models.CharField(max_length=9, verbose_name="ثبت شماره پلاک واحد(تک پلاک)", default="")
-
-    plaque_puller_num_check = models.BooleanField(verbose_name="شماره پلاک کشنده", default="")
-    plaque_puller_num = models.CharField(max_length=9, verbose_name="ثبت شماره پلاک کشنده", default="")
-
-    plaque_carriage_num_check = models.BooleanField(verbose_name="شماره پلاک گاری", default="")
-    plaque_carriage_num = models.CharField(max_length=9, verbose_name="ثبت شماره پلاک گاری", default="")
-
-    plaque_container_num_check = models.BooleanField(verbose_name="شماره پلاک کانتینر", default="")
-    plaque_container_num = models.CharField(max_length=9, verbose_name="ثبت شماره پلاک کانتینر", default="")
-
-    vehicle_card = models.ImageField(max_length=800, verbose_name="آپلود کارت ماشین", default="", upload_to="")
-    vehicle_property_doc = models.ImageField(max_length=800, verbose_name="آپلود برگه سبز ماشین", default="",
-                                             upload_to="")
-    vehicle_advocate_date = models.DateTimeField(verbose_name="تاریخ اعتبار بیمه نامه ماشین",
-                                                 default=timezone.now)
-    vehicle_advocate = models.ImageField(max_length=800, verbose_name="آپلود بیمه نامه ماشین", default="", upload_to="")
-
-    code_id = models.CharField(max_length=12, verbose_name="کد ملی  / شماره پاسپورت مالک", default="")
-    owner_document = models.ImageField(max_length=800, verbose_name="آپلود کارت ملی / پاسپورت مالک", default="",
-                                       upload_to="")
-
-    international_docs = models.ImageField(max_length=800, verbose_name="آپلود مدارک مجوز حمل بین المللی در صورت وجود",
-                                           default="", upload_to="")
-
-    carrier_in = models.BooleanField(verbose_name="حمل و نقل داخلی", default="")
-    carrier_out = models.BooleanField(verbose_name="حمل و نقل بین المللی", default="")
-
-    class Meta:
-        verbose_name = "ناوگان جاده ای"
-
-    def __str__(self):
-        return self.ownerType
-
-
-# Model for the request of transportation from a driver
-class CarrierReqToDriver(Base_Model):
-    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_carrier_requests',
-                               verbose_name='راننده')
-    carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
-    carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_requests',
-                                      verbose_name='صاحب حمل‌کننده')
-    collaboration_type = models.CharField(max_length=20, default="full_time", verbose_name='نوع همکاری',
-                                          choices=(
-                                              ('full_time', 'تمام وقت'),
-                                              ('part_time', 'پاره وقت/بار موردی'),
-                                          ))
-    proposed_price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی')
-    origin = models.CharField(max_length=100, blank=True, null=True, verbose_name='مبدا بار ')
-
-    # Additional features based on the type of collaboration
-    destination = models.CharField(max_length=100, verbose_name='مقصد بار ', blank=True, null=True)
-    arrival_date_at_origin = models.DateField(verbose_name='تاریخ حضور در مبدا', blank=True, null=True)
-
-    class Meta:
-        verbose_name = 'درخواست صاحب حمل‌کننده از راننده'
-        verbose_name_plural = "درخواست های صاحب حمل‌کننده از راننده"
-
-
-# Model for the request of a carrier owner to a driver
-class CarrierReqToGoodsOwner(Base_Model):
+class RequiredCarrier(Base_Model):
     CARGO_TYPE_CHOICES = [
         ('inner_cargo', 'اعلام بار داخلی'),
         ('international_cargo', 'اعلام بار خارجی'),
         ('rail_cargo', 'اعلام بار ریلی'),
     ]
 
-    cargo_type = models.CharField(max_length=20, default='inner_cargo', choices=CARGO_TYPE_CHOICES,
-                                  verbose_name='نوع همکاری')
-    carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_requests',
-                                      verbose_name='صاحب حمل‌کننده')
-    carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
-    goods_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_carrier_requests',
-                                    verbose_name='صاحب بار')
-    inner_cargo = models.ForeignKey(InnerCargo, on_delete=models.CASCADE, blank=True, null=True,
-                                    verbose_name='بار داخلی')
-    international_cargo = models.ForeignKey(InternationalCargo, on_delete=models.CASCADE, blank=True, null=True,
-                                            verbose_name='بار خارجی')
+    cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
+    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                    verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers')
+    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                            verbose_name='اعلام بار خارجی', related_name='international_cargo_carriers')
 
-    price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی', )
+    cargo_weight = models.FloatField(max_length=100, verbose_name="وزن خالص محموله")
+    counter = models.PositiveIntegerField(verbose_name="تعداد حمل کننده مورد نیاز")
+    room_type = models.CharField(max_length=100, verbose_name="نوع اتاق مناسب", choices=(
+        ("چادری", "چادری"),
+        ("روباز", "روباز"),
+        ("یخچالی", "یخچالی"),
+    ))
+    vehichle_type = models.CharField(max_length=100, verbose_name="نوع وسیله حمل کننده مورد نیاز", choices=(
+        ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
+        ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
+        ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
+    ))
+
+    semi_heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین ", choices=(
+        ("کامیون", "کامیون"),
+        ("خاور", "خاور"),
+        ("هیوندا", "هیوندا"),
+        ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
+        ("کامیونت", "کامیونت"),
+    ))
+    semi_heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
+
+    heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", choices=(
+        ("تریلی", "تریلی"),
+        ("ترانزیت", "ترانزیت"),
+        ("ده تن", "ده تن"),
+        ("کفی", "کفی"),
+        ("ترانزیت یخچالی", "ترانزیت یخچالی"),
+        ("بیست تن", "بیست تن"),
+        ("چادری سه محور", "چادری سه محور"),
+        ("کمپرسی", "کمپرسی"),
+        ("تریلی تانکر فاو", "تریلی تانکر فاو"),
+    ))
+    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
+
+    special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز")
+    carrier_price = models.IntegerField(verbose_name="قیمت تقریبی حمل")
+
+    # فیلدهای مختص به حمل بین المللی
+    cargo_price = models.PositiveIntegerField(verbose_name="ارزش بار هر حمل کننده / خودرو")
 
     class Meta:
-        verbose_name = 'درخواست صاحب حمل‌کننده به  صاحب بار'
-        verbose_name_plural = "درخواست های صاحب حمل‌کننده به صاحب بار"
+        verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
+        verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
+
+# # Model for the request of transportation from a driver
+# class CarrierReqToDriver(Base_Model):
+#     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_carrier_requests',
+#                                verbose_name='راننده')
+#     carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
+#     carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_requests',
+#                                       verbose_name='صاحب حمل‌کننده')
+#     collaboration_type = models.CharField(max_length=20, default="full_time", verbose_name='نوع همکاری',
+#                                           choices=(
+#                                               ('full_time', 'تمام وقت'),
+#                                               ('part_time', 'پاره وقت/بار موردی'),
+#                                           ))
+#     proposed_price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی')
+#     origin = models.CharField(max_length=100, blank=True, null=True, verbose_name='مبدا بار ')
+#
+#     # Additional features based on the type of collaboration
+#     destination = models.CharField(max_length=100, verbose_name='مقصد بار ', blank=True, null=True)
+#     arrival_date_at_origin = models.DateField(verbose_name='تاریخ حضور در مبدا', blank=True, null=True)
+#
+#     class Meta:
+#         verbose_name = 'درخواست صاحب حمل‌کننده از راننده'
+#         verbose_name_plural = "درخواست های صاحب حمل‌کننده از راننده"
+#
+#
+# # Model for the request of a carrier owner to a driver
+# class CarrierReqToGoodsOwner(Base_Model):
+#     CARGO_TYPE_CHOICES = [
+#         ('inner_cargo', 'اعلام بار داخلی'),
+#         ('international_cargo', 'اعلام بار خارجی'),
+#         ('rail_cargo', 'اعلام بار ریلی'),
+#     ]
+#
+#     cargo_type = models.CharField(max_length=20, default='inner_cargo', choices=CARGO_TYPE_CHOICES,
+#                                   verbose_name='نوع همکاری')
+#     carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_requests',
+#                                       verbose_name='صاحب حمل‌کننده')
+#     carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
+#     goods_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_carrier_requests',
+#                                     verbose_name='صاحب بار')
+#     inner_cargo = models.ForeignKey(InnerCargo, on_delete=models.CASCADE, blank=True, null=True,
+#                                     verbose_name='بار داخلی')
+#     international_cargo = models.ForeignKey(InternationalCargo, on_delete=models.CASCADE, blank=True, null=True,
+#                                             verbose_name='بار خارجی')
+#
+#     price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی', )
+#
+#     class Meta:
+#         verbose_name = 'درخواست صاحب حمل‌کننده به  صاحب بار'
+#         verbose_name_plural = "درخواست های صاحب حمل‌کننده به صاحب بار"
