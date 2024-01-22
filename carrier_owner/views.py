@@ -192,7 +192,6 @@ def international_cargo_view(request):
         international_cargo.soft_delete()
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
-
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_carrier(request):
@@ -201,10 +200,9 @@ def required_carrier(request):
 
     if request.method == "GET":
         required_carrier_id = data.get("required_carrier_id")
-        print(required_carrier_id)
         if required_carrier_id is not None and len(str(required_carrier_id)) < 6:
             required_carrier = RequiredCarrier.objects.filter(deleted_at=None, user_id=user.id)
-            if required_carrier.count() > 0:
+            if required_carrier.exists():
                 serializer = RequiredCarrierSerializer(required_carrier, many=True)
                 return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
             else:
@@ -258,7 +256,7 @@ def required_carrier(request):
                 except InternationalCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
-            counter = int(data.get('counter'))
+            counter = int(data.get('counter', 0))
             counter = counter + 1
             saved_data = []
             for i in range(1, counter):
@@ -275,6 +273,7 @@ def required_carrier(request):
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     if request.method == 'PUT':
         required_carrier_id = data.get('required_carrier_id')
         try:
@@ -291,6 +290,7 @@ def required_carrier(request):
         else:
             return Response({'message': 'داده‌های ارسالی معتبر نیستند.', 'errors': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == "DELETE":
         try:
             required_carrier_ids_string = data.get("required_carrier_ids")
@@ -299,7 +299,6 @@ def required_carrier(request):
 
             # حذف ایتم‌ها با استفاده از لیست ایدی‌ها
             deleted_items_count = 0
-            print(required_carrier_ids)
             for carrier_id in required_carrier_ids:
                 try:
                     carrier = RequiredCarrier.objects.get(id=carrier_id, user_id=user.id, deleted_at=None)
