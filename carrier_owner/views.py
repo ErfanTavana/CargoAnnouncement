@@ -192,9 +192,11 @@ def international_cargo_view(request):
         international_cargo.soft_delete()
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
+
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_carrier(request):
+    limit_requests_in_24_hours = 50
     data = request.data
     user = request.user
 
@@ -246,7 +248,7 @@ def required_carrier(request):
                 except InnerCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if international_cargo_id is not None:
+            elif international_cargo_id is not None:
                 try:
                     international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
                                                                          deleted_at=None)
@@ -255,8 +257,35 @@ def required_carrier(request):
                     data_copy['user'] = user.id
                 except InternationalCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
-
+            required_carrier = None
+            # محاسبه تاریخ و زمان 24 ساعت پیش
+            twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
             counter = int(data.get('counter', 0))
+            if data_copy['cargo_type'] == 'اعلام بار داخلی':
+                required_carrier_inner = RequiredCarrier.objects.filter(
+                    deleted_at=None,
+                    user_id=user.id,
+                    inner_cargo_id=inner_cargo_id,
+                    created_at__gte=twenty_four_hours_ago
+                )
+            elif data_copy['cargo_type'] == 'اعلام بار خارجی':
+                required_carrier = RequiredCarrier.objects.filter(
+                    deleted_at=None,
+                    user_id=user.id,
+                    international_cargo_id=international_cargo_id,
+                    created_at__gte=twenty_four_hours_ago
+                )
+
+            number = (required_carrier.count() + counter)
+            if required_carrier.count() > limit_requests_in_24_hours or required_carrier.count() + counter > limit_requests_in_24_hours:
+                return Response({
+                                    'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number-limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
+
+            if counter > limit_requests_in_24_hours:
+                return Response({
+                                    'message': f'در طول 24 ساعت بیشتر از {limit_requests_in_24_hours} حمل کننده نمیتوانید درخواست کنید',
+                                    'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
             counter = counter + 1
             saved_data = []
             for i in range(1, counter):
@@ -273,7 +302,6 @@ def required_carrier(request):
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     if request.method == 'PUT':
         required_carrier_id = data.get('required_carrier_id')
         try:
@@ -281,7 +309,13 @@ def required_carrier(request):
         except RequiredCarrier.DoesNotExist:
             return Response({'message': 'حمل‌کننده مورد نظر یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = RequiredCarrierSerializer(required_carrier, data=data)
+        # تبدیل request.data به یک نسخه تغییرپذیر از QueryDict
+        mutable_data = request.data.copy()
+
+        # حذف فیلد counter از دیتای درخواست
+        mutable_data.pop('counter', None)
+
+        serializer = RequiredCarrierSerializer(required_carrier, data=mutable_data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -318,3 +352,6 @@ def required_carrier(request):
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
