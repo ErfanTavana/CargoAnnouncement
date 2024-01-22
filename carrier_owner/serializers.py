@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from carrier_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model
+from carrier_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model,RequiredCarrier
 
 
 class Base_ModelSerializer(serializers.ModelSerializer):
@@ -64,14 +64,36 @@ class InnerCargoSerializer(CommonCargoSerializer):
 class InternationalCargoSerializer(Base_ModelSerializer):
     class Meta(Base_ModelSerializer.Meta):
         model = InternationalCargo
-        fields = Base_ModelSerializer.Meta.fields + (
-            'sender_country',
-            'sender_state',
-            'sender_city',
-            'sender_street',
-            'sender_address',
-            'delivery_time_date',
-            'discharge_time_date_destination',
-            'discharge_time_destination',
-            'custom_name_destination',
+        fields = CommonCargoSerializer.Meta.fields + (
+            'senderCountry',
+            'senderState',
+            'senderCity',
+            'senderStreet',
+            'senderAddress',
+            'deliveryTimeDate',
+            'dischargeTimeDate',
+            'dischargeTime',
+            'customNameEnd',
+        )
+
+
+class RequiredCarrierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequiredCarrier
+        fields = (
+            'cargo_type',
+            'user',
+            'inner_cargo',
+            'international_cargo',
+            'cargo_weight',
+            'counter',
+            'room_type',
+            'vehichle_type',
+            'semi_heavy_vehichle',
+            'semi_heavy_vehichle_others',
+            'heavy_vehichle',
+            'heavy_vehichle_others',
+            'special_widget_carrier',
+            'carrier_price',
+            'cargo_price',
         )

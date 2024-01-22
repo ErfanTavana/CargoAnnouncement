@@ -4,4 +4,7 @@ from . import views
 
 urlpatterns = [
     path('InnerCargo/', views.inner_cargo_view, name='inner_cargo_view_name'),
+    path('InternationalCargo/', views.international_cargo_view, name='international_cargo_view'),
+    path('RequiredCarrier/', views.required_carrier, name='required_carrier'),
+
 ]

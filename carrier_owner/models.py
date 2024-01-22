@@ -26,7 +26,7 @@ def generate_complex_id():
 # Abstract base class for common fields among different models
 class Base_Model(models.Model):
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True, blank=True,null=True,verbose_name='تاریخ ایجاد')
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
     is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
@@ -40,11 +40,12 @@ class Base_Model(models.Model):
         """
         self.deleted_at = timezone.now()
         self.is_ok = False  # شاید نیاز به تغییر این فیلد نیز باشد
+        self.is_changeable = False
         self.save()
 
 
 class CommonCargo(Base_Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
     goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='پروفایل صاحاب بار')
     # Common Fields
@@ -66,13 +67,13 @@ class CommonCargo(Base_Model):
         ("کالای خاص", "کالای خاص"),
         ("غیر پالیتیزه", "غیر پالیتیزه"),
         ("غیرمعمول", "غیرمعمول"),
-    ))
+    ), blank=True, null=True)
     description = models.TextField(max_length=5000, verbose_name="توضیحات", default="", blank=True, null=True)
     specialWidgets = models.CharField(max_length=100, verbose_name='ویژگی های خاص', choices=(
         ("روباری", "روباری"),
         ("نیاز به بارنامه ندارد", "نیاز به بارنامه ندارد"),
         ("بارنامه خودم میگیرم", "بارنامه خودم میگیرم"),
-    ))
+    ), blank=True, null=True)
     storageBillNum = models.CharField(max_length=20, verbose_name="شماره قبض انبار", default="", blank=True, null=True)
     storagePrice = models.TextField(max_length=9999, verbose_name="هزینه انبارداری", default="", blank=True, null=True)
     loadigPrice = models.TextField(max_length=9999, verbose_name="هزینه بارگیری", default="", blank=True, null=True)
@@ -99,7 +100,7 @@ class CommonCargo(Base_Model):
         ("تاجیکستان", "تاجیکستان"),
         ("7افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
-    ))
+    ), blank=True, null=True)
     state = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
     city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
     street = models.CharField(max_length=50, verbose_name="خیابان مبدا", blank=True, null=True)
@@ -135,7 +136,7 @@ class InternationalCargo(CommonCargo):
         ("تاجیکستان", "تاجیکستان"),
         ("7افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
-    ))
+    ), blank=True, null=True)
     senderState = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
     senderCity = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
     senderStreet = models.CharField(max_length=50, verbose_name="خیابان", blank=True, null=True)
@@ -157,12 +158,13 @@ class InternationalCargo(CommonCargo):
 
 class RequiredCarrier(Base_Model):
     CARGO_TYPE_CHOICES = [
-        ('inner_cargo', 'اعلام بار داخلی'),
-        ('international_cargo', 'اعلام بار خارجی'),
-        ('rail_cargo', 'اعلام بار ریلی'),
+        ('اعلام بار داخلی', 'اعلام بار داخلی'),
+        ('اعلام بار خارجی', 'اعلام بار خارجی'),
+        ('اعلام بار ریلی', 'اعلام بار ریلی'),
     ]
-
     cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
+
     inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers')
     international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
@@ -201,13 +203,13 @@ class RequiredCarrier(Base_Model):
         ("کمپرسی", "کمپرسی"),
         ("تریلی تانکر فاو", "تریلی تانکر فاو"),
     ))
-    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
+    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="",blank=True,null=True)
 
-    special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز")
-    carrier_price = models.IntegerField(verbose_name="قیمت تقریبی حمل")
+    special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز",blank=True,null=True)
+    carrier_price = models.IntegerField(default=0,verbose_name="قیمت تقریبی حمل",blank=True,null=True)
 
     # فیلدهای مختص به حمل بین المللی
-    cargo_price = models.PositiveIntegerField(verbose_name="ارزش بار هر حمل کننده / خودرو")
+    cargo_price = models.PositiveIntegerField(default=0,verbose_name="ارزش بار هر حمل کننده / خودرو",blank=True,null=True)
 
     class Meta:
         verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
