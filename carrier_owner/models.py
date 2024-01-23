@@ -216,6 +216,7 @@ class RequiredCarrier(Base_Model):
         verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
         verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
 
+
 # # Model for the request of transportation from a driver
 # class CarrierReqToDriver(Base_Model):
 #     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_carrier_requests',
