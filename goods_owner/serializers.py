@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from carrier_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model,RequiredCarrier
+from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model,RequiredCarrier
 
 
 class Base_ModelSerializer(serializers.ModelSerializer):
