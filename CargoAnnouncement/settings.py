@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'carrier_owner',
     'driver',
+    'goods_owner',
 ]
 
 MIDDLEWARE = [
