@@ -53,3 +53,31 @@ def road_fleet_view(request):
             serializer.save()
             return Response({'message': f'حمل کننده ی شما با موفقیت اضافه شد', 'data': serializer.data})
         return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': ''})
+    if request.method == 'PUT':
+        road_fleet_id = data.get('road_fleet_id')
+        data_copy = request.data.copy()
+        try:
+            road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
+            serializer = RoadFleetSerializer(road_fleet, data=data_copy)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'اطلاعات حمل‌کننده‌ی بار ویرایش شد', 'data': serializer.data},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'داده‌های ارسالی معتبر نیستند.', 'errors': serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        except RoadFleet.DoesNotExist:
+            return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        road_fleet_id = data.get('road_fleet_id')
+
+        try:
+            road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
+            road_fleet.soft_delete()
+            return Response({'message': 'اطلاعات حمل‌کننده‌ی بار حذف شد', 'data': ''}, status=status.HTTP_200_OK)
+        except RoadFleet.DoesNotExist:
+            return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+
