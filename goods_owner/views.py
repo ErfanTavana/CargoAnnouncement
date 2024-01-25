@@ -18,7 +18,8 @@ def inner_cargo_view(request):
     # Extract data and user from the request
     data = request.data
     user = request.user
-
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
     # Comment: Handle GET request to retrieve InnerCargo information
     if request.method == 'GET':
         inner_cargo_id = data.get("inner_cargo_id")
@@ -109,7 +110,8 @@ def international_cargo_view(request):
     # Extract data and user from the request
     data = request.data
     user = request.user
-
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
     # Comment: Handle GET request to retrieve InternationalCargo information
     if request.method == 'GET':
         international_cargo_id = data.get("international_cargo_id")
@@ -206,7 +208,8 @@ def required_carrier_view(request):
     limit_requests_in_24_hours = 50
     data = request.data
     user = request.user
-
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
     # Comment: Handle GET request to retrieve RequiredCarrier information
     if request.method == "GET":
         required_carrier_id = data.get("required_carrier_id")
