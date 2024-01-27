@@ -56,6 +56,8 @@ def road_fleet_view(request):
     if request.method == 'PUT':
         road_fleet_id = data.get('road_fleet_id')
         data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['carrier_owner'] = user.carrierowner.id
         try:
             road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
             serializer = RoadFleetSerializer(road_fleet, data=data_copy)

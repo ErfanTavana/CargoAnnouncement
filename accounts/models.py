@@ -7,9 +7,10 @@ import datetime
 import string
 import random
 from rest_framework.authtoken.models import Token
-# from  utility import *
+
+
+# Function to generate a random complex ID
 def generate_complex_id():
-   
     id_length = 8  # Length of the generated complex ID
     characters = string.ascii_letters + string.digits  # Set of characters (letters and digits) to choose from
     complex_id = ''.join(
@@ -17,7 +18,28 @@ def generate_complex_id():
     return complex_id  # Return the generated complex ID
 
 
-class VerificationCode(models.Model):
+# Abstract base class for common fields among different models
+class Base_Model(models.Model):
+    id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
+    deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
+    is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
+    is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
+
+    class Meta:
+        abstract = True  # Indicates that this class is an abstract class and should not create a table in the database
+
+    def soft_delete(self):
+        """
+        تابع سافت‌دیلیت برای تنظیم تاریخ و زمان حذف به لحظه فراخوانی تابع
+        """
+        self.deleted_at = timezone.now()
+        self.is_ok = False  # شاید نیاز به تغییر این فیلد نیز باشد
+        self.is_changeable = False
+        self.save()
+
+
+class VerificationCode(Base_Model):
     # Field for user association
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)  # ForeignKey to associate the VerificationCode with a User model
@@ -59,9 +81,12 @@ class VerificationCode(models.Model):
 
         super().save(*args, **kwargs)  # Call the save method of the parent class
 
-class PasswordSetStatus(models.Model):
+
+class PasswordSetStatus(Base_Model):
     token = models.OneToOneField(Token, on_delete=models.CASCADE)
     is_password_set = models.BooleanField(default=False)
+
+
 type_user_list = (
     ("انتخاب نشده", "انتخاب نشده"),
     ("صاحب بار", "صاحب بار"),
@@ -77,15 +102,13 @@ type_user_code_mapping = {
 
 
 # در مدل Profile
-class Profile(models.Model):
+class Profile(Base_Model):
     is_completed = models.BooleanField(default=False, verbose_name="پروفایل تکمیل  شده؟")
     is_ok = models.BooleanField(default=False, verbose_name="پروفایل تایید شده؟")
-    id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
     user_type = models.CharField(max_length=255, default='انتخاب نشده', verbose_name="نوع کاربر",
                                  choices=type_user_list)
     unique_code = models.CharField(max_length=25, verbose_name='کد اختصاصی', unique=True, help_text='کد اختصاصی')
-
 
     def save(self, *args, **kwargs):
         # تنظیم حرف اول بر اساس نوع کاربر
@@ -95,15 +118,18 @@ class Profile(models.Model):
         super(Profile, self).save(*args, **kwargs)
 
 
-class GoodsOwner(models.Model):
+class GoodsOwner(Base_Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
-    full_name = models.CharField(max_length=255, verbose_name="نام و نام خانوادگی صاحب بار / مدیر عامل", blank=True, null=True)
+    full_name = models.CharField(max_length=255, verbose_name="نام و نام خانوادگی صاحب بار / مدیر عامل", blank=True,
+                                 null=True)
     phone_number = models.CharField(max_length=15, verbose_name="موبایل صاحب بار / مدیر عامل", blank=True, null=True)
-    national_code_passport_number = models.CharField(max_length=20, verbose_name="کد ملی / شماره پاسپورت", blank=True, null=True)
+    national_code_passport_number = models.CharField(max_length=20, verbose_name="کد ملی / شماره پاسپورت", blank=True,
+                                                     null=True)
     national_card_passport_image = models.ImageField(upload_to='goods_owners/', blank=True, null=True,
-                                            verbose_name="آپلود کارت ملی / پاسپورت")
+                                                     verbose_name="آپلود کارت ملی / پاسپورت")
     company_name = models.CharField(max_length=255, verbose_name="نام شرکت", blank=True, null=True)
-    national_id_optional = models.CharField(max_length=20, verbose_name="شناسه ملی (اختیاری در صورت نداشتن شرکت)", blank=True, null=True)
+    national_id_optional = models.CharField(max_length=20, verbose_name="شناسه ملی (اختیاری در صورت نداشتن شرکت)",
+                                            blank=True, null=True)
     trade_license_expiry = models.DateField(verbose_name="کارت بازرگانی انقضا", blank=True, null=True)
     trade_license_image = models.ImageField(upload_to='goods_owners/', blank=True, null=True,
                                             verbose_name="آپلود کارت بازرگانی")
@@ -115,7 +141,7 @@ class GoodsOwner(models.Model):
         verbose_name_plural = "صاحبان بار"
 
 
-class CarrierOwner(models.Model):
+class CarrierOwner(Base_Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
     car_card_image = models.ImageField(upload_to='carriers/', blank=True, null=True, verbose_name="عکس کارت ماشین")
     insurance_image = models.ImageField(upload_to='carriers/', blank=True, null=True, verbose_name="عکس بیمه نامه")
@@ -127,13 +153,12 @@ class CarrierOwner(models.Model):
                                        null=True)
     owner_mobile_number = models.CharField(max_length=15, verbose_name="شماره موبایل صاحب ماشین", blank=True, null=True)
 
-
     class Meta:
         verbose_name = "صاحب حمل‌کننده"
         verbose_name_plural = " صاحبان حمل کننده ها"
 
 
-class Driver(models.Model):
+class Driver(Base_Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
 
     driver_full_name = models.CharField(max_length=255, verbose_name="نام و نام خانوادگی راننده", blank=True, null=True)
@@ -147,8 +172,6 @@ class Driver(models.Model):
     domestic_license = models.BooleanField(default=False, verbose_name="گواهی نامه داخلی", blank=True, null=True)
     international_license = models.BooleanField(default=False, verbose_name="گواهینامه بین المللی", blank=True,
                                                 null=True)
-
-
 
     class Meta:
         verbose_name = "راننده"
