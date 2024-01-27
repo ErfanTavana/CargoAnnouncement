@@ -74,7 +74,6 @@ def road_fleet_view(request):
                             status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         road_fleet_id = data.get('road_fleet_id')
-
         try:
             road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
             road_fleet.soft_delete()
