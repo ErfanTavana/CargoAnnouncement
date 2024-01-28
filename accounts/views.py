@@ -114,7 +114,9 @@ def register(request):
                 otp_last.save()
                 password_set_status.save()
                 user.save()
-                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"}, status=status.HTTP_200_OK)
+                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
+                                status=status.HTTP_200_OK).set_cookie('Authorization', f"Token {token.key}",
+                                                                      httponly=True, secure=True)
 
             else:
                 # Increment the failed attempts count if the provided OTP is incorrect
@@ -172,11 +174,15 @@ def login(request):
 
             # Create a new token for the authenticated user
             token = Token.objects.create(user=user)
-            password_set_status, creat = PasswordSetStatus.objects.get_or_create(token=token)
+            password_set_status, created = PasswordSetStatus.objects.get_or_create(token=token)
             password_set_status.is_password_set = True
             password_set_status.save()
 
-            return Response({'message': 'ok', 'Authorization': f"Token {token.key}"}, status=status.HTTP_200_OK)
+            # Set the HTTP-only flag for the token cookie
+            response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"}, status=status.HTTP_200_OK)
+            response.set_cookie('Authorization', f"Token {token.key}", httponly=True, secure=True)
+
+            return response
 
         else:
             return Response({'message': 'نام کاربری یا رمز عبور اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
@@ -235,7 +241,9 @@ def forget_password(request):
                 otp_last.save()
                 password_set_status.save()
                 user.save()
-                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"}, status=status.HTTP_200_OK)
+                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
+                                status=status.HTTP_200_OK).set_cookie('Authorization', f"Token {token.key}",
+                                                                      httponly=True, secure=True)
 
             else:
                 # Increment the failed attempts count if the provided OTP is incorrect
