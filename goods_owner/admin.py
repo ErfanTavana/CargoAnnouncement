@@ -36,7 +36,7 @@ from .models import RequiredCarrier
 
 @admin.register(RequiredCarrier)
 class RequiredCarrierAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cargo_type', 'cargo_weight', 'counter', 'room_type', 'vehichle_type',
+    list_display = ('id', "relinquished",'cargo_type', 'cargo_weight', 'counter', 'room_type', 'vehichle_type',
                     'semi_heavy_vehichle', 'heavy_vehichle', 'special_widget_carrier', 'carrier_price',
                     'cargo_price', 'created_at', 'deleted_at', 'is_ok', 'is_changeable')
     list_filter = ('cargo_type', 'room_type', 'vehichle_type', 'semi_heavy_vehichle', 'heavy_vehichle', 'is_ok')

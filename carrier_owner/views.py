@@ -9,7 +9,7 @@ from rest_framework import permissions
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
 from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer
-from .models import CarrierOwner
+from goods_owner.serializers import RequiredCarrier
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -215,3 +215,16 @@ def car_ow_req_driver_view(request):
             return Response({'message': 'آیتم با موفقیت حذف شد', 'data': ''}, status=status.HTTP_200_OK)
         except CarOwReqDriver.DoesNotExist:
             return Response({'message': 'آیتم با این ایدی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def required_carrier_list_view(request):
+    data = request.data
+    user = request.user
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Comment: Retrieve GoodsOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    RequiredCarrier.objects.filter()

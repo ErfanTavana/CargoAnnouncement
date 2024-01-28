@@ -161,6 +161,7 @@ class InternationalCargo(CommonCargo):
 
 
 class RequiredCarrier(Base_Model):
+    relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
     CARGO_TYPE_CHOICES = [
         ('اعلام بار داخلی', 'اعلام بار داخلی'),
         ('اعلام بار خارجی', 'اعلام بار خارجی'),

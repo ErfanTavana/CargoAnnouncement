@@ -156,3 +156,8 @@ class CarOwReqDriver(Base_Model):
     class Meta:
         verbose_name = "درخواست همکاری صاحب حمل کننده از راننده"
         verbose_name_plural = "درخواست‌های همکاری صاحب حمل کننده از راننده"
+
+
+# class CarOwReqGoodsOwner(Base_Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
+#
