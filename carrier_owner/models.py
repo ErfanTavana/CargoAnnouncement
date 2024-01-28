@@ -78,11 +78,15 @@ class RoadFleet(Base_Model):
     plaque_container_num = models.CharField(max_length=9, verbose_name="ثبت شماره پلاک کانتینر", default="")
 
     vehicle_card = models.ImageField(max_length=800, verbose_name="آپلود کارت ماشین", default="", upload_to="",blank=True,null=True)
+    vehicle_card_bool = models.BooleanField(default=False,verbose_name="آپلود کارت ماشین")
     vehicle_property_doc = models.ImageField(max_length=800, verbose_name="آپلود برگه سبز ماشین", default="",
                                              upload_to="",blank=True,null=True)
+    vehicle_property_doc_bool = models.BooleanField(default=False,verbose_name="آپلود برگه سبز ماشین")
+
     vehicle_advocate_date = models.DateTimeField(verbose_name="تاریخ اعتبار بیمه نامه ماشین",
                                                  default=timezone.now)
     vehicle_advocate = models.ImageField(max_length=800, verbose_name="آپلود بیمه نامه ماشین", default="", upload_to="",blank=True,null=True)
+    vehicle_advocate_bool = models.BooleanField(default=False,verbose_name="آپلود بیمه نامه ماشین")
 
     code_id = models.CharField(max_length=12, verbose_name="کد ملی  / شماره پاسپورت مالک", default="")
     owner_document = models.ImageField(max_length=800, verbose_name="آپلود کارت ملی / پاسپورت مالک", default="",
@@ -90,6 +94,7 @@ class RoadFleet(Base_Model):
 
     international_docs = models.ImageField(max_length=800, verbose_name="آپلود مدارک مجوز حمل بین المللی در صورت وجود",
                                            default="", upload_to="",blank=True,null=True)
+    international_docs_bool = models.BooleanField(default=False,verbose_name="آپلود مدارک مجوز حمل بین المللی در صورت وجود")
     CARRIER_CHOICES = (
         ('حمل و نقل داخلی', 'حمل و نقل داخلی'),
         ('حمل و نقل بین المللی', 'حمل و نقل بین المللی'),
@@ -103,6 +108,16 @@ class RoadFleet(Base_Model):
 
     def __str__(self):
         return self.ownerType
+    def save(self, *args, **kwargs):
+        if self.vehicle_card != None:
+            self.vehicle_card_bool = True
+        if self.vehicle_property_doc != None:
+            self.vehicle_property_doc_bool = True
+        if self.vehicle_advocate != None:
+            self.vehicle_advocate_bool = True
+        if self.international_docs != None:
+            self.international_docs_bool = True
+        super().save(*args, **kwargs)
 
 
 # درخواست همکاری صاحب حمل کننده از راننده

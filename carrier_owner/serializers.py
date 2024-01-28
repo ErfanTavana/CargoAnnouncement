@@ -54,10 +54,24 @@ class DriverListCarrierOwner(Base_ModelSerializer):
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
+class RoadFleet_req_car_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoadFleet
+        fields = (
+            'ownerType', 'roomType', 'vehichleType', 'semiHeavyVehichle', 'semiHeavyVehichleOthers',
+            'HeavyVehichle', 'heavy_vehicle_others', 'plaque_one_num_check', 'plaque_puller_num_check',
+            'plaque_carriage_num_check', 'plaque_container_num_check', 'vehicle_card_bool',
+            'vehicle_property_doc_bool', 'vehicle_advocate_date', 'international_docs_bool', 'carrier_type'
+        )
+
+
 class CarOwReqDriverSerializer(Base_ModelSerializer):
+    carrier = RoadFleetSerializer()
+
     class Meta:
         model = CarOwReqDriver
         fields = Base_ModelSerializer.Meta.fields + (
             'user', 'carrier_owner', 'carrier', 'driver', 'collaboration_type', 'origin', 'destination',
-            'proposed_price')
+            'proposed_price'
+        )
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
