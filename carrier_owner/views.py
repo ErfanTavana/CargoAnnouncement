@@ -8,7 +8,7 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
-from .serializers import RoadFleetSerializer
+from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer
 from .models import CarrierOwner
 
 
@@ -60,6 +60,9 @@ def road_fleet_view(request):
         data_copy['carrier_owner'] = user.carrierowner.id
         try:
             road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
+            if road_fleet.is_changeable == False:
+                return Response({'message': "این ایتم قابل تغییر نیست ", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
             serializer = RoadFleetSerializer(road_fleet, data=data_copy)
             if serializer.is_valid():
                 serializer.save()
@@ -76,9 +79,139 @@ def road_fleet_view(request):
         road_fleet_id = data.get('road_fleet_id')
         try:
             road_fleet = RoadFleet.objects.get(user_id=user.id, id=road_fleet_id, deleted_at=None)
+            if road_fleet.is_deletable == False:
+                return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
             road_fleet.soft_delete()
             return Response({'message': 'اطلاعات حمل‌کننده‌ی بار حذف شد', 'data': ''}, status=status.HTTP_200_OK)
         except RoadFleet.DoesNotExist:
             return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def driver_list_carrier_owner(request):
+    user = request.user
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        # Comment: Retrieve GoodsOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        drivers = Driver.objects.filter(deleted_at=None)
+        # ایجاد serializer
+        serializer = DriverListCarrierOwner(drivers, many=True)
+
+        # ارسال نتیجه‌ی serializer به عنوان داده
+        return Response({'message': 'ok', 'data': serializer.data})
+
+
+@api_view(['GET'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def list_road_fleet(request):
+    user = request.user
+    data = request.data
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Comment: Retrieve GoodsOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    road_fleet = RoadFleet.objects.filter(deleted_at=None, user_id=user.id, is_ok=True)
+    if road_fleet.exists():
+        serializer = RoadFleetSerializer(road_fleet, many=True)
+        return Response({'message': 'ok', 'data': serializer.data})
+    else:
+        return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def car_ow_req_driver_view(request):
+    data = request.data
+    user = request.user
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Comment: Retrieve GoodsOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        CarOwReqDriver_id = data.get('CarOwReqDriver_id')
+        if CarOwReqDriver_id is not None and len(str(CarOwReqDriver_id)) < 6:
+            car_ow_req_driver = CarOwReqDriver.objects.filter(user_id=user.id, deleted_at=None, is_ok=True)
+            if car_ow_req_driver.exists():
+                serializer = CarOwReqDriverSerializer(car_ow_req_driver, many=True)
+                return Response({"message": "ok", 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                car_ow_req_driver = CarOwReqDriver.objects.get(id=CarOwReqDriver_id, user_id=user.id, deleted_at=None,
+                                                               is_ok=True)
+                serializer = CarOwReqDriverSerializer(car_ow_req_driver, many=False)
+                return Response({"message": "ok", 'data': serializer.data})
+            except CarOwReqDriver.DoesNotExist:
+                return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'POST':
+        RoadFleet_id = data.get('RoadFleet_id')
+        Driver_id = data.get('Driver_id')
+        try:
+            road_fleet = RoadFleet.objects.get(deleted_at=None, user_id=user.id, is_ok=True, id=RoadFleet_id)
+        except:
+            return Response({"message": 'حمل کننده ای  با این ایدی وجود ندارد یا تایید نشده است'})
+        try:
+            driver = Driver.objects.get(deleted_at=None, is_ok=True, id=Driver_id)
+        except:
+            return Response({"message": 'راننده  ای  با این ایدی وجود ندارد یا تایید نشده است'})
+        data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['carrier_owner'] = user.carrierowner.id
+        data_copy['carrier'] = road_fleet.id
+        data_copy['driver'] = driver.id
+        serializer = CarOwReqDriverSerializer(data=data_copy)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'درخواست همکاری با موفقیت ارسال شد', 'data': serializer.data})
+        else:
+            return Response({'message': 'درخواست همکاری با موفقیت ارسال شد', 'data': serializer.data},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'PUT':
+        CarOwReqDriver_id = data.get('CarOwReqDriver_id')
+        try:
+            car_ow_req_driver = CarOwReqDriver.objects.get(deleted_at=None, user_id=user.id, id=CarOwReqDriver_id)
+            if car_ow_req_driver.is_changeable == False:
+                return Response({'message': "این ایتم قابل تغییر نیست ", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+            serializer = CarOwReqDriverSerializer(instance=car_ow_req_driver, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'ok', "data": serializer.data})
+            else:
+                return Response({'message': 'خطای صحت سنجی', 'data': serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        except CarOwReqDriver.DoesNotExist:
+            return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        CarOwReqDriver_id = data.get('CarOwReqDriver_id')
+
+        try:
+            car_ow_req_driver = CarOwReqDriver.objects.get(deleted_at=None, user_id=user.id, id=CarOwReqDriver_id)
+            if car_ow_req_driver.is_deletable == False:
+                return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+            car_ow_req_driver.soft_delete()
+            return Response({'message': 'آیتم با موفقیت حذف شد', 'data': ''}, status=status.HTTP_200_OK)
+        except CarOwReqDriver.DoesNotExist:
+            return Response({'message': 'آیتم با این ایدی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)

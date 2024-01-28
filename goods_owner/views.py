@@ -97,7 +97,9 @@ def inner_cargo_view(request):
             inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
         except InnerCargo.DoesNotExist:
             return Response({'message': 'بار داخلی با این ایدی وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        if inner_cargo.is_deletable == False:
+            return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
         # Comment: Execute soft delete using the soft_delete method
         inner_cargo.soft_delete()
         return Response({'message': 'بار داخلی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
@@ -194,7 +196,9 @@ def international_cargo_view(request):
                                                                  deleted_at=None)
         except InternationalCargo.DoesNotExist:
             return Response({'message': 'بار خارجی با این ایدی وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        if international_cargo.is_deletable == False:
+            return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
         # Comment: Execute soft delete using the soft_delete method
         international_cargo.soft_delete()
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
@@ -326,6 +330,9 @@ def required_carrier_view(request):
         required_carrier_id = data.get('required_carrier_id')
         try:
             required_carrier = RequiredCarrier.objects.get(user_id=user.id, deleted_at=None, id=required_carrier_id)
+            if required_carrier.is_changeable == False:
+                return Response({'message': "این ایتم قابل تغییر نیست ", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
         except RequiredCarrier.DoesNotExist:
             return Response({'message': 'حمل‌کننده مورد نظر یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -357,6 +364,9 @@ def required_carrier_view(request):
             for carrier_id in required_carrier_ids:
                 try:
                     carrier = RequiredCarrier.objects.get(id=carrier_id, user_id=user.id, deleted_at=None)
+                    if carrier.is_deletable == False:
+                        return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
+                                        status=status.HTTP_400_BAD_REQUEST)
                     carrier.soft_delete()
                     deleted_items_count += 1
                 except Exception as s:

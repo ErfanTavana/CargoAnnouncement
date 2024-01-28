@@ -31,6 +31,8 @@ class Base_Model(models.Model):
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
     is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
+    is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است ؟')
+
 
     class Meta:
         abstract = True  # Indicates that this class is an abstract class and should not create a table in the database
@@ -39,10 +41,11 @@ class Base_Model(models.Model):
         """
         تابع سافت‌دیلیت برای تنظیم تاریخ و زمان حذف به لحظه فراخوانی تابع
         """
-        self.deleted_at = timezone.now()
-        self.is_ok = False  # شاید نیاز به تغییر این فیلد نیز باشد
-        self.is_changeable = False
-        self.save()
+        if self.is_deletable == True:
+            self.deleted_at = timezone.now()
+            self.is_ok = False  # شاید نیاز به تغییر این فیلد نیز باشد
+            self.is_changeable = False
+            self.save()
 
 
 class CommonCargo(Base_Model):

@@ -23,7 +23,7 @@ class Base_Model(models.Model):
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
-    is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
+    is_ok = models.BooleanField(default=True, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
 
     class Meta:
@@ -166,13 +166,31 @@ class Driver(Base_Model):
                                                  null=True)
     national_card_image = models.ImageField(upload_to='drivers/', blank=True, null=True,
                                             verbose_name="عکس کارت ملی یا پاسپورت")
+    national_card_image_bool = models.BooleanField(default=False, verbose_name="عکس کارت ملی یا پاسپورت", blank=True,
+                                                   null=True)
     mobile_number = models.CharField(max_length=15, verbose_name="شماره موبایل راننده", blank=True, null=True)
     license_expiry_date = models.DateField(verbose_name="تاریخ اعتبار گواهینامه", blank=True, null=True)
     smart_card_image = models.ImageField(upload_to='drivers/', blank=True, null=True, verbose_name="عکس کارت هوشمند")
+    smart_card_image_bool = models.BooleanField(default=False, verbose_name="عکس کارت هوشمند", blank=True, null=True)
     domestic_license = models.BooleanField(default=False, verbose_name="گواهی نامه داخلی", blank=True, null=True)
     international_license = models.BooleanField(default=False, verbose_name="گواهینامه بین المللی", blank=True,
                                                 null=True)
+    # فیلد شهر
+    city = models.CharField(max_length=100, verbose_name="شهر", blank=True, null=True)
+    # فیلد استان
+    province = models.CharField(max_length=100, verbose_name="استان", blank=True, null=True)
 
     class Meta:
         verbose_name = "راننده"
         verbose_name_plural = "رانندگان"
+
+    def save(self, *args, **kwargs):
+        if self.national_card_image != None:
+            self.national_card_image_bool = True
+        else:
+            self.national_card_image_bool = False
+        if self.smart_card_image != None:
+            self.smart_card_image_bool = True
+        else:
+            self.smart_card_image_bool = False
+        super().save(*args, **kwargs)

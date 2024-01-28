@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model,RequiredCarrier
+from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, RequiredCarrier
 
 
 class Base_ModelSerializer(serializers.ModelSerializer):
@@ -11,6 +11,7 @@ class Base_ModelSerializer(serializers.ModelSerializer):
             'deleted_at',
             'is_ok',
             'is_changeable',
+            'is_deletable',
         )
         read_only_fields = (
             'id',
@@ -18,6 +19,7 @@ class Base_ModelSerializer(serializers.ModelSerializer):
             'deleted_at',
             'is_ok',
             'is_changeable',
+            'is_deletable',
         )
 
 
@@ -51,6 +53,7 @@ class CommonCargoSerializer(Base_ModelSerializer):
             'address',
             'customName',
         )
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
 class InnerCargoSerializer(CommonCargoSerializer):
@@ -59,6 +62,7 @@ class InnerCargoSerializer(CommonCargoSerializer):
         fields = CommonCargoSerializer.Meta.fields + (
             'deliveryTimeDate',
         )
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
 class InternationalCargoSerializer(Base_ModelSerializer):
@@ -75,6 +79,7 @@ class InternationalCargoSerializer(Base_ModelSerializer):
             'dischargeTime',
             'customNameEnd',
         )
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
 class RequiredCarrierSerializer(serializers.ModelSerializer):

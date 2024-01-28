@@ -16,12 +16,11 @@ class CarrierSerializer(serializers.ModelSerializer):
                   'national_code_or_passport', 'national_card_image', 'owner_full_name', 'owner_mobile_number']
 
 
+
 from .models import Driver
-
-
 class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = ('driver_full_name', 'national_card_or_passport', 'national_card_image',
                   'mobile_number', 'license_expiry_date', 'smart_card_image', 'domestic_license',
-                  'international_license')
+                  'international_license','city','province')
