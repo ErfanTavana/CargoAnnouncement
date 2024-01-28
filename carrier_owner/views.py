@@ -227,4 +227,4 @@ def required_carrier_list_view(request):
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-    RequiredCarrier.objects.filter()
+    required_carrier = RequiredCarrier.objects.filter(deleted_at=None,is_ok=True,relinquished=False)
