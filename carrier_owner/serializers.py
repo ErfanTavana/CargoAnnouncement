@@ -77,42 +77,5 @@ class CarOwReqDriverSerializer(Base_ModelSerializer):
         )
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
-
 from rest_framework import serializers
-from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
-
-class InnerCargoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InnerCargo
-        fields = [
-            'id', 'length', 'width', 'height', 'cargoType', 'pkgType', 'description',
-            'specialWidgets', 'storageBillNum', 'storagePrice', 'loadigPrice',
-            'basculPrice', 'specialDesc', 'sendersName', 'sendersFamName',
-            'dischargeTimeDate', 'duratio_ndischargeTime', 'country', 'state',
-            'city', 'customName'
-        ]
-
-class RequiredCarrierSerializer(serializers.ModelSerializer):
-    inner_cargo = InnerCargoSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = RequiredCarrier
-        fields = [
-            'id', 'cargo_type', 'cargo_weight', 'counter', 'room_type', 'vehichle_type',
-            'semi_heavy_vehichle', 'semi_heavy_vehichle_others', 'heavy_vehichle',
-            'heavy_vehichle_others', 'special_widget_carrier', 'carrier_price',
-            'cargo_price', 'relinquished', 'inner_cargo'
-        ]
-
-class InternationalCargoSerializer(serializers.ModelSerializer):
-    carriers = RequiredCarrierSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = InternationalCargo
-        fields = [
-            'id', 'length', 'width', 'height', 'cargoType', 'pkgType', 'description',
-            'specialWidgets', 'storageBillNum', 'storagePrice', 'loadigPrice',
-            'basculPrice', 'specialDesc', 'sendersName', 'sendersFamName',
-            'dischargeTimeDate', 'duratio_ndischargeTime', 'country', 'state',
-            'city', 'customName', 'carriers'
-        ]
+from goods_owner.models import InnerCargo,InternationalCargo

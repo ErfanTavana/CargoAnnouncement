@@ -8,9 +8,9 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
-from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer, \
-    RequiredCarrierSerializer
-from goods_owner.serializers import RequiredCarrier
+from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer
+
+from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -231,8 +231,112 @@ def required_carrier_list_view(request):
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-
+    cargo_all = []
     if request.method == 'GET':
-        required_carriers = RequiredCarrier.objects.filter(deleted_at=None, is_ok=True, relinquished=False)
-        serializer = RequiredCarrierSerializer(required_carriers, many=True)
-        return Response({'message': 'ok', 'data': serializer.data})
+        inner_cargo = InnerCargo.objects.filter(deleted_at=None, is_ok=True)
+        for inner_c in inner_cargo:
+            cargo = {
+                'cargo_type': 'اعلام بار داخلی',
+                'length': inner_c.length,
+                'width': inner_c.width,
+                'height': inner_c.height,
+                'cargoType': inner_c.cargoType,
+                'pkgType': inner_c.pkgType,
+                'description': inner_c.description,
+                'specialWidgets': inner_c.specialWidgets,
+                'storageBillNum': inner_c.storageBillNum,
+                'storagePrice': inner_c.storagePrice,
+                'loadigPrice': inner_c.loadigPrice,
+                'basculPrice': inner_c.basculPrice,
+                'specialDesc': inner_c.specialDesc,
+                'sendersName': inner_c.sendersName,
+                'sendersFamName': inner_c.sendersFamName,
+                'dischargeTimeDate': inner_c.dischargeTimeDate,
+                'duratio_ndischargeTime': inner_c.duratio_ndischargeTime,
+                'country': inner_c.country,
+                'state': inner_c.state,
+                'city': inner_c.city,
+                'customName': inner_c.customName,
+                'deliveryTimeDate': inner_c.deliveryTimeDate,
+                'required_carriers': [],
+            }
+            try:
+                required_carriers = RequiredCarrier.objects.filter(inner_cargo_id=inner_c.id, deleted_at=None,
+                                                                   is_ok=True,
+                                                                   relinquished=False)
+                for required_carriers_inner_c in required_carriers:
+                    required_carrier_info = {
+                        'cargo_weight': required_carriers_inner_c.cargo_weight,
+                        'room_type': required_carriers_inner_c.room_type,
+                        'vehichle_type': required_carriers_inner_c.vehichle_type,
+                        'semi_heavy_vehichle': required_carriers_inner_c.semi_heavy_vehichle,
+                        'semi_heavy_vehichle_others': required_carriers_inner_c.semi_heavy_vehichle_others,
+                        'heavy_vehichle': required_carriers_inner_c.heavy_vehichle,
+                        'heavy_vehichle_others': required_carriers_inner_c.heavy_vehichle_others,
+                        'special_widget_carrier': required_carriers_inner_c.special_widget_carrier,
+                        'carrier_price': required_carriers_inner_c.carrier_price,
+                        'cargo_price': required_carriers_inner_c.cargo_price,
+                    }
+                    cargo['required_carriers'].append(required_carrier_info)
+                cargo_all.append(cargo)
+
+            except Exception as e:
+                print(e)
+                continue
+        international_cargo = InternationalCargo.objects.filter(deleted_at=None, is_ok=True)
+        for international_c in international_cargo:
+            cargo = {
+                'cargo_type': 'اعلام بار خارجی',
+                'length': international_c.length,
+                'width': international_c.width,
+                'height': international_c.height,
+                'cargoType': international_c.cargoType,
+                'pkgType': international_c.pkgType,
+                'description': international_c.description,
+                'specialWidgets': international_c.specialWidgets,
+                'storageBillNum': international_c.storageBillNum,
+                'storagePrice': international_c.storagePrice,
+                'loadigPrice': international_c.loadigPrice,
+                'basculPrice': international_c.basculPrice,
+                'specialDesc': international_c.specialDesc,
+                'sendersName': international_c.sendersName,
+                'sendersFamName': international_c.sendersFamName,
+                'dischargeTimeDate': international_c.dischargeTimeDate,
+                'duratio_ndischargeTime': international_c.duratio_ndischargeTime,
+                'country': international_c.country,
+                'state': international_c.state,
+                'city': international_c.city,
+                'customName': international_c.customName,
+                'deliveryTimeDate': international_c.deliveryTimeDate,
+                'senderCountry': international_c.senderCountry,
+                'senderState': international_c.senderState,
+                'senderCity': international_c.senderCity,
+                'dischargeTime': international_c.dischargeTime,
+                'customNameEnd': international_c.customNameEnd,
+                'required_carriers': [],
+            }
+            try:
+                required_carriers = RequiredCarrier.objects.filter(international_cargo_id=international_c.id, deleted_at=None,
+                                                                   is_ok=True,
+                                                                   relinquished=False)
+                for required_carriers_international_c in required_carriers:
+                    required_carrier_info = {
+                        'cargo_weight': required_carriers_international_c.cargo_weight,
+                        'room_type': required_carriers_international_c.room_type,
+                        'vehichle_type': required_carriers_international_c.vehichle_type,
+                        'semi_heavy_vehichle': required_carriers_international_c.semi_heavy_vehichle,
+                        'semi_heavy_vehichle_others': required_carriers_international_c.semi_heavy_vehichle_others,
+                        'heavy_vehichle': required_carriers_international_c.heavy_vehichle,
+                        'heavy_vehichle_others': required_carriers_international_c.heavy_vehichle_others,
+                        'special_widget_carrier': required_carriers_international_c.special_widget_carrier,
+                        'carrier_price': required_carriers_international_c.carrier_price,
+                        'cargo_price': required_carriers_international_c.cargo_price,
+                    }
+                    cargo['required_carriers'].append(required_carrier_info)
+                cargo_all.append(cargo)
+            except Exception as e:
+                print(e)
+
+        return Response({'message': 'ok', 'data': cargo_all})
+
+
