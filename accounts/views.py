@@ -114,10 +114,11 @@ def register(request):
                 otp_last.save()
                 password_set_status.save()
                 user.save()
-                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
-                                status=status.HTTP_200_OK).set_cookie('Authorization', f"Token {token.key}",
+                response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
+                                status=status.HTTP_200_OK)
+                response.set_cookie('Authorization', f"Token {token.key}",
                                                                       httponly=True, secure=True)
-
+                return response
             else:
                 # Increment the failed attempts count if the provided OTP is incorrect
                 otp_last.failed_attempts = otp_last.failed_attempts + 1
@@ -178,10 +179,10 @@ def login(request):
             password_set_status.is_password_set = True
             password_set_status.save()
 
-            # Set the HTTP-only flag for the token cookie
-            response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"}, status=status.HTTP_200_OK)
-            response.set_cookie('Authorization', f"Token {token.key}", httponly=True, secure=True)
-
+            response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
+                                status=status.HTTP_200_OK)
+            response.set_cookie('Authorization', f"Token {token.key}",
+                                httponly=True, secure=True)
             return response
 
         else:
@@ -241,9 +242,11 @@ def forget_password(request):
                 otp_last.save()
                 password_set_status.save()
                 user.save()
-                return Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
-                                status=status.HTTP_200_OK).set_cookie('Authorization', f"Token {token.key}",
+                response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
+                                status=status.HTTP_200_OK)
+                response.set_cookie('Authorization', f"Token {token.key}",
                                                                       httponly=True, secure=True)
+                return response
 
             else:
                 # Increment the failed attempts count if the provided OTP is incorrect

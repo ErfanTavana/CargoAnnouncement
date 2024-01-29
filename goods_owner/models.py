@@ -15,6 +15,7 @@ from django.utils import timezone
 # from cachetools import TTLCache
 from datetime import datetime, timedelta
 
+
 # Function to generate a random complex ID
 def generate_complex_id():
     id_length = 8  # Length of the generated complex ID
@@ -32,7 +33,6 @@ class Base_Model(models.Model):
     is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
     is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است ؟')
-
 
     class Meta:
         abstract = True  # Indicates that this class is an abstract class and should not create a table in the database
@@ -105,6 +105,25 @@ class CommonCargo(Base_Model):
         ("7افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
     ), blank=True, null=True)
+    # Fields for Delivery Provider
+    delivery_provider_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل دهنده", blank=True,
+                                              null=True)
+    delivery_provider_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل دهنده", blank=True,
+                                                     null=True)
+    delivery_provider_full_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی تحویل دهنده",
+                                                   blank=True, null=True)
+    delivery_provider_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل دهنده",
+                                                blank=True, null=True)
+
+    # Fields for Cargo Receiver
+    cargo_receiver_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل گیرنده", blank=True, null=True)
+    cargo_receiver_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل گیرنده", blank=True,
+                                                  null=True)
+    cargo_receiver_full_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی تحویل گیرنده",
+                                                blank=True, null=True)
+    cargo_receiver_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل گیرنده",
+                                             blank=True, null=True)
+
     state = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
     city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
     street = models.CharField(max_length=50, verbose_name="خیابان مبدا", blank=True, null=True)
@@ -131,7 +150,7 @@ class InnerCargo(CommonCargo):
 
 
 class InternationalCargo(CommonCargo):
-    senderCountry = models.CharField(max_length=20, verbose_name="کشور مبدا", choices=(
+    senderCountry = models.CharField(max_length=255, verbose_name="کشور مبدا", choices=(
         ("ایران", "ایران"),
         ("روسیه", "روسیه"),
         ("قزاقستان", "قزاقستان"),
@@ -208,18 +227,19 @@ class RequiredCarrier(Base_Model):
         ("کمپرسی", "کمپرسی"),
         ("تریلی تانکر فاو", "تریلی تانکر فاو"),
     ))
-    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="",blank=True,null=True)
+    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="", blank=True, null=True)
 
-    special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز",blank=True,null=True)
-    carrier_price = models.IntegerField(default=0,verbose_name="قیمت تقریبی حمل",blank=True,null=True)
+    special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز",
+                                              blank=True, null=True)
+    carrier_price = models.IntegerField(default=0, verbose_name="قیمت تقریبی حمل", blank=True, null=True)
 
     # فیلدهای مختص به حمل بین المللی
-    cargo_price = models.PositiveIntegerField(default=0,verbose_name="ارزش بار هر حمل کننده / خودرو",blank=True,null=True)
+    cargo_price = models.PositiveIntegerField(default=0, verbose_name="ارزش بار هر حمل کننده / خودرو", blank=True,
+                                              null=True)
 
     class Meta:
         verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
         verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
-
 
 # # Model for the request of transportation from a driver
 # class CarrierReqToDriver(Base_Model):

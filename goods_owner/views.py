@@ -244,6 +244,7 @@ def required_carrier_view(request):
 
             if inner_cargo_id is not None and len(str(inner_cargo_id)) < 6:
                 inner_cargo_id = None
+
             if international_cargo_id is None and inner_cargo_id is None:
                 return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -273,6 +274,7 @@ def required_carrier_view(request):
                     data_copy['user'] = user.id
                 except InternationalCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+
             required_carrier = None
 
             # Calculate the date and time 24 hours ago
@@ -286,6 +288,13 @@ def required_carrier_view(request):
                     inner_cargo_id=inner_cargo_id,
                     created_at__gte=twenty_four_hours_ago
                 )
+                number = (required_carrier_inner.count() + counter)
+
+                # Comment: Check the limit of requests within 24 hours
+                if required_carrier_inner.count() > limit_requests_in_24_hours or required_carrier_inner.count() + counter > limit_requests_in_24_hours:
+                    return Response({
+                        'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
+
             elif data_copy['cargo_type'] == 'اعلام بار خارجی':
                 required_carrier = RequiredCarrier.objects.filter(
                     deleted_at=None,
@@ -293,13 +302,12 @@ def required_carrier_view(request):
                     international_cargo_id=international_cargo_id,
                     created_at__gte=twenty_four_hours_ago
                 )
+                number = (required_carrier.count() + counter)
 
-            number = (required_carrier.count() + counter)
-
-            # Comment: Check the limit of requests within 24 hours
-            if required_carrier.count() > limit_requests_in_24_hours or required_carrier.count() + counter > limit_requests_in_24_hours:
-                return Response({
-                    'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
+                # Comment: Check the limit of requests within 24 hours
+                if required_carrier.count() > limit_requests_in_24_hours or required_carrier.count() + counter > limit_requests_in_24_hours:
+                    return Response({
+                        'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
 
             if counter > limit_requests_in_24_hours:
                 return Response({
