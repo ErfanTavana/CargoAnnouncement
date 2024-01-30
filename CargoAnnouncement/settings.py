@@ -1,22 +1,21 @@
+# این فایل settings.py شامل تنظیمات مربوط به پروژه Django شما است.
+
 from pathlib import Path
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# مسیر پایه پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# کلید مخفی برای موارد حساس (مثل SECRET_KEY) - در محیط توسعه این مورد مهم نیست
 SECRET_KEY = 'django-insecure-x+a_w2&j4@+%a9j=c&%4hryln@584$w%^1(#m0i^x0$77g4jv6'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# حالت اشکال‌زدایی - این مقدار در محیط توسعه باید True باشد
 DEBUG = True
 
+# لیست میزبان‌های مجاز برای دسترسی به سایت - در حالت توسعه، می‌تواند خالی باشد
 ALLOWED_HOSTS = []
 
-# Application definition
-
+# افزونه‌های نصب‌شده در پروژه
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -33,6 +32,7 @@ INSTALLED_APPS = [
     'goods_owner',
 ]
 
+# میان‌افزارهای اجرایی برنامه
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -44,8 +44,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
+# تنظیمات پوشه‌ها و فایل‌ها
 ROOT_URLCONF = 'CargoAnnouncement.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -64,9 +64,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'CargoAnnouncement.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+# تنظیمات پایگاه داده
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -74,9 +72,7 @@ DATABASES = {
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
+# اعتبارسنجی رمز عبور
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -92,43 +88,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
+# تنظیمات زمان و تاریخ
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-# Static files (CSS, JavaScript, Images)
+# تنظیمات فایل‌های استاتیک و رسانه‌ها
 STATIC_URL = "static/"
-# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
-# Media files (uploads)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# تنظیمات REST framework برای استفاده از توکن برای احراز هویت
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
+
+# تنظیمات CORS برای اجازه دسترسی به API از دامنه‌های مشخص
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
 ]
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Set SESSION_COOKIE_HTTPONLY to True to make session cookies HTTP-only
+# تنظیمات امان برای کوکی‌ها و سشن
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
-
-# Set the HTTP-only flag for all other cookies
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
+
+# زمینه پیشفرض برای مدل‌های جدید در Django 3.2+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
