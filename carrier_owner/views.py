@@ -14,18 +14,30 @@ from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDr
 from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
 
 
+# نمایش، ایجاد، ویرایش و حذف حمل‌کننده‌های بار
+
+# هشتگ: نمایش حمل‌کننده‌های بار
+# Hash: Display road fleets
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def road_fleet_view(request):
     data = request.data
     user = request.user
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: نمایش حمل‌کننده‌ها
+    # Hash: Display road fleets
     if request.method == 'GET':
         road_fleet_id = data.get('road_fleet_id')
         print(road_fleet_id)
@@ -45,6 +57,8 @@ def road_fleet_view(request):
                 return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
 
+    # هشتگ: ایجاد حمل‌کننده
+    # Hash: Create road fleet
     if request.method == 'POST':
         data_copy = request.data.copy()
         data_copy['user'] = user.id
@@ -55,6 +69,9 @@ def road_fleet_view(request):
             serializer.save()
             return Response({'message': f'حمل کننده ی شما با موفقیت اضافه شد', 'data': serializer.data})
         return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': ''})
+
+    # هشتگ: ویرایش حمل‌کننده
+    # Hash: Edit road fleet
     if request.method == 'PUT':
         road_fleet_id = data.get('road_fleet_id')
         data_copy = request.data.copy()
@@ -77,6 +94,9 @@ def road_fleet_view(request):
         except RoadFleet.DoesNotExist:
             return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: حذف حمل‌کننده
+    # Hash: Delete road fleet
     if request.method == 'DELETE':
         road_fleet_id = data.get('road_fleet_id')
         try:
@@ -91,63 +111,102 @@ def road_fleet_view(request):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# نمایش لیست راننده‌ها برای صاحب حمل‌کننده
+
+# هشتگ: نمایش لیست راننده‌ها برای صاحب حمل‌کننده
+# Hash: Display list of drivers for carrier owner
 @api_view(['GET'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def driver_list_carrier_owner(request):
     user = request.user
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'GET':
         drivers = Driver.objects.filter(deleted_at=None)
-        # ایجاد serializer
+
+        # هشتگ: ایجاد serializer
+        # Hash: Create serializer
         serializer = DriverListCarrierOwner(drivers, many=True)
 
-        # ارسال نتیجه‌ی serializer به عنوان داده
+        # هشتگ: ارسال نتیجه‌ی serializer به عنوان داده
+        # Hash: Send the result of serializer as data
         return Response({'message': 'ok', 'data': serializer.data})
 
 
+# نمایش لیست حمل‌کننده‌های بار برای صاحب حمل‌کننده
+
+# هشتگ: نمایش لیست حمل‌کننده‌های بار برای صاحب حمل‌کننده
+# Hash: Display list of road fleets for carrier owner
 @api_view(['GET'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_road_fleet(request):
     user = request.user
     data = request.data
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
     road_fleet = RoadFleet.objects.filter(deleted_at=None, user_id=user.id, is_ok=True)
+
     if road_fleet.exists():
+        # هشتگ: ایجاد serializer
+        # Hash: Create serializer
         serializer = RoadFleetSerializer(road_fleet, many=True)
+
+        # هشتگ: ارسال نتیجه‌ی serializer به عنوان داده
+        # Hash: Send the result of serializer as data
         return Response({'message': 'ok', 'data': serializer.data})
     else:
         return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# هشتگ: نمایش، افزودن، ویرایش و حذف درخواست‌های همکاری صاحب حمل‌کننده با راننده
+
+# Hash: Display, add, edit, and delete collaboration requests from carrier owner to driver
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def car_ow_req_driver_view(request):
     data = request.data
     user = request.user
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'GET':
         CarOwReqDriver_id = data.get('CarOwReqDriver_id')
+
         if CarOwReqDriver_id is not None and len(str(CarOwReqDriver_id)) < 6:
             car_ow_req_driver = CarOwReqDriver.objects.filter(user_id=user.id, deleted_at=None, is_ok=True)
+
             if car_ow_req_driver.exists():
                 serializer = CarOwReqDriverSerializer(car_ow_req_driver, many=True)
                 return Response({"message": "ok", 'data': serializer.data}, status=status.HTTP_200_OK)
@@ -167,13 +226,14 @@ def car_ow_req_driver_view(request):
         RoadFleet_id = data.get('RoadFleet_id')
         Driver_id = data.get('Driver_id')
 
-        # Check if the user has already requested for this specific road fleet and driver
+        # هشتگ: بررسی اینکه کاربر قبلاً برای این حمل‌کننده و راننده درخواست داده یا نه
+        # Hash: Check if the user has already requested for this specific road fleet and driver
         existing_request = CarOwReqDriver.objects.filter(
             user=user,
             carrier__user_id=user.id,
             road_fleet_id=RoadFleet_id,
             driver_id=Driver_id,
-            deleted_at=None  # Assuming soft-delete with 'deleted_at' field
+            deleted_at=None  # فرض: حذف نرم با فیلد 'deleted_at'
         ).first()
 
         if existing_request:
@@ -205,13 +265,16 @@ def car_ow_req_driver_view(request):
         else:
             return Response({'message': 'خطای داده ی ارسالی', 'data': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'PUT':
         CarOwReqDriver_id = data.get('CarOwReqDriver_id')
+
         try:
             car_ow_req_driver = CarOwReqDriver.objects.get(deleted_at=None, user_id=user.id, id=CarOwReqDriver_id)
             if car_ow_req_driver.is_changeable == False:
                 return Response({'message': "این ایتم قابل تغییر نیست ", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
+
             serializer = CarOwReqDriverSerializer(instance=car_ow_req_driver, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -223,6 +286,7 @@ def car_ow_req_driver_view(request):
         except CarOwReqDriver.DoesNotExist:
             return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'DELETE':
         CarOwReqDriver_id = data.get('CarOwReqDriver_id')
 
@@ -237,19 +301,25 @@ def car_ow_req_driver_view(request):
             return Response({'message': 'آیتم با این ایدی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# هشتگ: نمایش لیست بارهای مورد نیاز
+# Hash: Display the list of required cargoes
 @api_view(['GET'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_carrier_list_view(request):
     user = request.user
 
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
     cargo_all = []
     if request.method == 'GET':
         inner_cargo = InnerCargo.objects.filter(deleted_at=None, is_ok=True)
@@ -280,10 +350,10 @@ def required_carrier_list_view(request):
                 'deliveryTimeDate': inner_c.deliveryTimeDate,
                 'required_carriers': [],
             }
+
             try:
                 required_carriers = RequiredCarrier.objects.filter(inner_cargo_id=inner_c.id, deleted_at=None,
-                                                                   is_ok=True,
-                                                                   relinquished=False)
+                                                                   is_ok=True, relinquished=False)
                 for required_carriers_inner_c in required_carriers:
                     required_carrier_info = {
                         'id': required_carriers_inner_c.id,
@@ -304,6 +374,7 @@ def required_carrier_list_view(request):
             except Exception as e:
                 print(e)
                 continue
+
         international_cargo = InternationalCargo.objects.filter(deleted_at=None, is_ok=True)
         for international_c in international_cargo:
             cargo = {
@@ -337,11 +408,10 @@ def required_carrier_list_view(request):
                 'customNameEnd': international_c.customNameEnd,
                 'required_carriers': [],
             }
+
             try:
                 required_carriers = RequiredCarrier.objects.filter(international_cargo_id=international_c.id,
-                                                                   deleted_at=None,
-                                                                   is_ok=True,
-                                                                   relinquished=False)
+                                                                   deleted_at=None, is_ok=True, relinquished=False)
                 for required_carriers_international_c in required_carriers:
                     required_carrier_info = {
                         'id': required_carriers_international_c.id,
@@ -364,40 +434,50 @@ def required_carrier_list_view(request):
         return Response({'message': 'ok', 'data': cargo_all})
 
 
+# هشتگ: درخواست حمل‌کننده از سوی صاحب بار
+# Hash: Carrier Owner Request Goods Owner
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def car_ow_req_goods_owner(request):
     user = request.user
     data = request.data
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
-        # Comment: Retrieve GoodsOwner related to the current user
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'GET':
         car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner')
         try:
             car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
                                                                     id=car_ow_req_goods_owner_id)
-        except:
+        except CarOwReqGoodsOwner.DoesNotExist:
             return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'POST':
         road_fleet_id = data.get('road_fleet_id')
         required_carrier_id = data.get('required_carrier_id')
 
-        # Check if the user has already requested for this specific road fleet and required carrier
+        # هشتگ: بررسی اینکه کاربر قبلاً برای این بار درخواست داده یا خیر
+        # Hash: Check if the user has already requested for this specific road fleet and required carrier
         existing_request = CarOwReqGoodsOwner.objects.filter(
             user=user,
             road_fleet_id=road_fleet_id,
             required_carrier_id=required_carrier_id,
-            deleted_at=None  # Assuming soft-delete with 'deleted_at' field
+            deleted_at=None  # فرض: حذف نرم با فیلد 'deleted_at'
         ).first()
 
         if existing_request:
-            # If there is an existing request, include its details in the response
+            # اگر درخواست قبلاً ثبت شده باشد، جزئیات آن را در پاسخ درج کنید
             serializer = CarOwReqGoodsOwnerSerializer(existing_request)
             return Response({
                 "message": "شما قبلاً برای این بار درخواست داده‌اید.",
@@ -405,17 +485,24 @@ def car_ow_req_goods_owner(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # هشتگ: دریافت اطلاعات حمل‌کننده
+            # Hash: Retrieve information about the carrier
             road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, user_id=user.id, id=road_fleet_id)
         except RoadFleet.DoesNotExist:
             return Response({"message": "حمل کننده ای با این ایدی وجود ندارد"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # هشتگ: دریافت اطلاعات درخواست حمل‌کننده
+            # Hash: Retrieve information about the required carrier
             required_carrier = RequiredCarrier.objects.get(deleted_at=None, is_ok=True, id=required_carrier_id)
+
+            # هشتگ: بررسی اینکه آیا بار قبلا واگذار شده است یا خیر
+            # Hash: Check if the cargo has been relinquished
             if required_carrier.relinquished:
                 return Response({"message": "این بار قبلا واگذار شده است"},
                                 status=status.HTTP_400_BAD_REQUEST)
         except RequiredCarrier.DoesNotExist:
-            return Response({"message": "درخواست حمل کننده  ای با این ایدی وجود ندارد"},
+            return Response({"message": "درخواست حمل‌کننده ای با این ایدی وجود ندارد"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         data_copy = request.data.copy()
@@ -425,6 +512,7 @@ def car_ow_req_goods_owner(request):
         data_copy['goods_owner'] = required_carrier.user.goodsowner.id
         data_copy['required_carrier'] = required_carrier.id
         data_copy['request_result'] = 'در انتظار پاسخ'
+
         serializer = CarOwReqGoodsOwnerSerializer(data=data_copy)
 
         if serializer.is_valid():
