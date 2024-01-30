@@ -17,28 +17,32 @@ from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver
 from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer
 
 
+# تابع ایجاد یک کد تایید برای شماره موبایل داده شده
 # Function to create a verification code for a given phone number
 def Create_a_verification_code(phone_number):
+    # دریافت یا ایجاد کاربر با نام کاربری شماره موبایل
     user, created = User.objects.get_or_create(username=phone_number)
     try:
-        # Get the latest verification code for the user
+        # دریافت آخرین کد تایید برای کاربر
         otp_last = VerificationCode.objects.filter(user=user).latest('expires_at')
 
-        # Check if the latest verification code has expired
+        # بررسی اینکه آخرین کد تایید منقضی شده یا خیر
         if otp_last.expires_at < timezone.now():
-            # Create a new verification code if the latest one has expired
+            # ایجاد یک کد تایید جدید در صورت منقضی شدن آخرین کد
             verification_code = VerificationCode.objects.create(user_id=user.id)
+            # ارسال کد تایید از طریق سرویس پیامکی
             # sms = ghasedakpack.Ghasedak("1feaff6b0fb9ab14d5f1b9acc9fcad839699b313816e3001e128cef8e6271850")
             # print(sms.verification({'receptor': f'{phone_number}', 'type': '1', 'template': 'mziSmsOtp',
             #                         'param1': f'{phone_number}', 'param2': f'{phone_number}',
             #                         'param3': f'{verification_code.random_code}'}))
             return {'status': True, 'verify_code': verification_code.random_code}
         else:
-            # Return an empty verification code if the latest one is still valid
+            # اگر آخرین کد هنوز اعتبار دارد، یک کد تایید خالی برگردان
             return {'status': False, 'verify_code': ''}
     except:
-        # Create a new verification code if there is no previous one for the user
+        # ایجاد یک کد تایید جدید در صورت عدم وجود کد قبلی برای کاربر
         verification_code = VerificationCode.objects.create(user_id=user.id)
+        # ارسال کد تایید از طریق سرویس پیامکی
         sms = ghasedakpack.Ghasedak("1feaff6b0fb9ab14d5f1b9acc9fcad839699b313816e3001e128cef8e6271850")
         print(sms.verification({'receptor': f'{phone_number}', 'type': '1', 'template': 'mziSmsOtp',
                                 'param1': f'{phone_number}', 'param2': f'{phone_number}',
@@ -46,6 +50,7 @@ def Create_a_verification_code(phone_number):
         return {'status': True, 'verify_code': verification_code.random_code}
 
 
+# نمایش برای ارسال کد تایید از طریق درخواست POST
 # View to send a verification code via POST request
 @api_view(["POST"])
 def Send_verification_code(request):
@@ -54,7 +59,7 @@ def Send_verification_code(request):
         phone_number = data.get('phone_number')
         type_user = data.get('type_user')
 
-        # Create a verification code for the given phone number
+        # ایجاد یک کد تایید برای شماره موبایل داده شده
         status_send_verification_code = Create_a_verification_code(phone_number=phone_number)
         user = User.objects.get(username=phone_number)
         if any(map(lambda x: x[0] == type_user, type_user_list)):
@@ -68,15 +73,17 @@ def Send_verification_code(request):
                 profile.user_type = type_user
                 profile.save()
         else:
+            # اگر نوع کاربر انتخاب نشده باشد، پاسخ خطا برگردان
             return Response({'message': 'نوع کاربر انتخاب نشده است'}, status=status.HTTP_400_BAD_REQUEST)
         if status_send_verification_code['status'] == True:
-            # Return success message and the generated verification code
+            # اگر ارسال کد تایید موفقیت‌آمیز بود، پیام موفقیت و کد تایید ایجاد شده را برگردان
             return Response({"message": "کد تایید به شماره تلفن شما ارسال شده است"}, status=status.HTTP_200_OK)
         else:
-            # Return an error message if creating the verification code fails
+            # اگر ایجاد کد تایید با مشکل مواجه شود، پیام خطا برگردان
             return Response({'message': 'دقایقی دیگر دوباره امتحان کنید'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# نمایش برای ثبت‌نام کاربر از طریق درخواست POST
 # View to handle user registration via POST request
 @api_view(["POST"])
 def register(request):
@@ -88,25 +95,25 @@ def register(request):
         # password = data.get('password')
 
         try:
-            # Get the user with the provided phone number
+            # دریافت کاربر با شماره تلفن داده شده
             user = User.objects.get(username=phone_number)
 
-            # Get the latest verification code for the user
+            # دریافت آخرین کد تایید برای کاربر
             otp_last = VerificationCode.objects.filter(user_id=user.id).latest('expires_at')
 
-            # Check if the verification code is invalid or expired
+            # بررسی اینکه کد تایید نامعتبر است یا منقضی شده است
             if otp_last.failed_attempts > 3 or otp_last.expires_at < timezone.now() or not otp_last.is_valid:
                 return Response({'message': 'کد تایید منقضی شده است'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the provided OTP matches the one associated with the user
+            # بررسی اینکه کد OTP ارائه‌شده با کد مرتبط با کاربر مطابقت دارد یا خیر
             elif otp_last.random_code == otp:
-                # Delete the existing token, if it exists
+                # حذف توکن موجود اگر وجود داشته باشد
                 Token.objects.filter(user=user).delete()
 
-                # Create a new token for the user
+                # ایجاد یک توکن جدید برای کاربر
                 token = Token.objects.create(user=user)
                 password_set_status = PasswordSetStatus.objects.create(token=token, is_password_set=False)
-                # Update user information if needed
+                # به‌روزرسانی اطلاعات کاربر در صورت نیاز
                 # user.first_name = first_name
                 # user.set_password(password)
                 user.last_login = timezone.now()
@@ -115,12 +122,12 @@ def register(request):
                 password_set_status.save()
                 user.save()
                 response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
-                                status=status.HTTP_200_OK)
+                                    status=status.HTTP_200_OK)
                 response.set_cookie('Authorization', f"Token {token.key}",
-                                                                      httponly=True, secure=True)
+                                    httponly=True, secure=True)
                 return response
             else:
-                # Increment the failed attempts count if the provided OTP is incorrect
+                # افزایش تعداد تلاش‌های ناموفق اگر OTP ارائه‌شده اشتباه باشد
                 otp_last.failed_attempts = otp_last.failed_attempts + 1
                 otp_last.save()
                 return Response({'message': 'کد اشتباه وارد شده است'}, status=status.HTTP_400_BAD_REQUEST)
@@ -130,9 +137,8 @@ def register(request):
             return Response({'message': 'کد تایید را دوباره ارسال کنید'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.permissions import IsAuthenticated
-
-
+# نمایش برای تنظیم رمز عبور توسط کاربران وارد شده از طریق درخواست POST
+# View to set the password for authenticated users via POST request
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def set_password(request):
@@ -141,11 +147,11 @@ def set_password(request):
         new_password = data.get('new_password')
 
         try:
-            # Get the user with the provided phone number
+            # دریافت کاربر با شماره تلفن داده شده
             user = request.user
             token = Token.objects.get(user=user)
 
-            # Update the user's password
+            # به‌روزرسانی رمز عبور کاربر
             user.password = make_password(new_password)
             password_set_status = PasswordSetStatus.objects.get(token=token)
 
@@ -159,6 +165,7 @@ def set_password(request):
             return Response({'message': 'کاربر یافت نشد'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# نمایش برای ورود کاربران از طریق درخواست POST
 # View to handle user login via POST request
 @api_view(["POST"])
 def login(request):
@@ -167,14 +174,14 @@ def login(request):
         phone_number = data.get('phone_number')
         password = data.get('password')
 
-        # Authenticate the user using the provided phone number and password
+        # احراز هویت کاربر با استفاده از شماره تلفن و رمز عبور ارائه شده
         user = authenticate(username=phone_number, password=password)
 
         if user is not None:
-            # Delete the existing token, if it exists
+            # حذف توکن موجود، اگر وجود داشته باشد
             Token.objects.filter(user=user).delete()
 
-            # Create a new token for the authenticated user
+            # ایجاد یک توکن جدید برای کاربر احراز هویت شده
             token = Token.objects.create(user=user)
             password_set_status, created = PasswordSetStatus.objects.get_or_create(token=token)
             password_set_status.is_password_set = True
@@ -190,9 +197,7 @@ def login(request):
             return Response({'message': 'نام کاربری یا رمز عبور اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.permissions import IsAuthenticated
-
-
+# نمایش برای خروج کاربران از حساب کاربری از طریق درخواست POST با نیاز به احراز هویت
 # View to handle user logout via POST request with authentication required
 @api_view(["POST"])
 @permission_classes([IsLoggedInAndPasswordSet])
@@ -200,12 +205,13 @@ def logout(request):
     if request.method == "POST":
         user = request.user
 
-        # Delete the existing token for the authenticated user
+        # حذف توکن موجود برای کاربر احراز هویت شده
         Token.objects.filter(user=user).delete()
 
         return Response({'message': 'با موفقیت از حساب کاربری خود خارج شدید'}, status=status.HTTP_200_OK)
 
 
+# نمایش برای پردازش "فراموشی رمز عبور" از طریق درخواست POST
 # View to handle the "forget password" process via POST request
 @api_view(["POST"])
 def forget_password(request):
@@ -217,25 +223,25 @@ def forget_password(request):
         # password = data.get('password')
 
         try:
-            # Get the user with the provided phone number
+            # گرفتن کاربر با شماره تلفن داده شده
             user = User.objects.get(username=phone_number)
 
-            # Get the latest verification code for the user
+            # گرفتن آخرین کد تایید برای کاربر
             otp_last = VerificationCode.objects.filter(user_id=user.id).latest('expires_at')
 
-            # Check if the verification code is invalid or expired
+            # بررسی اینکه کد تایید نامعتبر یا منقضی است یا خیر
             if otp_last.failed_attempts > 3 or otp_last.expires_at < timezone.now() or not otp_last.is_valid:
                 return Response({'message': 'کد تایید منقضی شده است'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the provided OTP matches the one associated with the user
+            # بررسی اینکه کد تایید داده شده با کد مرتبط با کاربر مطابقت دارد یا خیر
             elif otp_last.random_code == otp:
-                # Delete the existing token, if it exists
+                # حذف توکن موجود، اگر وجود داشته باشد
                 Token.objects.filter(user=user).delete()
 
-                # Create a new token for the user
+                # ایجاد یک توکن جدید برای کاربر
                 token = Token.objects.create(user=user)
                 password_set_status = PasswordSetStatus.objects.create(token=token, is_password_set=False)
-                # Update user information if needed
+                # به‌روزرسانی اطلاعات کاربر در صورت نیاز
                 # user.first_name = first_name
                 # user.set_password(password)
                 user.last_login = timezone.now()
@@ -244,13 +250,13 @@ def forget_password(request):
                 password_set_status.save()
                 user.save()
                 response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
-                                status=status.HTTP_200_OK)
+                                    status=status.HTTP_200_OK)
                 response.set_cookie('Authorization', f"Token {token.key}",
-                                                                      httponly=True, secure=True)
+                                    httponly=True, secure=True)
                 return response
 
             else:
-                # Increment the failed attempts count if the provided OTP is incorrect
+                # افزایش تعداد تلاش‌های ناموفق اگر کد تایید داده شده اشتباه باشد
                 otp_last.failed_attempts = otp_last.failed_attempts + 1
                 otp_last.save()
                 return Response({'message': 'کد اشتباه وارد شده است'}, status=status.HTTP_400_BAD_REQUEST)
@@ -260,43 +266,43 @@ def forget_password(request):
             return Response({'message': 'کد تایید را دوباره ارسال کنید'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver
-from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer
-
-
+# درخواست گت و پست برای مشاهده و ذخیره اطلاعات پروفایل کاربر
+# View for retrieving and updating user profile information via GET and POST requests
 @api_view(['GET', 'POST', ])
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
     user = request.user
+
     if request.method == 'GET':
-        # درخواست گت برای دریافت اطلاعات پروفایل کاربر
+        # GET request to retrieve user profile information
 
         if user.profile.user_type in ["صاحب بار"]:
             try:
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the owner does not exist, create one
                 goodsowner = GoodsOwner.objects.create(user=user)
             serializer = GoodsOwnerSerializer(goodsowner)
-        elif user.profile.user_type in ['صاحب حمل کننده']:
+        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the carrier does not exist, create one
                 carrier = CarrierOwner.objects.create(user=user)
             serializer = CarrierSerializer(carrier)
         elif user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver
             except Driver.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the driver does not exist, create one
                 driver = Driver.objects.create(user=user)
             serializer = DriverSerializer(user.driver)
         else:
-            return Response({'message': 'نوع کاربر نامعتبر'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"message": 'اطلاعات پروفایل کاربر', 'data': serializer.data, 'user_type': user.profile.user_type})
+            {"message": 'User profile information', 'data': serializer.data, 'user_type': user.profile.user_type})
+
     data = request.data
 
     if request.method == 'POST':
@@ -304,25 +310,25 @@ def profile_view(request):
             try:
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the owner does not exist, create one
                 goodsowner = GoodsOwner.objects.create(user=user)
             serializer = GoodsOwnerSerializer(user.goodsowner, data=data)
-        elif user.profile.user_type in ['صاحب حمل کننده']:
+        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the carrier does not exist, create one
                 carrier = CarrierOwner.objects.create(user=user)
             serializer = CarrierSerializer(user.carrierowner, data=data)
         elif user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver
             except Driver.DoesNotExist:
-                # اگر شرکت وجود نداشته باشد، می‌توانید یک شرکت بسازید
+                # If the driver does not exist, create one
                 driver = Driver.objects.create(user=user)
             serializer = DriverSerializer(user.driver, data=data)
         else:
-            return Response({'message': 'نوع کاربر نامعتبر'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
             serializer.save()
@@ -333,5 +339,5 @@ def profile_view(request):
             user.profile.is_completed = True
             user.save()
             user.profile.save()
-            return Response({'message': 'اطلاعات شما با موفقیت ذخیره شد'})
+            return Response({'message': 'Your information has been successfully saved'})
         return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
