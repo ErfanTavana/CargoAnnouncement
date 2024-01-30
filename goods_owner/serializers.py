@@ -2,9 +2,11 @@ from rest_framework import serializers
 from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, RequiredCarrier
 
 
+# سریالایزر برای مدل پایه
 class Base_ModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Base_Model
+        # فیلدهای مدل پایه که در سریالایزر قابل دسترسی هستند
         fields = (
             'id',
             'created_at',
@@ -13,6 +15,7 @@ class Base_ModelSerializer(serializers.ModelSerializer):
             'is_changeable',
             'is_deletable',
         )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = (
             'id',
             'created_at',
@@ -23,9 +26,11 @@ class Base_ModelSerializer(serializers.ModelSerializer):
         )
 
 
+# سریالایزر برای مدل مشترک بار
 class CommonCargoSerializer(Base_ModelSerializer):
     class Meta(Base_ModelSerializer.Meta):
         model = CommonCargo
+        # فیلدهای مدل پایه و فیلدهای اضافی مدل مشترک بار در سریالایزر
         fields = Base_ModelSerializer.Meta.fields + (
             'user',
             'goods_owner',
@@ -53,21 +58,27 @@ class CommonCargoSerializer(Base_ModelSerializer):
             'address',
             'customName',
         )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
+# سریالایزر برای مدل بار داخلی
 class InnerCargoSerializer(CommonCargoSerializer):
     class Meta(CommonCargoSerializer.Meta):
         model = InnerCargo
+        # ارث‌بری از سریالایزر مشترک بار و اضافه کردن فیلد تاریخ و ساعت تحویل بار در مدل بار داخلی
         fields = CommonCargoSerializer.Meta.fields + (
             'deliveryTimeDate',
         )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
+# سریالایزر برای مدل بار خارجی
 class InternationalCargoSerializer(Base_ModelSerializer):
     class Meta(Base_ModelSerializer.Meta):
         model = InternationalCargo
+        # ارث‌بری از سریالایزر پایه و اضافه کردن فیلدهای مختلف برای مدل بار خارجی
         fields = CommonCargoSerializer.Meta.fields + (
             'senderCountry',
             'senderState',
@@ -79,13 +90,14 @@ class InternationalCargoSerializer(Base_ModelSerializer):
             'dischargeTime',
             'customNameEnd',
         )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 
-class RequiredCarrierSerializer(serializers.ModelSerializer):
+class RequiredCarrierSerializer(Base_ModelSerializer):
     class Meta:
         model = RequiredCarrier
-        fields = (
+        fields = CommonCargoSerializer.Meta.fields + (
             'cargo_type',
             'user',
             'inner_cargo',
@@ -102,3 +114,5 @@ class RequiredCarrierSerializer(serializers.ModelSerializer):
             'carrier_price',
             'cargo_price',
         )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

@@ -16,26 +16,28 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 
-# Function to generate a random complex ID
+# تابع برای ایجاد یک شناسه پیچیده تصادفی
 def generate_complex_id():
-    id_length = 8  # Length of the generated complex ID
-    characters = string.ascii_letters + string.digits  # Set of characters (letters and digits) to choose from
+    id_length = 8  # طول شناسه پیچیده تولیدی
+    characters = string.ascii_letters + string.digits  # مجموعه کاراکترها (حروف و ارقام) برای انتخاب
     complex_id = ''.join(
-        random.choice(characters) for _ in range(id_length))  # Generate the complex ID using random characters
-    return complex_id  # Return the generated complex ID
+        random.choice(characters) for _ in range(id_length))  # تولید شناسه پیچیده با استفاده از کاراکترهای تصادفی
+    return complex_id  # بازگشت شناسه پیچیده تولید شده
 
 
-# Abstract base class for common fields among different models
+# کلاس پایه برای فیلدهای مشترک بین مدل‌های مختلف
 class Base_Model(models.Model):
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
     is_ok = models.BooleanField(default=True, verbose_name='آیا تایید شده است؟')
-    is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
-    is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است ؟')
-    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='deleted_by_%(class)s_set')
+    is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است؟')
+    is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است؟')
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='deleted_by_%(class)s_set')
+
     class Meta:
-        abstract = True  # Indicates that this class is an abstract class and should not create a table in the database
+        abstract = True  # نشان می‌دهد که این کلاس یک کلاس انتزاعی است و نباید یک جدول در پایگاه داده ایجاد کند
 
     def soft_delete(self, deleted_by):
         self.deleted_at = timezone.now()
@@ -46,13 +48,14 @@ class Base_Model(models.Model):
         self.save()
 
 
+# کلاس بار مشترک
 class CommonCargo(Base_Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
     goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
-                                    verbose_name='پروفایل صاحاب بار')
-    # Common Fields
-    length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
+                                    verbose_name='پروفایل صاحب بار')
 
+    # فیلدهای مشترک
+    length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
     width = models.IntegerField(verbose_name="عرض", default=0, blank=True, null=True)
     height = models.IntegerField(verbose_name="ارتفاع", default=0, blank=True, null=True)
     cargoType = models.CharField(max_length=800, verbose_name="عنوان محموله", default="", blank=True, null=True)
@@ -92,7 +95,7 @@ class CommonCargo(Base_Model):
                                                   default=timezone.timedelta(hours=0, minutes=0, seconds=0), blank=True,
                                                   null=True)
 
-    # Comment: Unique fields for InnerCargo
+    # Comment: فیلدهای منحصر به فرد برای InnerCargo
     country = models.CharField(max_length=20, verbose_name="کشور مبدا", choices=(
         ("ایران", "ایران"),
         ("روسیه", "روسیه"),
@@ -103,7 +106,8 @@ class CommonCargo(Base_Model):
         ("7افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
     ), blank=True, null=True)
-    # Fields for Delivery Provider
+
+    # فیلدهای ارائه‌دهنده تحویل
     delivery_provider_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل دهنده", blank=True,
                                               null=True)
     delivery_provider_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل دهنده", blank=True,
@@ -113,7 +117,7 @@ class CommonCargo(Base_Model):
     delivery_provider_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل دهنده",
                                                 blank=True, null=True)
 
-    # Fields for Cargo Receiver
+    # فیلدهای گیرنده بار
     cargo_receiver_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل گیرنده", blank=True, null=True)
     cargo_receiver_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل گیرنده", blank=True,
                                                   null=True)
@@ -133,6 +137,7 @@ class CommonCargo(Base_Model):
         abstract = True
 
 
+# کلاس بار داخلی که از کلاس CommonCargo ارث‌بری می‌کند
 class InnerCargo(CommonCargo):
     deliveryTimeDate = models.DateTimeField(
         max_length=200,
@@ -147,6 +152,7 @@ class InnerCargo(CommonCargo):
         verbose_name_plural = 'اعلام بار های  داخلی'
 
 
+# کلاس بار بین‌المللی که از کلاس CommonCargo ارث‌بری می‌کند
 class InternationalCargo(CommonCargo):
     senderCountry = models.CharField(max_length=255, verbose_name="کشور مبدا", choices=(
         ("ایران", "ایران"),
@@ -177,6 +183,7 @@ class InternationalCargo(CommonCargo):
         verbose_name_plural = 'اعلام بار های خارجی'
 
 
+# کلاس مدل بار مورد نیاز که از کلاس Base_Model ارث‌بری می‌کند
 class RequiredCarrier(Base_Model):
     relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
     CARGO_TYPE_CHOICES = [
