@@ -30,22 +30,20 @@ class Base_Model(models.Model):
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=10, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
     deleted_at = models.DateTimeField(default=None, null=True, blank=True, verbose_name='تاریخ حذف')
-    is_ok = models.BooleanField(default=False, verbose_name='آیا تایید شده است؟')
+    is_ok = models.BooleanField(default=True, verbose_name='آیا تایید شده است؟')
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است ؟')
     is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است ؟')
-
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='deleted_by_%(class)s_set')
     class Meta:
         abstract = True  # Indicates that this class is an abstract class and should not create a table in the database
 
-    def soft_delete(self):
-        """
-        تابع سافت‌دیلیت برای تنظیم تاریخ و زمان حذف به لحظه فراخوانی تابع
-        """
-        if self.is_deletable == True:
-            self.deleted_at = timezone.now()
-            self.is_ok = False  # شاید نیاز به تغییر این فیلد نیز باشد
-            self.is_changeable = False
-            self.save()
+    def soft_delete(self, deleted_by):
+        self.deleted_at = timezone.now()
+        self.is_ok = False
+        self.is_changeable = False
+        self.deleted_by = deleted_by
+        self.is_deletable = False
+        self.save()
 
 
 class CommonCargo(Base_Model):

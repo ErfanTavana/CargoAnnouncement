@@ -148,6 +148,7 @@ def set_password(request):
             # Update the user's password
             user.password = make_password(new_password)
             password_set_status = PasswordSetStatus.objects.get(token=token)
+
             password_set_status.is_password_set = True
             password_set_status.save()
             user.save()

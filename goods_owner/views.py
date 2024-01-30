@@ -101,7 +101,7 @@ def inner_cargo_view(request):
             return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
         # Comment: Execute soft delete using the soft_delete method
-        inner_cargo.soft_delete()
+        inner_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار داخلی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
 
@@ -200,7 +200,7 @@ def international_cargo_view(request):
             return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
         # Comment: Execute soft delete using the soft_delete method
-        international_cargo.soft_delete()
+        international_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
 
@@ -375,7 +375,7 @@ def required_carrier_view(request):
                     if carrier.is_deletable == False:
                         return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
                                         status=status.HTTP_400_BAD_REQUEST)
-                    carrier.soft_delete()
+                    carrier.soft_delete(deleted_by=user)
                     deleted_items_count += 1
                 except Exception as s:
                     pass  # Ignore if the ID does not exist

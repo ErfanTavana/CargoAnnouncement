@@ -3,7 +3,7 @@ from .models import RoadFleet, CarOwReqDriver
 from goods_owner.serializers import Base_ModelSerializer
 from accounts.models import Driver, CarrierOwner, GoodsOwner
 from goods_owner.models import RequiredCarrier, CommonCargo
-
+from .models import CarOwReqGoodsOwner
 
 class RoadFleetSerializer(Base_ModelSerializer):
     class Meta:
@@ -12,6 +12,7 @@ class RoadFleetSerializer(Base_ModelSerializer):
             'user',
             'carrier_owner',
             'ownerType',
+            'driver',
             'roomType',
             'vehichleType',
             'semiHeavyVehichle',
@@ -64,7 +65,7 @@ class RoadFleet_req_car_Serializer(serializers.ModelSerializer):
             'plaque_carriage_num_check', 'plaque_container_num_check', 'vehicle_card_bool',
             'vehicle_property_doc_bool', 'vehicle_advocate_date', 'international_docs_bool', 'carrier_type'
         )
-
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 class CarOwReqDriverSerializer(Base_ModelSerializer):
     carrier = RoadFleetSerializer()
@@ -72,10 +73,22 @@ class CarOwReqDriverSerializer(Base_ModelSerializer):
     class Meta:
         model = CarOwReqDriver
         fields = Base_ModelSerializer.Meta.fields + (
-            'user', 'carrier_owner', 'carrier', 'driver', 'collaboration_type', 'origin', 'destination',
+            'user','request_result', 'carrier_owner', 'carrier', 'driver', 'collaboration_type', 'origin', 'destination',
             'proposed_price'
         )
-        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ('request_result',)
 
-from rest_framework import serializers
-from goods_owner.models import InnerCargo,InternationalCargo
+class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarOwReqGoodsOwner
+        fields = [
+            'user',
+            'carrier_owner',
+            'road_fleet',
+            'goods_owner',
+            'required_carrier',
+            'proposed_price',
+            'request_result',
+        ]
+
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

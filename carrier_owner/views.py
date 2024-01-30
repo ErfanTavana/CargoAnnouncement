@@ -8,7 +8,8 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
-from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer
+from .serializers import RoadFleetSerializer, DriverListCarrierOwner, CarOwReqDriverSerializer, \
+    CarOwReqGoodsOwnerSerializer
 
 from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
 
@@ -83,7 +84,7 @@ def road_fleet_view(request):
             if road_fleet.is_deletable == False:
                 return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
-            road_fleet.soft_delete()
+            road_fleet.soft_delete(deleted_by=user)
             return Response({'message': 'اطلاعات حمل‌کننده‌ی بار حذف شد', 'data': ''}, status=status.HTTP_200_OK)
         except RoadFleet.DoesNotExist:
             return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
@@ -212,7 +213,7 @@ def car_ow_req_driver_view(request):
             if car_ow_req_driver.is_deletable == False:
                 return Response({'message': "این ایتم قابل حذف  نیست ", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
-            car_ow_req_driver.soft_delete()
+            car_ow_req_driver.soft_delete(deleted_by=user)
             return Response({'message': 'آیتم با موفقیت حذف شد', 'data': ''}, status=status.HTTP_200_OK)
         except CarOwReqDriver.DoesNotExist:
             return Response({'message': 'آیتم با این ایدی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
@@ -237,6 +238,7 @@ def required_carrier_list_view(request):
         for inner_c in inner_cargo:
             cargo = {
                 'cargo_type': 'اعلام بار داخلی',
+                'id': inner_c.id,
                 'length': inner_c.length,
                 'width': inner_c.width,
                 'height': inner_c.height,
@@ -266,6 +268,7 @@ def required_carrier_list_view(request):
                                                                    relinquished=False)
                 for required_carriers_inner_c in required_carriers:
                     required_carrier_info = {
+                        'id': required_carriers_inner_c.id,
                         'cargo_weight': required_carriers_inner_c.cargo_weight,
                         'room_type': required_carriers_inner_c.room_type,
                         'vehichle_type': required_carriers_inner_c.vehichle_type,
@@ -286,6 +289,7 @@ def required_carrier_list_view(request):
         international_cargo = InternationalCargo.objects.filter(deleted_at=None, is_ok=True)
         for international_c in international_cargo:
             cargo = {
+                'id': international_c.id,
                 'cargo_type': 'اعلام بار خارجی',
                 'length': international_c.length,
                 'width': international_c.width,
@@ -316,11 +320,13 @@ def required_carrier_list_view(request):
                 'required_carriers': [],
             }
             try:
-                required_carriers = RequiredCarrier.objects.filter(international_cargo_id=international_c.id, deleted_at=None,
+                required_carriers = RequiredCarrier.objects.filter(international_cargo_id=international_c.id,
+                                                                   deleted_at=None,
                                                                    is_ok=True,
                                                                    relinquished=False)
                 for required_carriers_international_c in required_carriers:
                     required_carrier_info = {
+                        'id': required_carriers_international_c.id,
                         'cargo_weight': required_carriers_international_c.cargo_weight,
                         'room_type': required_carriers_international_c.room_type,
                         'vehichle_type': required_carriers_international_c.vehichle_type,
@@ -340,3 +346,46 @@ def required_carrier_list_view(request):
         return Response({'message': 'ok', 'data': cargo_all})
 
 
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def car_ow_req_goods_owner(request):
+    user = request.user
+    data = request.data
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        # Comment: Retrieve GoodsOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'POST':
+        road_fleet_id = data.get('road_fleet_id')
+        required_carrier_id = data.get('required_carrier_id')
+        try:
+            road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, user_id=user.id, id=road_fleet_id)
+        except:
+            return Response({"message": "حمل کننده ای با این ایدی وجود ندارد"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            required_carrier = RequiredCarrier.objects.get(deleted_at=None, is_ok=True, id=required_carrier_id)
+            if required_carrier.relinquished:
+                return Response({"message": "این بار قبلا واگذار شده است"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "درخواست حمل کننده  ای با این ایدی وجود ندارد"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['carrier_owner'] = user.carrierowner.id
+        data_copy['road_fleet'] = road_fleet.id
+        data_copy['goods_owner'] = required_carrier.user.goodsowner.id
+        data_copy['required_carrier'] = required_carrier.id
+        data_copy['request_result'] = 'در انتظار پاسخ'
+        serializer = CarOwReqGoodsOwnerSerializer(data=data_copy)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'خطای داده ی ارسالی', 'data': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
