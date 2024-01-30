@@ -166,27 +166,45 @@ def car_ow_req_driver_view(request):
     if request.method == 'POST':
         RoadFleet_id = data.get('RoadFleet_id')
         Driver_id = data.get('Driver_id')
+
+        # Check if the user has already requested for this specific road fleet and driver
+        existing_request = CarOwReqDriver.objects.filter(
+            user=user,
+            carrier__user_id=user.id,
+            road_fleet_id=RoadFleet_id,
+            driver_id=Driver_id,
+            deleted_at=None  # Assuming soft-delete with 'deleted_at' field
+        ).first()
+
+        if existing_request:
+            return Response({"message": "شما قبلاً برای این راننده و حمل‌ونقل درخواست داده‌اید."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         try:
             road_fleet = RoadFleet.objects.get(deleted_at=None, user_id=user.id, is_ok=True, id=RoadFleet_id)
-        except:
-            return Response({"message": 'حمل کننده ای  با این ایدی وجود ندارد یا تایید نشده است'})
+        except RoadFleet.DoesNotExist:
+            return Response({"message": 'حمل کننده ای  با این ایدی وجود ندارد یا تایید نشده است'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         try:
             driver = Driver.objects.get(deleted_at=None, is_ok=True, id=Driver_id)
-        except:
-            return Response({"message": 'راننده  ای  با این ایدی وجود ندارد یا تایید نشده است'})
+        except Driver.DoesNotExist:
+            return Response({"message": 'راننده  ای  با این ایدی وجود ندارد یا تایید نشده است'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['carrier_owner'] = user.carrierowner.id
         data_copy['carrier'] = road_fleet.id
         data_copy['driver'] = driver.id
+
         serializer = CarOwReqDriverSerializer(data=data_copy)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'درخواست همکاری با موفقیت ارسال شد', 'data': serializer.data})
         else:
-            return Response({'message': 'درخواست همکاری با موفقیت ارسال شد', 'data': serializer.data},
+            return Response({'message': 'خطای داده ی ارسالی', 'data': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
-
     if request.method == 'PUT':
         CarOwReqDriver_id = data.get('CarOwReqDriver_id')
         try:
@@ -353,18 +371,42 @@ def car_ow_req_goods_owner(request):
     data = request.data
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # Comment: Retrieve GoodsOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner')
+        try:
+            car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
+                                                                    id=car_ow_req_goods_owner_id)
+        except:
+            return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'POST':
         road_fleet_id = data.get('road_fleet_id')
         required_carrier_id = data.get('required_carrier_id')
+
+        # Check if the user has already requested for this specific road fleet and required carrier
+        existing_request = CarOwReqGoodsOwner.objects.filter(
+            user=user,
+            road_fleet_id=road_fleet_id,
+            required_carrier_id=required_carrier_id,
+            deleted_at=None  # Assuming soft-delete with 'deleted_at' field
+        ).first()
+
+        if existing_request:
+            # If there is an existing request, include its details in the response
+            serializer = CarOwReqGoodsOwnerSerializer(existing_request)
+            return Response({
+                "message": "شما قبلاً برای این بار درخواست داده‌اید.",
+                "data": serializer.data
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, user_id=user.id, id=road_fleet_id)
-        except:
+        except RoadFleet.DoesNotExist:
             return Response({"message": "حمل کننده ای با این ایدی وجود ندارد"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -372,9 +414,10 @@ def car_ow_req_goods_owner(request):
             if required_carrier.relinquished:
                 return Response({"message": "این بار قبلا واگذار شده است"},
                                 status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except RequiredCarrier.DoesNotExist:
             return Response({"message": "درخواست حمل کننده  ای با این ایدی وجود ندارد"},
                             status=status.HTTP_400_BAD_REQUEST)
+
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['carrier_owner'] = user.carrierowner.id
@@ -383,6 +426,7 @@ def car_ow_req_goods_owner(request):
         data_copy['required_carrier'] = required_carrier.id
         data_copy['request_result'] = 'در انتظار پاسخ'
         serializer = CarOwReqGoodsOwnerSerializer(data=data_copy)
+
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
