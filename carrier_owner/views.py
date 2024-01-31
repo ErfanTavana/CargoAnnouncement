@@ -23,18 +23,17 @@ from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, Interna
 def road_fleet_view(request):
     data = request.data
     user = request.user
-
-    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-    # Hash: Check user type for access verification
-    if request.user.profile.user_type != 'صاحب حمل کننده':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     # هشتگ: نمایش حمل‌کننده‌ها
     # Hash: Display road fleets
