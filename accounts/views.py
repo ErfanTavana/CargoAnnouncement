@@ -208,8 +208,9 @@ def logout(request):
         # حذف توکن موجود برای کاربر احراز هویت شده
         Token.objects.filter(user=user).delete()
 
-        return Response({'message': 'با موفقیت از حساب کاربری خود خارج شدید'}, status=status.HTTP_200_OK)
-
+        response = Response({'message': 'با موفقیت از حساب کاربری خود خارج شدید'}, status=status.HTTP_200_OK)
+        response.delete_cookie('Authorization')
+        return response
 
 # نمایش برای پردازش "فراموشی رمز عبور" از طریق درخواست POST
 # View to handle the "forget password" process via POST request
