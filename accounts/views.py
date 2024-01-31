@@ -273,33 +273,39 @@ def forget_password(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
     user = request.user
-
+    serializer = ''
     if request.method == 'GET':
         # GET request to retrieve user profile information
-
-        if user.profile.user_type in ["صاحب بار"]:
-            try:
-                goodsowner = user.goodsowner
-            except GoodsOwner.DoesNotExist:
-                # If the owner does not exist, create one
-                goodsowner = GoodsOwner.objects.create(user=user)
-            serializer = GoodsOwnerSerializer(goodsowner)
-        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
-            try:
-                carrier = user.carrierowner
-            except CarrierOwner.DoesNotExist:
-                # If the carrier does not exist, create one
-                carrier = CarrierOwner.objects.create(user=user)
-            serializer = CarrierSerializer(carrier)
-        elif user.profile.user_type in ['راننده']:
-            try:
-                driver = user.driver
-            except Driver.DoesNotExist:
-                # If the driver does not exist, create one
-                driver = Driver.objects.create(user=user)
-            serializer = DriverSerializer(user.driver)
-        else:
-            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if user.profile.user_type in ["صاحب بار"]:
+                try:
+                    goodsowner = user.goodsowner
+                except GoodsOwner.DoesNotExist:
+                    # If the owner does not exist, create one
+                    goodsowner = GoodsOwner.objects.create(user=user)
+                serializer = GoodsOwnerSerializer(goodsowner)
+        except :
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if user.profile.user_type in ['صاحب حمل‌ونقل']:
+                try:
+                    carrier = user.carrierowner
+                except CarrierOwner.DoesNotExist:
+                    # If the carrier does not exist, create one
+                    carrier = CarrierOwner.objects.create(user=user)
+                serializer = CarrierSerializer(carrier)
+        except:
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if user.profile.user_type in ['راننده']:
+                try:
+                    driver = user.driver
+                except Driver.DoesNotExist:
+                    # If the driver does not exist, create one
+                    driver = Driver.objects.create(user=user)
+                serializer = DriverSerializer(user.driver)
+        except:
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {"message": 'User profile information', 'data': serializer.data, 'user_type': user.profile.user_type})

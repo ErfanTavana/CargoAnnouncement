@@ -118,6 +118,12 @@ def road_fleet_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def driver_list_carrier_owner(request):
     user = request.user
+    try:
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
     # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
     # Hash: Check user type for access verification
@@ -152,18 +158,17 @@ def driver_list_carrier_owner(request):
 def list_road_fleet(request):
     user = request.user
     data = request.data
-
-    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-    # Hash: Check user type for access verification
-    if request.user.profile.user_type != 'صاحب حمل کننده':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     road_fleet = RoadFleet.objects.filter(deleted_at=None, user_id=user.id, is_ok=True)
 
@@ -187,18 +192,17 @@ def list_road_fleet(request):
 def car_ow_req_driver_view(request):
     data = request.data
     user = request.user
-
-    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-    # Hash: Check user type for access verification
-    if request.user.profile.user_type != 'صاحب حمل کننده':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         CarOwReqDriver_id = data.get('CarOwReqDriver_id')
@@ -306,18 +310,17 @@ def car_ow_req_driver_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_carrier_list_view(request):
     user = request.user
-
-    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-    # Hash: Check user type for access verification
-    if request.user.profile.user_type != 'صاحب حمل کننده':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     cargo_all = []
     if request.method == 'GET':
@@ -440,18 +443,17 @@ def required_carrier_list_view(request):
 def car_ow_req_goods_owner(request):
     user = request.user
     data = request.data
-
-    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-    # Hash: Check user type for access verification
-    if request.user.profile.user_type != 'صاحب حمل کننده':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         carrier_owner = CarrierOwner.objects.get(user=user)
     except CarrierOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner')
