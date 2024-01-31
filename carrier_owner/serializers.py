@@ -4,7 +4,7 @@ from goods_owner.serializers import Base_ModelSerializer
 from accounts.models import Driver, CarrierOwner, GoodsOwner
 from goods_owner.models import RequiredCarrier, CommonCargo
 from .models import CarOwReqGoodsOwner
-
+from goods_owner.models import  InnerCargo,InternationalCargo
 
 # سریالایزر برای مدل RoadFleet
 # نام سریالایزر: RoadFleetSerializer
@@ -98,21 +98,128 @@ class CarOwReqDriverSerializer(Base_ModelSerializer):
         # فیلدهای تنها خواندنی را اگر وجود دارد اینجا مشخص کنید
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ('request_result',)
 
+from rest_framework import serializers
 
-# سریالایزر برای مدل CarOwReqGoodsOwner به عنوان درخواست حمل‌ونقل از صاحب حمل کننده به صاحب بار
-# نام سریالایزر: CarOwReqGoodsOwnerSerializer
+# سریالایزر برای مدل RoadFleet
+class RoadFleetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoadFleet
+        fields = [
+            'ownerType',
+            'roomType',
+            'vehichleType',
+            'semiHeavyVehichle',
+            'semiHeavyVehichleOthers',
+            'HeavyVehichle',
+            'heavy_vehicle_others',
+            'plaque_one_num_check',
+            'plaque_puller_num_check',
+            'plaque_carriage_num_check',
+            'plaque_container_num_check',
+            'vehicle_card_bool',
+            'vehicle_property_doc_bool',
+            'vehicle_advocate_bool',
+        ]
+
+# سریالایزر برای مدل InnerCargo
+class InnerCargoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InnerCargo
+        fields = [
+            'length',
+            'width',
+            'height',
+            'cargoType',
+            'pkgType',
+            'description',
+            'specialWidgets',
+            'storageBillNum',
+            'storagePrice',
+            'loadigPrice',
+            'basculPrice',
+            'sendersFamName',
+            'specialDesc',
+            'dischargeTimeDate',
+            'country',
+            'state',
+            'city',
+            'customName',
+            'deliveryTimeDate',
+        ]
+
+# سریالایزر برای مدل InternationalCargo
+class InternationalCargoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InternationalCargo
+        fields = [
+            'length',
+            'width',
+            'height',
+            'cargoType',
+            'pkgType',
+            'description',
+            'specialWidgets',
+            'storageBillNum',
+            'storagePrice',
+            'loadigPrice',
+            'basculPrice',
+            'sendersFamName',
+            'specialDesc',
+            'dischargeTimeDate',
+            'duration_dischargeTime',
+            'country',
+            'state',
+            'city',
+            'customName',
+            'senderCountry',
+            'senderState',
+            'senderStreet',
+            'deliveryTimeDate',
+            'dischargeTime',
+            'customNameEnd',
+        ]
+
+# سریالایزر برای مدل RequiredCarrier
+class RequiredCarrierSerializer(serializers.ModelSerializer):
+    inner_cargo = InnerCargoSerializer()
+    international_cargo = InternationalCargoSerializer()
+
+    class Meta:
+        model = RequiredCarrier
+        fields = [
+            'relinquished',
+            'cargo_type',
+            'inner_cargo',
+            'international_cargo',
+            'cargo_weight',
+            'counter',
+            'room_type',
+            'vehichle_type',
+            'semi_heavy_vehichle',
+            'semi_heavy_vehichle_others',
+            'heavy_vehichle',
+            'heavy_vehichle_others',
+            'special_widget_carrier',
+            'carrier_price',
+            'cargo_price',
+        ]
+
+# سریالایزر برای مدل CarOwReqGoodsOwner
 class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
+    road_fleet = RoadFleetSerializer()
+    required_carrier = RequiredCarrierSerializer()
+
     class Meta:
         model = CarOwReqGoodsOwner
-        # فیلدهای مدل و مدل پایه را در اینجا مشخص کنید
         fields = [
             'user',
+            'id',
             'carrier_owner',
             'road_fleet',
             'goods_owner',
             'required_carrier',
             'proposed_price',
             'request_result',
+            'cancellation_time',
         ]
-        # فیلدهای تنها خواندنی را اگر وجود دارد اینجا مشخص کنید
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

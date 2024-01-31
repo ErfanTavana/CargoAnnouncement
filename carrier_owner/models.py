@@ -16,6 +16,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from goods_owner.models import Base_Model, RequiredCarrier
 
+
 # کلاس RoadFleet از Base_Model ارث‌بری کرده است و اطلاعات مرتبط با حمل‌ونقل در سیستم را نمایش می‌دهد.
 
 class RoadFleet(Base_Model):
@@ -130,6 +131,7 @@ class RoadFleet(Base_Model):
             self.international_docs_bool = True
         super().save(*args, **kwargs)
 
+
 # CHOICES برای نتایج ممکن برای درخواست همکاری
 REQUEST_RESULT_CHOICES = [
     ('در انتظار پاسخ', 'در انتظار پاسخ'),
@@ -137,6 +139,7 @@ REQUEST_RESULT_CHOICES = [
     ('رد شده', 'رد شده'),
     ('لغو شده', 'لغو شده'),
 ]
+
 
 # مدل برای ثبت درخواست همکاری صاحب حمل کننده از راننده
 # نام مدل: CarOwReqDriver
@@ -171,6 +174,8 @@ class CarOwReqDriver(Base_Model):
 
     # نتیجه درخواست
     request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
+    # زمان لغو درخواست
+    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
 
     def __str__(self):
         return f'{self.carrier_owner} - {self.carrier} - {self.driver} - {self.collaboration_type}'
@@ -178,6 +183,7 @@ class CarOwReqDriver(Base_Model):
     class Meta:
         verbose_name = "درخواست همکاری صاحب حمل کننده از راننده"
         verbose_name_plural = "درخواست‌های همکاری صاحب حمل کننده از راننده"
+
 
 # مدل برای ثبت درخواست همکاری صاحب حمل کننده از صاحب بار
 # نام مدل: CarOwReqGoodsOwner
@@ -203,6 +209,8 @@ class CarOwReqGoodsOwner(Base_Model):
 
     # نتیجه درخواست
     request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
+    # زمان لغو درخواست
+    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
 
     class Meta:
         verbose_name = "درخواست همکاری صاحب حمل کننده از صاحب بار"

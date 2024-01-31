@@ -212,6 +212,7 @@ def logout(request):
         response.delete_cookie('Authorization')
         return response
 
+
 # نمایش برای پردازش "فراموشی رمز عبور" از طریق درخواست POST
 # View to handle the "forget password" process via POST request
 @api_view(["POST"])
@@ -301,7 +302,7 @@ def profile_view(request):
             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"message": 'User profile information', 'data': serializer.data, 'user_type': user.profile.user_type})
+            {"message": 'اطلاعات پروفایل', 'data': serializer.data, 'user_type': user.profile.user_type})
 
     data = request.data
 
@@ -328,7 +329,7 @@ def profile_view(request):
                 driver = Driver.objects.create(user=user)
             serializer = DriverSerializer(user.driver, data=data)
         else:
-            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'کاربر یافت نشد'}, status=status.HTTP_400_BAD_REQUEST)
 
         if serializer.is_valid():
             serializer.save()
@@ -339,5 +340,5 @@ def profile_view(request):
             user.profile.is_completed = True
             user.save()
             user.profile.save()
-            return Response({'message': 'Your information has been successfully saved'})
+            return Response({'message': 'اطلاعات پروفایل با موفقیت ذخیره شد'})
         return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

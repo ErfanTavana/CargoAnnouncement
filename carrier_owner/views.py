@@ -456,13 +456,20 @@ def car_ow_req_goods_owner(request):
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
-        car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner')
-        try:
-            car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
-                                                                    id=car_ow_req_goods_owner_id)
-        except CarOwReqGoodsOwner.DoesNotExist:
-            return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
-                            status=status.HTTP_400_BAD_REQUEST)
+        car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner_id')
+        if car_ow_req_goods_owner_id is not None and len(str(car_ow_req_goods_owner_id)) < 6:
+            car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.filter(deleted_at=None, user_id=user.id)
+            serializer = CarOwReqGoodsOwnerSerializer(car_ow_req_goods_owner, many=True)
+            return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            try:
+                car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
+                                                                        id=car_ow_req_goods_owner_id)
+                serializer = CarOwReqGoodsOwnerSerializer(car_ow_req_goods_owner, many=False)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            except CarOwReqGoodsOwner.DoesNotExist:
+                return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'POST':
         road_fleet_id = data.get('road_fleet_id')
@@ -491,7 +498,6 @@ def car_ow_req_goods_owner(request):
             road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, user_id=user.id, id=road_fleet_id)
         except RoadFleet.DoesNotExist:
             return Response({"message": "حمل کننده ای با این ایدی وجود ندارد"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             # هشتگ: دریافت اطلاعات درخواست حمل‌کننده
             # Hash: Retrieve information about the required carrier
@@ -521,4 +527,32 @@ def car_ow_req_goods_owner(request):
             return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'خطای داده ی ارسالی', 'data': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'PUT':
+        car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner_id')
+        proposed_price = data.get('proposed_price')
+        request_result = data.get('request_result')
+        try:
+            car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
+                                                                    id=car_ow_req_goods_owner_id,is_ok=True)
+            car_ow_req_goods_owner.proposed_price = proposed_price
+            if request_result != None:
+                car_ow_req_goods_owner.request_result = 'لغو شده'
+                car_ow_req_goods_owner.cancellation_time = timezone.now()
+            car_ow_req_goods_owner.save()
+            serializer = CarOwReqGoodsOwnerSerializer(car_ow_req_goods_owner, many=False)
+            return Response({'message': 'اطلاعات با موفقیت به‌روزرسانی شد', 'data': serializer.data},
+                            status=status.HTTP_200_OK)
+        except CarOwReqGoodsOwner.DoesNotExist:
+            return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        car_ow_req_goods_owner_id = data.get('car_ow_req_goods_owner_id')
+        try:
+            car_ow_req_goods_owner = CarOwReqGoodsOwner.objects.get(deleted_at=None, user_id=user.id,
+                                                                    id=car_ow_req_goods_owner_id,is_ok=True)
+            car_ow_req_goods_owner.soft_delete(deleted_by=user)
+            return Response({'message': 'درخواست با موفقیت حذف شد', 'data': ''}, status=status.HTTP_200_OK)
+        except CarOwReqGoodsOwner.DoesNotExist:
+            return Response({"message": "درخواست برای صاحب بار با این ایدی یافت نشد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
