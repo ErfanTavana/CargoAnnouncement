@@ -212,6 +212,7 @@ def logout(request):
         response.delete_cookie('Authorization')
         return response
 
+
 # نمایش برای پردازش "فراموشی رمز عبور" از طریق درخواست POST
 # View to handle the "forget password" process via POST request
 @api_view(["POST"])
@@ -284,7 +285,7 @@ def profile_view(request):
                     # If the owner does not exist, create one
                     goodsowner = GoodsOwner.objects.create(user=user)
                 serializer = GoodsOwnerSerializer(goodsowner)
-        except :
+        except:
             return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             if user.profile.user_type in ['صاحب حمل‌ونقل']:
@@ -313,30 +314,36 @@ def profile_view(request):
     data = request.data
 
     if request.method == 'POST':
-        if user.profile.user_type in ["صاحب بار"]:
-            try:
-                goodsowner = user.goodsowner
-            except GoodsOwner.DoesNotExist:
-                # If the owner does not exist, create one
-                goodsowner = GoodsOwner.objects.create(user=user)
-            serializer = GoodsOwnerSerializer(user.goodsowner, data=data)
-        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
-            try:
-                carrier = user.carrierowner
-            except CarrierOwner.DoesNotExist:
-                # If the carrier does not exist, create one
-                carrier = CarrierOwner.objects.create(user=user)
-            serializer = CarrierSerializer(user.carrierowner, data=data)
-        elif user.profile.user_type in ['راننده']:
-            try:
-                driver = user.driver
-            except Driver.DoesNotExist:
-                # If the driver does not exist, create one
-                driver = Driver.objects.create(user=user)
-            serializer = DriverSerializer(user.driver, data=data)
-        else:
-            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
-
+        try:
+            if user.profile.user_type in ["صاحب بار"]:
+                try:
+                    goodsowner = user.goodsowner
+                except GoodsOwner.DoesNotExist:
+                    # If the owner does not exist, create one
+                    goodsowner = GoodsOwner.objects.create(user=user)
+                serializer = GoodsOwnerSerializer(user.goodsowner, data=data)
+        except:
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if user.profile.user_type in ['صاحب حمل‌ونقل']:
+                try:
+                    carrier = user.carrierowner
+                except CarrierOwner.DoesNotExist:
+                    # If the carrier does not exist, create one
+                    carrier = CarrierOwner.objects.create(user=user)
+                serializer = CarrierSerializer(user.carrierowner, data=data)
+        except:
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if user.profile.user_type in ['راننده']:
+                try:
+                    driver = user.driver
+                except Driver.DoesNotExist:
+                    # If the driver does not exist, create one
+                    driver = Driver.objects.create(user=user)
+                serializer = DriverSerializer(user.driver, data=data)
+        except:
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             # sms = ghasedakpack.Ghasedak("1feaff6b0fb9ab14d5f1b9acc9fcad839699b313816e3001e128cef8e6271850")
@@ -346,5 +353,5 @@ def profile_view(request):
             user.profile.is_completed = True
             user.save()
             user.profile.save()
-            return Response({'message': 'Your information has been successfully saved'})
+            return Response({'message': 'اطلاعات شما با موفقیت ذخیره شد'},status=status.HTTP_200_OK)
         return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
