@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, RequiredCarrier
 from django.contrib.auth.models import User
-
+from accounts.serializers import GoodsOwnerSerializer
 
 # سریالایزر برای مدل پایه
 class Base_ModelSerializer(serializers.ModelSerializer):
@@ -96,11 +96,9 @@ class InternationalCargoSerializer(Base_ModelSerializer):
 
 
 class RequiredCarrierSerializer(Base_ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), allow_null=True, required=False)
-
     class Meta:
         model = RequiredCarrier
-        fields = CommonCargoSerializer.Meta.fields + (
+        fields = Base_ModelSerializer.Meta.fields + (
             'cargo_type',
             'user',
             'inner_cargo',

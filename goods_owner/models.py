@@ -185,6 +185,8 @@ class InternationalCargo(CommonCargo):
 
 # کلاس مدل بار مورد نیاز که از کلاس Base_Model ارث‌بری می‌کند
 class RequiredCarrier(Base_Model):
+    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, verbose_name='صاحب بار', blank=True,
+                                    null=True)
     relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
     CARGO_TYPE_CHOICES = [
         ('اعلام بار داخلی', 'اعلام بار داخلی'),
