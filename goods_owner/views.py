@@ -10,38 +10,49 @@ from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 
-# API view for handling InnerCargo operations
+
+# نمای API برای مدیریت عملیات کارگوی داخلی
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def inner_cargo_view(request):
-    # Extract data and user from the request
+    # استخراج داده و کاربر از درخواست
     data = request.data
     user = request.user
 
-    # Check user type for access control
+    # بررسی نوع کاربر برای کنترل دسترسی
     if request.user.profile.user_type != 'صاحب بار':
-        return Response({'message': 'You do not have access to this page.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'شما به این صفحه دسترسی ندارید.'}, status=status.HTTP_403_FORBIDDEN)
 
-    # Handle GET request to retrieve InnerCargo information
+    # پردازش درخواست GET برای بازیابی اطلاعات کارگوی داخلی
     if request.method == 'GET':
         inner_cargo_id = data.get("inner_cargo_id")
-        try:
-            # Retrieve InnerCargo based on ID and current user
-            inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
-            serializer = InnerCargoSerializer(inner_cargo)
-            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
-        except InnerCargo.DoesNotExist:
-            return Response({'message': 'No internal cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+        if inner_cargo_id is not None and len(str(inner_cargo_id)) < 6:
+            try:
+                # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
+                inner_cargo = InnerCargo.objects.filter(user_id=user.id, deleted_at=None,is_ok=True)
+                serializer = InnerCargoSerializer(inner_cargo , many=True)
+                return Response({'message':'ok','data': serializer.data}, status=status.HTTP_200_OK)
+            except InnerCargo.DoesNotExist:
+                return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
+                inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None,is_ok=True)
+                serializer = InnerCargoSerializer(inner_cargo)
+                return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+            except InnerCargo.DoesNotExist:
+                return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle POST request to create a new InnerCargo
+    # پردازش درخواست POST برای ایجاد یک کارگوی داخلی جدید
     if request.method == 'POST':
         try:
-            # Retrieve GoodsOwner related to the current user
+            # بازیابی صاحب کالا مرتبط با کاربر فعلی
             goods_owner = GoodsOwner.objects.get(user=user)
         except GoodsOwner.DoesNotExist:
-            return Response({"message": "Please complete your profile."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Add current user and goods owner information to the request data
+        # افزودن کاربر فعلی و اطلاعات صاحب کالا به داده‌های درخواست
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = goods_owner.id if goods_owner else None
@@ -49,33 +60,33 @@ def inner_cargo_view(request):
         serializer = InnerCargoSerializer(data=data_copy)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'message': 'با موفقیت ذخیره شد', 'data': serializer.data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle PUT request to update InnerCargo information
+    # پردازش درخواست PUT برای به‌روزرسانی اطلاعات کارگوی داخلی
     if request.method == "PUT":
         inner_cargo_id = data.get("inner_cargo_id")
-        # Check the existence of inner_cargo_id in the request data
+        # بررسی وجود inner_cargo_id در داده‌های درخواست
         if inner_cargo_id is None:
-            return Response({'message': 'Please specify the ID of the internal cargo.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'لطفاً شناسه بار داخلی را مشخص کنید.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve GoodsOwner related to the current user
+            # بازیابی صاحب کالا مرتبط با کاربر فعلی
             goods_owner = GoodsOwner.objects.get(user=user)
         except GoodsOwner.DoesNotExist:
-            return Response({"message": "Please complete your profile."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve InnerCargo based on ID and current user
+            # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
             inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
 
-            # Check the possibility of modification in this InnerCargo
+            # بررسی امکان تغییر در این کارگوی داخلی
             if not inner_cargo.is_changeable:
-                return Response({"message": 'This item is not changeable', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
         except InnerCargo.DoesNotExist:
-            return Response({'message': 'No internal cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Add current user and goods owner information to the request data
+        # افزودن کاربر فعلی و اطلاعات صاحب کالا به داده‌های درخواست
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = goods_owner.id if goods_owner else None
@@ -83,62 +94,65 @@ def inner_cargo_view(request):
         serializer = InnerCargoSerializer(inner_cargo, data=data_copy)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Internal cargo information successfully updated.', 'data': serializer.data},
-                            status=status.HTTP_200_OK)
+            return Response({'message': 'اطلاعات بار داخلی با موفقیت به‌روزرسانی شد.',
+                             'data': serializer.data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle DELETE request to delete InnerCargo
+    # پردازش درخواست DELETE برای حذف کارگوی داخلی
     if request.method == "DELETE":
         inner_cargo_id = data.get("inner_cargo_id")
-        # Check the existence of inner_cargo_id in the request data
+        # بررسی وجود inner_cargo_id در داده‌های درخواست
         if inner_cargo_id is None:
-            return Response({'message': 'Please specify the ID of the internal cargo.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'لطفاً شناسه بار داخلی را مشخص کنید.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve InnerCargo based on ID and current user
+            # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
             inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
         except InnerCargo.DoesNotExist:
-            return Response({'message': 'No internal cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not inner_cargo.is_deletable:
-            return Response({'message': "This item is not deletable", 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': "این آیتم قابل حذف نیست", 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Execute soft delete using the soft_delete method
+        # اجرای حذف نرم با استفاده از متد soft_delete
         inner_cargo.soft_delete(deleted_by=user)
-        return Response({'message': 'Internal cargo successfully deleted.'}, status=status.HTTP_200_OK)
-# Define the API view for handling InternationalCargo operations
+        return Response({'message': 'بار داخلی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
+
+
+# تعریف نمای API برای مدیریت عملیات بین‌المللی کارگو
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def international_cargo_view(request):
-    # Extract data and user from the request
+    # استخراج داده و کاربر از درخواست
     data = request.data
     user = request.user
 
-    # Check user type for access control
+    # بررسی نوع کاربر برای کنترل دسترسی
     if request.user.profile.user_type != 'صاحب بار':
-        return Response({'message': 'You do not have access to this page.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'شما به این صفحه دسترسی ندارید.'}, status=status.HTTP_403_FORBIDDEN)
 
-    # Handle GET request to retrieve InternationalCargo information
+    # پردازش درخواست GET برای بازیابی اطلاعات بین‌المللی کارگو
     if request.method == 'GET':
         international_cargo_id = data.get("international_cargo_id")
         try:
-            # Retrieve InternationalCargo based on ID and current user
+            # بازیابی بین‌المللی کارگو بر اساس شناسه و کاربر فعلی
             international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
                                                                  deleted_at=None)
             serializer = InternationalCargoSerializer(international_cargo)
             return Response({'data': serializer.data}, status=status.HTTP_200_OK)
         except InternationalCargo.DoesNotExist:
-            return Response({'message': 'No international cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار خارجی با این شناسه وجود ندارد.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle POST request to create a new InternationalCargo
+    # پردازش درخواست POST برای ایجاد یک کارگوی بین‌المللی جدید
     if request.method == 'POST':
         try:
-            # Retrieve GoodsOwner related to the current user
+            # بازیابی صاحب کالا مرتبط با کاربر فعلی
             goods_owner = GoodsOwner.objects.get(user=user)
         except GoodsOwner.DoesNotExist:
-            return Response({"message": "Please complete your profile."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Add current user and goods owner information to the request data
+        # افزودن کاربر فعلی و اطلاعات صاحب کالا به داده‌های درخواست
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = goods_owner.id if goods_owner else None
@@ -146,36 +160,37 @@ def international_cargo_view(request):
         serializer = InternationalCargoSerializer(data=data_copy)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Successfully saved', 'data': serializer.data}, status=status.HTTP_200_OK)
-        return Response({'message': 'Check the sent values', 'data': serializer.errors},
+            return Response({'message': 'با موفقیت ذخیره شد', 'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'message': 'مقادیر ارسالی را بررسی کنید', 'data': serializer.errors},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle PUT request to update InternationalCargo information
+    # پردازش درخواست PUT برای به‌روزرسانی اطلاعات کارگوی بین‌المللی
     if request.method == "PUT":
         international_cargo_id = data.get("international_cargo_id")
-        # Check the existence of international_cargo_id in the request data
+        # بررسی وجود international_cargo_id در داده‌های درخواست
         if international_cargo_id is None:
-            return Response({'message': 'Please specify the ID of the international cargo.'},
+            return Response({'message': 'لطفاً شناسه بار خارجی را مشخص کنید.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve GoodsOwner related to the current user
+            # بازیابی صاحب کالا مرتبط با کاربر فعلی
             goods_owner = GoodsOwner.objects.get(user=user)
         except GoodsOwner.DoesNotExist:
-            return Response({"message": "Please complete your profile."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve InternationalCargo based on ID and current user
+            # بازیابی بین‌المللی کارگو بر اساس شناسه و کاربر فعلی
             international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
                                                                  deleted_at=None)
 
-            # Check the possibility of modification in this InternationalCargo
+            # بررسی امکان تغییر در این کارگوی بین‌المللی
             if not international_cargo.is_changeable:
-                return Response({"message": 'This item is not changeable', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
         except InternationalCargo.DoesNotExist:
-            return Response({'message': 'No international cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ یار خارجی با این شناسه وجود ندارد.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        # Add current user and goods owner information to the request data
+        # افزودن کاربر فعلی و اطلاعات صاحب کالا به داده‌های درخواست
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = goods_owner.id if goods_owner else None
@@ -183,32 +198,33 @@ def international_cargo_view(request):
         serializer = InternationalCargoSerializer(international_cargo, data=data_copy)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'International cargo information successfully updated.', 'data': serializer.data},
-                            status=status.HTTP_200_OK)
-        return Response({'message': 'Check the sent values', 'data': serializer.errors},
+            return Response({'message': 'اطلاعات بار خارجی با موفقیت به‌روزرسانی شد.',
+                             'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'message': 'مقادیر ارسالی را بررسی کنید', 'data': serializer.errors},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # Handle DELETE request to delete InternationalCargo
+    # پردازش درخواست DELETE برای حذف کارگوی بین‌المللی
     if request.method == "DELETE":
         international_cargo_id = data.get("international_cargo_id")
-        # Check the existence of international_cargo_id in the request data
+        # بررسی وجود international_cargo_id در داده‌های درخواست
         if international_cargo_id is None:
-            return Response({'message': 'Please specify the ID of the international cargo.'},
+            return Response({'message': 'لطفاً شناسه بار خارجی  را مشخص کنید.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Retrieve InternationalCargo based on ID and current user
+            # بازیابی بین‌المللی کارگو بر اساس شناسه و کاربر فعلی
             international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
                                                                  deleted_at=None)
         except InternationalCargo.DoesNotExist:
-            return Response({'message': 'No international cargo with this ID exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار خارجی ای با این شناسه وجود ندارد.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if not international_cargo.is_deletable:
-            return Response({'message': "This item is not deletable", 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': "این آیتم قابل حذف نیست", 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Execute soft delete using the soft_delete method
+        # اجرای حذف نرم با استفاده از متد soft_delete
         international_cargo.soft_delete(deleted_by=user)
-        return Response({'message': 'International cargo successfully deleted.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
 
 # Define the API view for handling RequiredCarrier operations

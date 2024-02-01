@@ -199,18 +199,18 @@ class RequiredCarrier(Base_Model):
     international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
                                             verbose_name='اعلام بار خارجی', related_name='international_cargo_carriers')
 
-    cargo_weight = models.FloatField(max_length=100, verbose_name="وزن خالص محموله")
-    counter = models.PositiveIntegerField(verbose_name="تعداد حمل کننده مورد نیاز")
+    cargo_weight = models.FloatField(max_length=100, verbose_name="وزن خالص محموله", blank=True, null=True)
+    counter = models.PositiveIntegerField(verbose_name="تعداد حمل کننده مورد نیاز", blank=True, null=True)
     room_type = models.CharField(max_length=100, verbose_name="نوع اتاق مناسب", choices=(
         ("چادری", "چادری"),
         ("روباز", "روباز"),
         ("یخچالی", "یخچالی"),
-    ))
+    ), blank=True, null=True)
     vehichle_type = models.CharField(max_length=100, verbose_name="نوع وسیله حمل کننده مورد نیاز", choices=(
         ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
         ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
         ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
-    ))
+    ), blank=True, null=True)
 
     semi_heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین ", choices=(
         ("کامیون", "کامیون"),
@@ -218,8 +218,9 @@ class RequiredCarrier(Base_Model):
         ("هیوندا", "هیوندا"),
         ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
         ("کامیونت", "کامیونت"),
-    ))
-    semi_heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
+    ), blank=True, null=True)
+    semi_heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="", blank=True,
+                                                  null=True)
 
     heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", choices=(
         ("تریلی", "تریلی"),
@@ -231,7 +232,7 @@ class RequiredCarrier(Base_Model):
         ("چادری سه محور", "چادری سه محور"),
         ("کمپرسی", "کمپرسی"),
         ("تریلی تانکر فاو", "تریلی تانکر فاو"),
-    ))
+    ), blank=True, null=True)
     heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="", blank=True, null=True)
 
     special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز",
