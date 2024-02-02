@@ -22,7 +22,8 @@ from goods_owner.models import Base_Model, RequiredCarrier
 class RoadFleet(Base_Model):
     # اطلاعات مرتبط با کاربران
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
-    carrier_owner = models.ForeignKey(CarrierOwner, on_delete=models.CASCADE, verbose_name='صاحب حمل کننده')
+    carrier_owner = models.ForeignKey(CarrierOwner, on_delete=models.CASCADE, verbose_name='صاحب حمل کننده', blank=True,
+                                      null=True)
     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='required_carriers', null=True, blank=True)
 
     # اطلاعات نوع مالکیت و اتاق حمل‌ونقل

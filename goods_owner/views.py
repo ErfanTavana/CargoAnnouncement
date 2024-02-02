@@ -7,8 +7,10 @@ from rest_framework import status
 from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
-from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer
+from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
+    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
+from carrier_owner.models import RoadFleet
 
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
@@ -29,20 +31,21 @@ def inner_cargo_view(request):
         if inner_cargo_id is not None and len(str(inner_cargo_id)) < 6:
             try:
                 # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
-                inner_cargo = InnerCargo.objects.filter(user_id=user.id, deleted_at=None,is_ok=True)
-                serializer = InnerCargoSerializer(inner_cargo , many=True)
-                return Response({'message':'ok','data': serializer.data}, status=status.HTTP_200_OK)
+                inner_cargo = InnerCargo.objects.filter(user_id=user.id, deleted_at=None, is_ok=True)
+                serializer = InnerCargoSerializer(inner_cargo, many=True)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
             except InnerCargo.DoesNotExist:
                 return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'},
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
             try:
                 # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
-                inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None,is_ok=True)
+                inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None, is_ok=True)
                 serializer = InnerCargoSerializer(inner_cargo)
                 return Response({'data': serializer.data}, status=status.HTTP_200_OK)
             except InnerCargo.DoesNotExist:
-                return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
     # پردازش درخواست POST برای ایجاد یک کارگوی داخلی جدید
     if request.method == 'POST':
@@ -289,6 +292,7 @@ def required_carrier_view(request):
                 try:
                     inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
                     data_copy['inner_cargo'] = inner_cargo.id
+                    data_copy['goods_owner'] = user.goodsowner.id
                     data_copy['cargo_type'] = 'اعلام بار داخلی'
                     data_copy['user'] = user.id
                 except InnerCargo.DoesNotExist:
@@ -426,3 +430,96 @@ def required_carrier_view(request):
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def road_fleet_list_goods_owner(request):
+    data = request.data
+    user = request.user
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # بازیابی صاحب کالا مرتبط با کاربر فعلی
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        road_fleet = RoadFleet.objects.filter(is_ok=True, deleted_at=None)
+        serializer = RoadFleetForGoodsOwnerSerializer(road_fleet, many=True)
+        return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def goods_owner_req_car_ow(request):
+    data = request.data
+    user = request.user
+
+    # Check user's permission
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # بازیابی صاحب کالا مرتبط با کاربر فعلی
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'POST':
+        road_fleet_id = data.get('road_fleet_id')
+        inner_cargo_id = data.get('inner_cargo_id')
+        international_cargo_id = data.get('international_cargo_id')
+        print("++++++++++++++++++++")
+        print(inner_cargo_id)
+        print(international_cargo_id)
+        print('--------------------')
+        if (inner_cargo_id is None or len(str(inner_cargo_id)) < 4) and (
+                international_cargo_id is None or len(str(international_cargo_id)) < 4):
+            return Response({'message': 'بار خود را مشخص کنید', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+        if inner_cargo_id is not None and len(str(inner_cargo_id)) < 6:
+            inner_cargo_id = None
+        else:
+            try:
+                inner_cargo_id = InnerCargo.objects.get(deleted_at=None, user_id=user.id, is_ok=True, id=inner_cargo_id)
+            except InnerCargo.DoesNotExist:
+                inner_cargo_id = None
+                return Response({'message': 'بار داخلی با این ایدی یافت نشد', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if international_cargo_id is not None and len(str(international_cargo_id)) < 6:
+                international_cargo_id = None
+            else:
+                try:
+                    international_cargo_id = InternationalCargo.objects.get(deleted_at=None, user_id=user.id,
+                                                                            is_ok=True,
+                                                                            id=international_cargo_id)
+                except:
+                    international_cargo_id = None
+                    return Response({'message': 'بار خارجی با این ایدی یافت نشد', 'data': ''},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+        road_fleet = None
+        carrier_owner_id = None
+        try:
+            road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, id=road_fleet_id)
+            carrier_owner_id = road_fleet.carrier_owner.id
+        except:
+            return Response({'message': 'حمل کننده ای با این ایدی یافت نشد', 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+        data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['goods_owner'] = user.goodsowner.id
+        # print(carrier_owner_id)
+        data_copy['carrier_owner'] = road_fleet.carrier_owner.id
+        print(inner_cargo_id)
+        data_copy['inner_cargo'] = inner_cargo_id
+        print(international_cargo_id)
+        data_copy['international_cargo'] = international_cargo_id
+        data_copy['road_fleet'] = road_fleet.id
+        data_copy['request_result'] = 'در انتظار پاسخ'
+        serializer = GoodsOwnerReqCarOwSerializer(data=data_copy)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'اطلاعات با موفقیت ذخیره شد', 'data': serializer.data})
+        else:
+            return Response({'message': 'خطا در مقادیر ارسالی', 'data': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)

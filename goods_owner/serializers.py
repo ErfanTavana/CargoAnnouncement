@@ -1,7 +1,10 @@
 from rest_framework import serializers
-from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, RequiredCarrier
+from goods_owner.models import InnerCargo, GoodsOwnerReqCarOw, InternationalCargo, CommonCargo, Base_Model, \
+    RequiredCarrier
 from django.contrib.auth.models import User
 from accounts.serializers import GoodsOwnerSerializer
+from carrier_owner.models import RoadFleet, CarrierOwner
+
 
 # سریالایزر برای مدل پایه
 class Base_ModelSerializer(serializers.ModelSerializer):
@@ -101,6 +104,7 @@ class RequiredCarrierSerializer(Base_ModelSerializer):
         fields = Base_ModelSerializer.Meta.fields + (
             'cargo_type',
             'user',
+            'goods_owner',
             'inner_cargo',
             'international_cargo',
             'cargo_weight',
@@ -114,6 +118,59 @@ class RequiredCarrierSerializer(Base_ModelSerializer):
             'special_widget_carrier',
             'carrier_price',
             'cargo_price',
+        )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
+
+
+# نمایش اطلاعات صاحب  حمل کننده
+class CarrierOwnerForGoodsOwnerSerializer(Base_ModelSerializer):
+    class Meta:
+        model = CarrierOwner
+        fields = ['owner_full_name']
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
+
+
+# Serializer for displaying information about a RoadFleet related to goods owners
+class RoadFleetForGoodsOwnerSerializer(Base_ModelSerializer):
+    carrier_owner = CarrierOwnerForGoodsOwnerSerializer()
+
+    class Meta:
+        model = RoadFleet
+        fields = Base_ModelSerializer.Meta.fields + (
+            'ownerType',
+            'carrier_owner',
+            'roomType',
+            'vehichleType',
+            'semiHeavyVehichle',
+            'semiHeavyVehichleOthers',
+            'HeavyVehichle',
+            'heavy_vehicle_others',
+            'vehicle_card_bool',
+            'vehicle_property_doc_bool',
+            'vehicle_advocate_bool',
+            'international_docs_bool',
+            'carrier_type',
+        )
+        # تنظیم فیلدهای فقط خواندنی در سریالایزر
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
+
+
+# درخواست همکاری صاحب بار به صاحب حمل کننده
+class GoodsOwnerReqCarOwSerializer(Base_ModelSerializer):
+    # carrier_owner = CarrierOwnerForGoodsOwnerSerializer()
+    class Meta:
+        model = GoodsOwnerReqCarOw
+        fields = Base_ModelSerializer.Meta.fields + (
+            'id',
+            'user',
+            'goods_owner',
+            'inner_cargo',
+            'international_cargo',
+            'carrier_owner',
+            'proposed_price',
+            'request_result',
+            'cancellation_time',
         )
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

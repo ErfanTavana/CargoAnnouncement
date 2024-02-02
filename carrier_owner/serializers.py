@@ -101,7 +101,7 @@ class CarOwReqDriverSerializer(Base_ModelSerializer):
 from rest_framework import serializers
 
 # سریالایزر برای مدل RoadFleet
-class RoadFleetSerializer(serializers.ModelSerializer):
+class RoadFleet2Serializer(serializers.ModelSerializer):
     class Meta:
         model = RoadFleet
         fields = [
@@ -206,7 +206,7 @@ class RequiredCarrierSerializer(serializers.ModelSerializer):
 
 # سریالایزر برای مدل CarOwReqGoodsOwner
 class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
-    road_fleet = RoadFleetSerializer()
+    road_fleet = RoadFleet2Serializer()
     required_carrier = RequiredCarrierSerializer()
 
     class Meta:

@@ -314,7 +314,7 @@ def profile_view(request):
                 # If the owner does not exist, create one
                 goodsowner = GoodsOwner.objects.create(user=user)
             serializer = GoodsOwnerSerializer(user.goodsowner, data=data)
-        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
+        elif user.profile.user_type in ['صاحب حمل کننده']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:

@@ -14,6 +14,15 @@ from datetime import datetime, timezone
 from django.utils import timezone
 # from cachetools import TTLCache
 from datetime import datetime, timedelta
+from carrier_owner.models import CarrierOwner
+
+# CHOICES برای نتایج ممکن برای درخواست همکاری
+REQUEST_RESULT_CHOICES = [
+    ('در انتظار پاسخ', 'در انتظار پاسخ'),
+    ('تایید شده', 'تایید شده'),
+    ('رد شده', 'رد شده'),
+    ('لغو شده', 'لغو شده'),
+]
 
 
 # تابع برای ایجاد یک شناسه پیچیده تصادفی
@@ -185,8 +194,7 @@ class InternationalCargo(CommonCargo):
 
 # کلاس مدل بار مورد نیاز که از کلاس Base_Model ارث‌بری می‌کند
 class RequiredCarrier(Base_Model):
-    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, verbose_name='صاحب بار', blank=True,
-                                    null=True)
+    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
     relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
     CARGO_TYPE_CHOICES = [
         ('اعلام بار داخلی', 'اعلام بار داخلی'),
@@ -249,52 +257,32 @@ class RequiredCarrier(Base_Model):
         verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
         verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
 
-# # Model for the request of transportation from a driver
-# class CarrierReqToDriver(Base_Model):
-#     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_carrier_requests',
-#                                verbose_name='راننده')
-#     carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
-#     carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_requests',
-#                                       verbose_name='صاحب حمل‌کننده')
-#     collaboration_type = models.CharField(max_length=20, default="full_time", verbose_name='نوع همکاری',
-#                                           choices=(
-#                                               ('full_time', 'تمام وقت'),
-#                                               ('part_time', 'پاره وقت/بار موردی'),
-#                                           ))
-#     proposed_price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی')
-#     origin = models.CharField(max_length=100, blank=True, null=True, verbose_name='مبدا بار ')
-#
-#     # Additional features based on the type of collaboration
-#     destination = models.CharField(max_length=100, verbose_name='مقصد بار ', blank=True, null=True)
-#     arrival_date_at_origin = models.DateField(verbose_name='تاریخ حضور در مبدا', blank=True, null=True)
-#
-#     class Meta:
-#         verbose_name = 'درخواست صاحب حمل‌کننده از راننده'
-#         verbose_name_plural = "درخواست های صاحب حمل‌کننده از راننده"
-#
-#
-# # Model for the request of a carrier owner to a driver
-# class CarrierReqToGoodsOwner(Base_Model):
-#     CARGO_TYPE_CHOICES = [
-#         ('inner_cargo', 'اعلام بار داخلی'),
-#         ('international_cargo', 'اعلام بار خارجی'),
-#         ('rail_cargo', 'اعلام بار ریلی'),
-#     ]
-#
-#     cargo_type = models.CharField(max_length=20, default='inner_cargo', choices=CARGO_TYPE_CHOICES,
-#                                   verbose_name='نوع همکاری')
-#     carrier_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_requests',
-#                                       verbose_name='صاحب حمل‌کننده')
-#     carrier = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل‌کننده')
-#     goods_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goods_owner_carrier_requests',
-#                                     verbose_name='صاحب بار')
-#     inner_cargo = models.ForeignKey(InnerCargo, on_delete=models.CASCADE, blank=True, null=True,
-#                                     verbose_name='بار داخلی')
-#     international_cargo = models.ForeignKey(InternationalCargo, on_delete=models.CASCADE, blank=True, null=True,
-#                                             verbose_name='بار خارجی')
-#
-#     price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی', )
-#
-#     class Meta:
-#         verbose_name = 'درخواست صاحب حمل‌کننده به  صاحب بار'
-#         verbose_name_plural = "درخواست های صاحب حمل‌کننده به صاحب بار"
+
+class GoodsOwnerReqCarOw(Base_Model):
+    user = models.ForeignKey(User, on_delete=models.Model, verbose_name='کاربر', related_name='userss', )
+    goods_owner = models.ForeignKey(GoodsOwner, related_name='goods_owner_requests', on_delete=models.CASCADE,
+                                    verbose_name='صاحب بار')
+
+    carrier_owner = models.ForeignKey(CarrierOwner, related_name='carrier_owner_requests', on_delete=models.CASCADE,
+                                      verbose_name='صاحب  حمل کننده')
+    road_fleet = models.ForeignKey('carrier_owner.RoadFleet', related_name='road_fleet_fleetasad',
+                                   verbose_name='حمل کننده',
+                                   on_delete=models.CASCADE, blank=True, null=True)
+
+    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                    verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers2')
+    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                            verbose_name='اعلام بار خارجی',
+                                            related_name='international_cargo_carriers2')
+
+    # قیمت پیشنهادی
+    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی')
+
+    # نتیجه درخواست
+    request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
+    # زمان لغو درخواست
+    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
+
+    class Meta:
+        verbose_name = 'درخواست همکاری صاحب بار برای صاحب حمل کننده'
+        verbose_name_plural = 'درخواست های همکاری صاحب بار برای صاحب حمل کننده'
