@@ -41,3 +41,15 @@ class RequiredCarrierAdmin(admin.ModelAdmin):
                     'cargo_price', 'created_at', 'deleted_at', 'is_ok', 'is_changeable')
     list_filter = ('cargo_type', 'room_type', 'vehichle_type', 'semi_heavy_vehichle', 'heavy_vehichle', 'is_ok')
     search_fields = ('id', 'cargo_type', 'room_type', 'vehichle_type', 'semi_heavy_vehichle', 'heavy_vehichle')
+
+
+from django.contrib import admin
+from .models import GoodsOwnerReqCarOw
+
+class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
+    list_filter = ('request_result', 'cancellation_time')
+    search_fields = ('user__username', 'goods_owner__name', 'carrier_owner__name')
+    readonly_fields = ('id',)
+
+admin.site.register(GoodsOwnerReqCarOw, GoodsOwnerReqCarOwAdmin)

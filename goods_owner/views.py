@@ -452,6 +452,27 @@ def road_fleet_list_goods_owner(request):
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
+def list_cargo(request):
+    data = request.data
+    user = request.user
+    # Check user's permission
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # بازیابی صاحب کالا مرتبط با کاربر فعلی
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    inner_cargo = InnerCargo.objects.filter(user_id=user.id, deleted_at=None, is_ok=True, )
+    inner_cargo_serializer = InnerCargoSerializer(inner_cargo, many=True)
+    international_cargo = InternationalCargo.objects.filter(user_id=user.id, deleted_at=None, is_ok=True)
+    international_cargo_serializer = InternationalCargoSerializer(international_cargo, many=True)
+    return Response({'message': 'ok', 'data': {'inner_cargo': inner_cargo_serializer.data,
+                                               'international_cargo': international_cargo_serializer.data}})
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
 def goods_owner_req_car_ow(request):
     data = request.data
     user = request.user
@@ -464,14 +485,25 @@ def goods_owner_req_car_ow(request):
         goods_owner = GoodsOwner.objects.get(user=user)
     except GoodsOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        goods_owner_req_car_ow_id = data.get('goods_owner_req_car_ow_id')
+
+        if goods_owner_req_car_ow_id is not None and len(str(goods_owner_req_car_ow_id)) < 6:
+            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.filter(deleted_at=None, is_ok=True, user_id=user.id)
+            serializer = GoodsOwnerReqCarOwSerializer(goods_owner_req_car_ow, many=True)
+            return Response({'message': 'ok', 'data': serializer.data})
+        else:
+            try:
+                goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(id=goods_owner_req_car_ow_id, deleted_at=None,
+                                                                        is_ok=True, user_id=user.id)
+                serializer = GoodsOwnerReqCarOwSerializer(goods_owner_req_car_ow, many=False)
+                return Response({'message': 'ok', 'data': serializer.data})
+            except GoodsOwnerReqCarOw.DoesNotExist:
+                return Response({'message': 'درخواست یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'POST':
         road_fleet_id = data.get('road_fleet_id')
         inner_cargo_id = data.get('inner_cargo_id')
         international_cargo_id = data.get('international_cargo_id')
-        print("++++++++++++++++++++")
-        print(inner_cargo_id)
-        print(international_cargo_id)
-        print('--------------------')
         if (inner_cargo_id is None or len(str(inner_cargo_id)) < 4) and (
                 international_cargo_id is None or len(str(international_cargo_id)) < 4):
             return Response({'message': 'بار خود را مشخص کنید', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
@@ -479,7 +511,8 @@ def goods_owner_req_car_ow(request):
             inner_cargo_id = None
         else:
             try:
-                inner_cargo_id = InnerCargo.objects.get(deleted_at=None, user_id=user.id, is_ok=True, id=inner_cargo_id)
+                inner_cargo_id = InnerCargo.objects.get(deleted_at=None, user_id=user.id, is_ok=True,
+                                                        id=inner_cargo_id).id
             except InnerCargo.DoesNotExist:
                 inner_cargo_id = None
                 return Response({'message': 'بار داخلی با این ایدی یافت نشد', 'data': ''},
@@ -491,7 +524,7 @@ def goods_owner_req_car_ow(request):
                 try:
                     international_cargo_id = InternationalCargo.objects.get(deleted_at=None, user_id=user.id,
                                                                             is_ok=True,
-                                                                            id=international_cargo_id)
+                                                                            id=international_cargo_id).id
                 except:
                     international_cargo_id = None
                     return Response({'message': 'بار خارجی با این ایدی یافت نشد', 'data': ''},
@@ -523,3 +556,30 @@ def goods_owner_req_car_ow(request):
         else:
             return Response({'message': 'خطا در مقادیر ارسالی', 'data': serializer.errors},
                             status=status.HTTP_400_BAD_REQUEST)
+    if request.method == "PUT":
+        car_ow_req_goods_owner_id = data.get('goods_owner_req_car_ow_id')
+        proposed_price = data.get('proposed_price')
+        request_result = data.get('request_result')
+        try:
+            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(deleted_at=None, user_id=user.id, is_ok=True,
+                                                                    id=car_ow_req_goods_owner_id)
+            if goods_owner_req_car_ow.is_changeable == False:
+                return Response({'message': 'این ایتم قابل تغییر نیست ', 'data': ''})
+            if request_result != None:
+                goods_owner_req_car_ow.request_result = 'لغو شده'
+                goods_owner_req_car_ow.cancellation_time = timezone.now()
+            if proposed_price != None:
+                goods_owner_req_car_ow.proposed_price = proposed_price
+            goods_owner_req_car_ow.save()
+            return Response({'message': 'ایتم مورد نظر با موفقیت بروزرسانی شد'})
+        except:
+            return Response({'message': 'درخواستی با این ایدی یافت نشد', 'data': ''}, )
+    if request.method == "DELETE":
+        goods_owner_req_car_ow_id = data.get('goods_owner_req_car_ow_id')
+        try:
+            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(id=goods_owner_req_car_ow_id, deleted_at=None,
+                                                                    is_ok=True, user_id=user.id)
+            goods_owner_req_car_ow.soft_delete()
+            return Response({'message': 'ایتم با موفقیت  حذف شد'})
+        except GoodsOwnerReqCarOw.DoesNotExist:
+            return Response({'message': 'درخواست یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
