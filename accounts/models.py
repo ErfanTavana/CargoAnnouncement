@@ -26,7 +26,7 @@ class Base_Model(models.Model):
 
     # Field: Date and time of creation
     # فیلد: تاریخ و زمان ایجاد
-    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد')
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد',editable=False)
 
     # Field: Date and time of soft deletion
     # فیلد: تاریخ و زمان حذف نرم

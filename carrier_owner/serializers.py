@@ -211,7 +211,7 @@ class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CarOwReqGoodsOwner
-        fields = [
+        fields = (
             'user',
             'id',
             'carrier_owner',
@@ -221,5 +221,5 @@ class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
             'proposed_price',
             'request_result',
             'cancellation_time',
-        ]
+        )
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

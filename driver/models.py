@@ -10,19 +10,44 @@ from rest_framework.authtoken.models import Token
 from accounts.models import GoodsOwner, CarrierOwner, Driver
 from carrier_owner.models import Base_Model
 
+# CHOICES برای نتایج ممکن برای درخواست همکاری
+REQUEST_RESULT_CHOICES = [
+    ('در انتظار پاسخ', 'در انتظار پاسخ'),
+    ('تایید شده', 'تایید شده'),
+    ('رد شده', 'رد شده'),
+    ('لغو شده', 'لغو شده'),
+]
 
-# # Define a meaningful related name for the DriverReqToCarrier model
-# class DriverReqToCarrier(Base_Model):
-#     CARGO_TYPE_CHOICES = [
-#         ('inner_cargo', 'اعلام بار داخلی'),
-#         ('international_cargo', 'اعلام بار خارجی'),
-#         ('rail_cargo', 'اعلام بار ریلی'),
-#     ]
-#
-#     cargo_type = models.CharField(max_length=20, default='inner_cargo', choices=CARGO_TYPE_CHOICES,
-#                                   verbose_name='نوع همکاری')
-#     driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_requests_to_carriers',
-#                                verbose_name='راننده')
-#     carrier = models.ForeignKey(CarrierOwner, on_delete=models.CASCADE, verbose_name='صاحب حمل کننده')
-#     price = models.FloatField(default=0, verbose_name='قیمت پیشنهادی', )
-#     origin = models.CharField(max_length=100, blank=True, null=True, verbose_name='مبدا راننده')
+CARGO_TYPE_CHOICES = [
+    ('اعلام بار داخلی', 'اعلام بار داخلی'),
+    ('اعلام بار خارجی', 'اعلام بار خارجی'),
+    ('اعلام بار ریلی', 'اعلام بار ریلی'),
+]
+
+
+class DriverReqCarrierOwner(Base_Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='required_carriers', null=True,
+                               blank=True, verbose_name='راننده')
+
+    carrier_owner = models.ForeignKey(CarrierOwner,on_delete=models.CASCADE,verbose_name='صاحب حمل کننده', blank=True,
+                                      null=True)
+    cargo_type = models.CharField(max_length=20, default='اعلام بار داخلی', choices=CARGO_TYPE_CHOICES,
+                                  verbose_name='نوع همکاری')
+
+    # قیمت پیشنهادی
+    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی')
+
+    # نتیجه درخواست
+    request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
+
+    # زمان لغو درخواست
+    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
+
+    # مبدا و مقصد
+    source = models.CharField(max_length=255, blank=True, null=True, verbose_name='مبدا')
+    destination = models.CharField(max_length=255, blank=True, null=True, verbose_name='مقصد')
+
+    class Meta:
+        verbose_name = "درخواست همکاری راننده از صاحب حمل کننده"
+        verbose_name_plural = "درخواست های  همکاری راننده از صاحب حمل کننده"

@@ -26,5 +26,6 @@ urlpatterns = [
     # path('', include("wag.urls")),
     path('', include("carrier_owner.urls")),
     path('', include("goods_owner.urls")),
+    path('', include("driver.urls")),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
