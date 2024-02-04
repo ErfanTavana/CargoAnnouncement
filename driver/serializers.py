@@ -4,17 +4,16 @@ from accounts.models import CarrierOwner
 from goods_owner.serializers import Base_ModelSerializer
 
 
-class CarrierOwnerForDriverSerializers(serializers.ModelSerializer):
+class CarrierOwnerForDriverSerializers(Base_ModelSerializer):
     class Meta:
         model = CarrierOwner
         fields = (
-            'id',
             'owner_full_name',
         )
 
 
 class DriverReqCarrierOwnerSerializer(Base_ModelSerializer):
-    carrier_owner = CarrierOwnerForDriverSerializers()
+    carrier_owner_full = CarrierOwnerForDriverSerializers(source='carrier_owner', read_only=True)
 
     class Meta:
         model = DriverReqCarrierOwner
@@ -23,6 +22,7 @@ class DriverReqCarrierOwnerSerializer(Base_ModelSerializer):
             'user',
             'driver',
             'carrier_owner',
+            'carrier_owner_full',
             'cargo_type',
             'proposed_price',
             'request_result',
@@ -31,4 +31,4 @@ class DriverReqCarrierOwnerSerializer(Base_ModelSerializer):
             'destination',
         )
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
-        # read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()

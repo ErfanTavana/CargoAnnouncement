@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import os
+from pathlib import Path
+from django.urls import path
 
 # مسیر پایه پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +34,7 @@ INSTALLED_APPS = [
     'goods_owner',
 ]
 
+
 # میان‌افزارهای اجرایی برنامه
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -43,7 +46,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
-
 # تنظیمات پوشه‌ها و فایل‌ها
 ROOT_URLCONF = 'CargoAnnouncement.urls'
 TEMPLATES = [

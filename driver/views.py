@@ -9,6 +9,9 @@ from .models import Driver, DriverReqCarrierOwner
 from .serializers import DriverReqCarrierOwnerSerializer
 from accounts.models import CarrierOwner
 from .serializers import CarrierOwnerForDriverSerializers
+from datetime import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 @api_view(['GET'])
@@ -49,7 +52,22 @@ def driver_req_carrier_owner(request):
     # Hash: Check user type for access verification
     if request.user.profile.user_type != 'راننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-
+    if request.method == 'GET':
+        driver_req_carrier_owner_id = data.get('driver_req_carrier_owner_id')
+        if driver_req_carrier_owner_id is None or len(str(driver_req_carrier_owner_id)) < 6:
+            driver_req_carrier_owner = DriverReqCarrierOwner.objects.filter(is_ok=True, deleted_at=None,
+                                                                            user_id=user.id)
+            serializer = DriverReqCarrierOwnerSerializer(driver_req_carrier_owner, many=True)
+            return Response({'message': 'ok', 'data': serializer.data})
+        else:
+            try:
+                driver_req_carrier_owner = DriverReqCarrierOwner.objects.get(is_ok=True, deleted_at=None,
+                                                                             user_id=user.id,
+                                                                             id=driver_req_carrier_owner_id)
+                serializer = DriverReqCarrierOwnerSerializer(driver_req_carrier_owner, many=False)
+                return Response({'message': 'ok', 'data': serializer.data})
+            except DriverReqCarrierOwner.DoesNotExist:
+                return Response({'message': 'درخواستی با این ایدی وجود ندارد', 'data': ''})
     if request.method == 'POST':
         carrier_owner_id = data.get('carrier_owner_id')
         try:
@@ -59,7 +77,6 @@ def driver_req_carrier_owner(request):
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['driver'] = user.driver.id
-
         data_copy['carrier_owner'] = carrier_owner.id
         print(data_copy['carrier_owner'])
         data_copy['request_result'] = 'در انتظار پاسخ'
@@ -69,4 +86,33 @@ def driver_req_carrier_owner(request):
             return Response({'message': 'درخواست همکاری با موفقیت ارسال شد', 'data': serializer.data},
                             status=status.HTTP_200_OK)
         else:
-            return Response({'message': '', "data": serializer.errors})
+            return Response({'message': '', "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'PUT':
+        driver_req_carrier_owner_id = data.get('driver_req_carrier_owner_id')
+        if driver_req_carrier_owner_id is None or len(str(driver_req_carrier_owner_id)) < 6:
+            return Response({'message': 'ایدی درخواستی که میخواهید ویرایش دهید را مشخص کنید', "data": ''},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                driver_req_carrier_owner = DriverReqCarrierOwner.objects.get(is_ok=True, deleted_at=None,
+                                                                             user_id=user.id,
+                                                                             id=driver_req_carrier_owner_id)
+                if driver_req_carrier_owner.is_changeable == False:
+                    return Response({'message': 'این ایتم قابل تغییر نیست'}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response({'message': 'ایدی درخواست ارسالی اشتباه است', "data": ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        request_result = data.get('request_result')
+        proposed_price = data.get('proposed_price')
+        source = data.get('source')
+        destination = data.get('destination')
+        driver_req_carrier_owner.proposed_price = proposed_price
+        driver_req_carrier_owner.source = source
+        driver_req_carrier_owner.destination = destination
+        if request_result is None or len(str(request_result)) < 6:
+            pass
+        else:
+            driver_req_carrier_owner.request_result = 'لغو شده'
+            driver_req_carrier_owner.cancellation_time = timezone.now()
+        return  Response({"message":'اطلاعات با موفقیت بروزرسانی شد'})
