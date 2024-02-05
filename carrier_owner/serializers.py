@@ -85,7 +85,6 @@ class RoadFleet_req_car_Serializer(serializers.ModelSerializer):
 # نام سریالایزر: CarOwReqDriverSerializer
 class CarOwReqDriverSerializer(Base_ModelSerializer):
     # اضافه کردن سریالایزر RoadFleetSerializer به عنوان فیلد 'carrier'
-    carrier = RoadFleetSerializer()
 
     class Meta:
         model = CarOwReqDriver
@@ -96,7 +95,7 @@ class CarOwReqDriverSerializer(Base_ModelSerializer):
             'proposed_price'
         )
         # فیلدهای تنها خواندنی را اگر وجود دارد اینجا مشخص کنید
-        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ('request_result',)
+        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
 from rest_framework import serializers
 

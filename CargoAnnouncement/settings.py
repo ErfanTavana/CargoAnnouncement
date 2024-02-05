@@ -30,10 +30,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'carrier_owner',
+    'carrier_owner_res',
     'driver',
+    'driver_res',
     'goods_owner',
-]
+    'goods_owner_res',
 
+]
 
 # میان‌افزارهای اجرایی برنامه
 MIDDLEWARE = [

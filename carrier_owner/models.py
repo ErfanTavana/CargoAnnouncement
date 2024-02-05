@@ -118,7 +118,7 @@ class RoadFleet(Base_Model):
         verbose_name_plural = "حمل کننده های مربوط به صاحاب حمل کنندهها "
 
     def __str__(self):
-        return self.ownerType
+        return self.id
 
     def save(self, *args, **kwargs):
         # تنظیم مقادیر فیلد‌های boolean بر اساس وجود تصاویر

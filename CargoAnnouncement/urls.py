@@ -21,11 +21,15 @@ from django.conf.urls.static import static
 from django.conf.urls import include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include("accounts.urls")),
-    # path('', include("wag.urls")),
-    path('', include("carrier_owner.urls")),
-    path('', include("goods_owner.urls")),
-    path('', include("driver.urls")),
+                  path('admin/', admin.site.urls),
+                  path('', include("accounts.urls")),
+                  # path('', include("wag.urls")),
+                  path('', include("carrier_owner.urls")),
+                  path('', include("carrier_owner_res.urls")),
 
+                  path('', include("goods_owner.urls")),
+                  path('', include("goods_owner_res.urls")),
+
+                  path('', include("driver.urls")),
+                  path('', include("driver_res.urls")),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

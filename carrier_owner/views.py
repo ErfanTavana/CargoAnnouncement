@@ -232,10 +232,10 @@ def car_ow_req_driver_view(request):
         # Hash: Check if the user has already requested for this specific road fleet and driver
         existing_request = CarOwReqDriver.objects.filter(
             user=user,
-            carrier__user_id=user.id,
-            road_fleet_id=RoadFleet_id,
-            driver_id=Driver_id,
-            deleted_at=None  # فرض: حذف نرم با فیلد 'deleted_at'
+            carrier_owner=user.carrierowner,
+            carrier__id=RoadFleet_id,
+            driver__id=Driver_id,
+            deleted_at=None
         ).first()
 
         if existing_request:
@@ -259,6 +259,7 @@ def car_ow_req_driver_view(request):
         data_copy['carrier_owner'] = user.carrierowner.id
         data_copy['carrier'] = road_fleet.id
         data_copy['driver'] = driver.id
+        data_copy['request_result'] = 'در انتظار پاسخ'
 
         serializer = CarOwReqDriverSerializer(data=data_copy)
         if serializer.is_valid():
