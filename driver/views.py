@@ -115,4 +115,26 @@ def driver_req_carrier_owner(request):
         else:
             driver_req_carrier_owner.request_result = 'لغو شده'
             driver_req_carrier_owner.cancellation_time = timezone.now()
-        return  Response({"message":'اطلاعات با موفقیت بروزرسانی شد'})
+        return Response({"message": 'اطلاعات با موفقیت بروزرسانی شد'})
+
+    if request.method == 'DELETE':
+        driver_req_carrier_owner_id = data.get('driver_req_carrier_owner_id')
+
+        if driver_req_carrier_owner_id is None or len(str(driver_req_carrier_owner_id)) < 6:
+            return Response({'message': 'لطفاً شناسه درخواست را مشخص کنید.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            driver_req_carrier_owner = DriverReqCarrierOwner.objects.get(
+                is_ok=True, deleted_at=None, user_id=user.id, id=driver_req_carrier_owner_id
+            )
+
+            # اگر درخواست تغییری در این مورد داده نشده باشد
+            if not driver_req_carrier_owner.is_changeable:
+                return Response({'message': 'این ایتم قابل حذف نیست.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            driver_req_carrier_owner.soft_delete(deleted_by=user)
+
+            return Response({'message': 'درخواست با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
+
+        except DriverReqCarrierOwner.DoesNotExist:
+            return Response({'message': 'درخواستی با این شناسه وجود ندارد.'}, status=status.HTTP_404_NOT_FOUND)
