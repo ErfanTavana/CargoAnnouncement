@@ -23,8 +23,6 @@ REQUEST_RESULT_CHOICES = [
     ('رد شده', 'رد شده'),
     ('لغو شده', 'لغو شده'),
 ]
-
-
 # تابع برای ایجاد یک شناسه پیچیده تصادفی
 def generate_complex_id():
     id_length = 8  # طول شناسه پیچیده تولیدی
@@ -194,6 +192,7 @@ class InternationalCargo(CommonCargo):
 
 # کلاس مدل بار مورد نیاز که از کلاس Base_Model ارث‌بری می‌کند
 class RequiredCarrier(Base_Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
     goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
     relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
     CARGO_TYPE_CHOICES = [
@@ -202,8 +201,6 @@ class RequiredCarrier(Base_Model):
         ('اعلام بار ریلی', 'اعلام بار ریلی'),
     ]
     cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
-
     inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers')
     international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,

@@ -205,8 +205,8 @@ class RequiredCarrierSerializer(serializers.ModelSerializer):
 
 # سریالایزر برای مدل CarOwReqGoodsOwner
 class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
-    road_fleet = RoadFleet2Serializer()
-    required_carrier = RequiredCarrierSerializer()
+    # road_fleet = RoadFleet2Serializer(read_only=True)
+    # required_carrier = RequiredCarrierSerializer(read_only=True)
 
     class Meta:
         model = CarOwReqGoodsOwner
