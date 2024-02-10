@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'driver_res',
     'goods_owner',
     'goods_owner_res',
+    'ticket',
 
 ]
 

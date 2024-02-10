@@ -32,4 +32,7 @@ urlpatterns = [
 
                   path('', include("driver.urls")),
                   path('', include("driver_res.urls")),
+
+                  path('', include("ticket.urls")),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
