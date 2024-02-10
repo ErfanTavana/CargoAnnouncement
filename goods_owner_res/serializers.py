@@ -1,7 +1,7 @@
 from goods_owner.serializers import Base_ModelSerializer
 from accounts.models import CarrierOwner
 from carrier_owner.models import RoadFleet, RequiredCarrier, CarOwReqGoodsOwner
-from goods_owner.models import InnerCargo, InternationalCargo
+from goods_owner.models import InnerCargo, InternationalCargo, GoodsOwnerReqCarOw
 
 
 # اطلاعات قابل نمایش صاحب حمل کننده برای صاحب بار
@@ -37,6 +37,7 @@ class InfoRoadFleetForGoodsOwnerSerializers(Base_ModelSerializer):
         )
 
 
+# اطلاعات قابل نمایش بار داخلی برای صاحب بار
 class InfoInnerCargoForGoodsOwnerSerializers(Base_ModelSerializer):
     class Meta:
         model = InnerCargo
@@ -76,7 +77,9 @@ class InfoInnerCargoForGoodsOwnerSerializers(Base_ModelSerializer):
         )
 
 
-class InternationalCargoForGoodsOwnerSerializers(Base_ModelSerializer):
+# اطلاعات قابل نمایش بار خارجی برای صاحب بار
+
+class InfoInternationalCargoForGoodsOwnerSerializers(Base_ModelSerializer):
     class Meta:
         model = InternationalCargo
         fields = Base_ModelSerializer.Meta.fields + (
@@ -123,9 +126,11 @@ class InternationalCargoForGoodsOwnerSerializers(Base_ModelSerializer):
         )
 
 
+# اطلاعات قابل نمایش حمل کننده های مورد نیاز برای صاحب بار
 class InfoRequiredCarrierForGoodsOwnerSerializers(Base_ModelSerializer):
     inner_cargo_full = InfoInnerCargoForGoodsOwnerSerializers(source='inner_cargo', read_only=True)
-    international_cargo_full = InternationalCargoForGoodsOwnerSerializers(source='international_cargo', read_only=True)
+    international_cargo_full = InfoInternationalCargoForGoodsOwnerSerializers(source='international_cargo',
+                                                                              read_only=True)
 
     class Meta:
         model = RequiredCarrier
@@ -150,6 +155,9 @@ class InfoRequiredCarrierForGoodsOwnerSerializers(Base_ModelSerializer):
         )
 
 
+########################################################################################
+# اطلاعات قابل نمایش درخواست  همکاری صاحب حمل کننده برای برای صاحب بار
+
 class InfoCarOwReqGoodsOwnerForGoodsOwnerSerializers(Base_ModelSerializer):
     carrier_owner_full = InfoCarrierOwnerResForGoodsOwnerSerializers(source='cargo_owner', read_only=True)
     road_fleet_full = InfoRoadFleetForGoodsOwnerSerializers(source='road_fleet', read_only=True)
@@ -166,6 +174,34 @@ class InfoCarOwReqGoodsOwnerForGoodsOwnerSerializers(Base_ModelSerializer):
             'goods_owner',
             'required_carrier',
             'required_carrier_full',
+            'proposed_price',
+            'request_result',
+            'cancellation_time',
+        )
+
+
+# پایان بخش نمایش درخواست های همکاری دریافتی
+################################################################################################
+class InfoGoodsOwnerReqCarOwForGoodsOwnerSerializers(Base_ModelSerializer):
+    carrier_owner_full = InfoCarrierOwnerResForGoodsOwnerSerializers(source='carrier_owner', read_only=True)
+    road_fleet_full = InfoRoadFleetForGoodsOwnerSerializers(source='road_fleet', read_only=True)
+    inner_cargo_full = InfoInnerCargoForGoodsOwnerSerializers(source='inner_cargo', read_only=True)
+    international_cargo_full = InfoInternationalCargoForGoodsOwnerSerializers(source='international_cargo',
+                                                                              read_only=True)
+
+    class Meta:
+        model = GoodsOwnerReqCarOw
+        fields = Base_ModelSerializer.Meta.fields + (
+            'user',
+            'goods_owner',
+            'carrier_owner',
+            'carrier_owner_full',
+            'road_fleet',
+            'road_fleet_full',
+            'inner_cargo',
+            'inner_cargo_full',
+            'international_cargo',
+            'international_cargo_full',
             'proposed_price',
             'request_result',
             'cancellation_time',

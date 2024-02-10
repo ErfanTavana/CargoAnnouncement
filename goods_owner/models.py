@@ -258,10 +258,10 @@ class RequiredCarrier(Base_Model):
 class GoodsOwnerReqCarOw(Base_Model):
     user = models.ForeignKey(User, on_delete=models.Model, verbose_name='کاربر', related_name='userss', )
     goods_owner = models.ForeignKey(GoodsOwner, related_name='goods_owner_requests', on_delete=models.CASCADE,
-                                    verbose_name='صاحب بار')
+                                    verbose_name='صاحب بار',blank=True,null=True)
 
     carrier_owner = models.ForeignKey(CarrierOwner, related_name='carrier_owner_requests', on_delete=models.CASCADE,
-                                      verbose_name='صاحب  حمل کننده')
+                                      verbose_name='صاحب  حمل کننده',blank=True,null=True)
     road_fleet = models.ForeignKey('carrier_owner.RoadFleet', related_name='road_fleet_fleetasad',
                                    verbose_name='حمل کننده',
                                    on_delete=models.CASCADE, blank=True, null=True)
@@ -273,7 +273,7 @@ class GoodsOwnerReqCarOw(Base_Model):
                                             related_name='international_cargo_carriers2')
 
     # قیمت پیشنهادی
-    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی')
+    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی',blank=True,null=True)
 
     # نتیجه درخواست
     request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
