@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'ticket',
     'blog',
     'home',
+    'CargoADMIN',
 
 ]
 
