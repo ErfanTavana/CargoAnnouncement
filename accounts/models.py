@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -26,7 +25,8 @@ class Base_Model(models.Model):
 
     # Field: Date and time of creation
     # فیلد: تاریخ و زمان ایجاد
-    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد',editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='تاریخ ایجاد',
+                                      editable=False)
 
     # Field: Date and time of soft deletion
     # فیلد: تاریخ و زمان حذف نرم
@@ -51,6 +51,8 @@ class Base_Model(models.Model):
         self.is_ok = False  # It might need to change this field as well
         self.is_changeable = False
         self.save()
+
+
 # VerificationCode Model
 # مدل VerificationCode
 
@@ -104,6 +106,12 @@ class VerificationCode(Base_Model):
         self.expires_at = self.created_at + datetime.timedelta(minutes=3)
 
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "کد تایید"
+        verbose_name_plural = 'کد های تایید'
+
+
 # PasswordSetStatus Model
 # مدل PasswordSetStatus
 
@@ -115,6 +123,10 @@ class PasswordSetStatus(Base_Model):
     # Field indicating whether the password is set
     # فیلد نشان‌دهنده اینکه رمز عبور تنظیم شده است یا خیر
     is_password_set = models.BooleanField(default=False, verbose_name='آیا رمز عبور تنظیم شده است؟')
+
+    class Meta:
+        verbose_name = "وضعیت پسورد"
+        verbose_name_plural = 'وضعیت پسورد کاربر ها'
 
 
 # User Type List
@@ -173,6 +185,12 @@ class Profile(Base_Model):
             self.unique_code = code_prefix + "-" + str(random.randint(1000, 9999))
 
         super(Profile, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "پروفایل"
+        verbose_name_plural = 'پروفایل ها'
+
+
 # GoodsOwner Model
 # مدل صاحب بار
 
@@ -230,6 +248,7 @@ class GoodsOwner(Base_Model):
         verbose_name = "صاحب بار"
         verbose_name_plural = "صاحبان بار"
 
+
 # CarrierOwner Model
 # مدل صاحب حمل‌کننده
 
@@ -271,6 +290,7 @@ class CarrierOwner(Base_Model):
     class Meta:
         verbose_name = "صاحب حمل‌کننده"
         verbose_name_plural = "صاحبان حمل‌کننده"
+
 
 # Driver Model
 # مدل راننده
@@ -348,4 +368,3 @@ class Driver(Base_Model):
         else:
             self.smart_card_image_bool = False
         super().save(*args, **kwargs)
-

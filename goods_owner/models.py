@@ -41,7 +41,7 @@ class Base_Model(models.Model):
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است؟')
     is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است؟')
     deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='deleted_by_%(class)s_set')
+                                   related_name='deleted_by_%(class)s_set' , verbose_name='حذف شده توسط ')
 
     class Meta:
         abstract = True  # نشان می‌دهد که این کلاس یک کلاس انتزاعی است و نباید یک جدول در پایگاه داده ایجاد کند

@@ -36,4 +36,6 @@ urlpatterns = [
                   path('', include("ticket.urls")),
                   path('', include("blog.urls")),
 
+                  path('', include("home.urls")),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

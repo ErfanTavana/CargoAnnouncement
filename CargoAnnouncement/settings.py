@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'goods_owner_res',
     'ticket',
     'blog',
+    'home',
 
 ]
 
