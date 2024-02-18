@@ -45,7 +45,9 @@ class RoadFleet(Base_Model):
                                         ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
                                         ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
                                         ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
+
                                     ))
+    vehichleTypeOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
 
     # اطلاعات نوع ماشین باربری نیمه سنگین
     semiHeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین", default="",
@@ -55,6 +57,8 @@ class RoadFleet(Base_Model):
                                              ("هیوندا", "هیوندا"),
                                              ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
                                              ("کامیونت", "کامیونت"),
+                                             ("سایر", "سایر"),
+
                                          ))
     semiHeavyVehichleOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
 
@@ -70,6 +74,8 @@ class RoadFleet(Base_Model):
                                          ("چادری سه محور", "چادری سه محور"),
                                          ("کمپرسی", "کمپرسی"),
                                          ("تریلی تانکر فاو", "تریلی تانکر فاو"),
+                                         ("سایر", "سایر"),
+
                                      ))
     heavy_vehicle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
 

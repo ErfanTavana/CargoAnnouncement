@@ -245,6 +245,10 @@ class GoodsOwner(Base_Model):
     # فیلد کدپستی صاحب بار یا شرکت
     postal_code = models.CharField(max_length=15, verbose_name="کدپستی صاحب بار / شرکت", blank=True, null=True)
 
+    def __save__(self, *args, **kwargs):
+        self.phone_number = self.user.username
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = "صاحب بار"
         verbose_name_plural = "صاحبان بار"
@@ -287,6 +291,11 @@ class CarrierOwner(Base_Model):
     # Field for the mobile number of the vehicle owner
     # فیلد شماره موبایل صاحب ماشین
     owner_mobile_number = models.CharField(max_length=15, verbose_name="شماره موبایل صاحب ماشین", blank=True, null=True)
+
+    def __save__(self, *args, **kwargs):
+        self.owner_mobile_number = self.user.username
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "صاحب حمل‌کننده"
@@ -344,6 +353,8 @@ class Driver(Base_Model):
     # فیلد بولین برای نشان دادن اختیار گواهینامه بین المللی
     international_license = models.BooleanField(default=False, verbose_name="گواهینامه بین المللی", blank=True,
                                                 null=True)
+    international_license_expiry_date = models.DateField(verbose_name="تاریخ اعتبار گواهینامه بین المللی", blank=True,
+                                                         null=True)
 
     # Field for the city of the driver
     # فیلد شهر
@@ -360,6 +371,8 @@ class Driver(Base_Model):
     def save(self, *args, **kwargs):
         # Set boolean fields based on the presence of images
         # تنظیم فیلدهای بولین بر اساس وجود تصاویر
+
+        self.mobile_number = self.user.username
         if self.national_card_image != None:
             self.national_card_image_bool = True
         else:

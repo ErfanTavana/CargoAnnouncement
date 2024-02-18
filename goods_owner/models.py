@@ -23,6 +23,8 @@ REQUEST_RESULT_CHOICES = [
     ('رد شده', 'رد شده'),
     ('لغو شده', 'لغو شده'),
 ]
+
+
 # تابع برای ایجاد یک شناسه پیچیده تصادفی
 def generate_complex_id():
     id_length = 8  # طول شناسه پیچیده تولیدی
@@ -41,7 +43,7 @@ class Base_Model(models.Model):
     is_changeable = models.BooleanField(default=True, verbose_name='قابل تغییر است؟')
     is_deletable = models.BooleanField(default=True, verbose_name='قابل حذف است؟')
     deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='deleted_by_%(class)s_set' , verbose_name='حذف شده توسط ')
+                                   related_name='deleted_by_%(class)s_set', verbose_name='حذف شده توسط ')
 
     class Meta:
         abstract = True  # نشان می‌دهد که این کلاس یک کلاس انتزاعی است و نباید یک جدول در پایگاه داده ایجاد کند
@@ -102,18 +104,6 @@ class CommonCargo(Base_Model):
                                                   default=timezone.timedelta(hours=0, minutes=0, seconds=0), blank=True,
                                                   null=True)
 
-    # Comment: فیلدهای منحصر به فرد برای InnerCargo
-    country = models.CharField(max_length=20, verbose_name="کشور مبدا", choices=(
-        ("ایران", "ایران"),
-        ("روسیه", "روسیه"),
-        ("قزاقستان", "قزاقستان"),
-        ("ازبکستان", "ازبکستان"),
-        ("قرقیزستان", "قرقیزستان"),
-        ("تاجیکستان", "تاجیکستان"),
-        ("7افغانستان", "افغانستان"),
-        ("ارمنستان", "ارمنستان"),
-    ), blank=True, null=True)
-
     # فیلدهای ارائه‌دهنده تحویل
     delivery_provider_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل دهنده", blank=True,
                                               null=True)
@@ -132,12 +122,41 @@ class CommonCargo(Base_Model):
                                                 blank=True, null=True)
     cargo_receiver_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل گیرنده",
                                              blank=True, null=True)
-
+    # Comment: فیلدهای منحصر به فرد برای InnerCargo
+    country = models.CharField(max_length=20, verbose_name="کشور مبدا", choices=(
+        ("ایران", "ایران"),
+        ("روسیه", "روسیه"),
+        ("قزاقستان", "قزاقستان"),
+        ("ازبکستان", "ازبکستان"),
+        ("قرقیزستان", "قرقیزستان"),
+        ("تاجیکستان", "تاجیکستان"),
+        ("7افغانستان", "افغانستان"),
+        ("ارمنستان", "ارمنستان"),
+    ), blank=True, null=True)
     state = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
     city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
     street = models.CharField(max_length=50, verbose_name="خیابان مبدا", blank=True, null=True)
     address = models.CharField(max_length=100, verbose_name="آدرس دقیق مبدا", blank=True, null=True)
     customName = models.CharField(max_length=100, verbose_name="نام کمرگ مبدا", default="", blank=True, null=True)
+
+    cargo_receiver_surname = models.CharField(max_length=100, verbose_name="نام خانوادگی تحویل گیرنده", blank=True,
+                                              null=True)
+    destination_country = models.CharField(max_length=20, verbose_name="کشور مقصد", blank=True, null=True, choices=(
+        ("ایران", "ایران"),
+        ("روسیه", "روسیه"),
+        ("قزاقستان", "قزاقستان"),
+        ("ازبکستان", "ازبکستان"),
+        ("قرقیزستان", "قرقیزستان"),
+        ("تاجیکستان", "تاجیکستان"),
+        ("7افغانستان", "افغانستان"),
+        ("ارمنستان", "ارمنستان"),
+    ))
+    destination_state = models.CharField(max_length=20, verbose_name="استان مقصد", blank=True, null=True)
+    destination_city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مقصد", blank=True, null=True)
+    destination_street = models.CharField(max_length=50, verbose_name="خیابان مقصد", blank=True, null=True)
+    destination_address = models.CharField(max_length=100, verbose_name="آدرس دقیق مقصد", blank=True, null=True)
+    destination_custom_name = models.CharField(max_length=100, verbose_name="نام کمرگ مقصد", default="", blank=True,
+                                               null=True)
 
     class Meta:
         verbose_name = 'اعلام بار اطلاعات  مشترک'
@@ -153,6 +172,8 @@ class InnerCargo(CommonCargo):
         blank=True,
         null=True,
     )
+    dischargeTimeDate = models.DateTimeField(max_length=200, verbose_name="تاریخ و ساعت تحویل بار در مقصد",
+                                             default=timezone.now, blank=True, null=True)
 
     class Meta:
         verbose_name = 'اعلام بار داخلی'
@@ -184,6 +205,7 @@ class InternationalCargo(CommonCargo):
                                          null=True)
     # customName = models.CharField(max_length=100, verbose_name="نام کمرگ مبدا", default="", blank=True, null=True)
     customNameEnd = models.CharField(max_length=100, verbose_name="نام کمرگ مقصد", default="", blank=True, null=True)
+    cargo_weight = models.FloatField(max_length=100, verbose_name="وزن خالص محموله", blank=True, null=True)
 
     class Meta:
         verbose_name = 'اعلام بار خارجی'
@@ -258,10 +280,10 @@ class RequiredCarrier(Base_Model):
 class GoodsOwnerReqCarOw(Base_Model):
     user = models.ForeignKey(User, on_delete=models.Model, verbose_name='کاربر', related_name='userss', )
     goods_owner = models.ForeignKey(GoodsOwner, related_name='goods_owner_requests', on_delete=models.CASCADE,
-                                    verbose_name='صاحب بار',blank=True,null=True)
+                                    verbose_name='صاحب بار', blank=True, null=True)
 
     carrier_owner = models.ForeignKey(CarrierOwner, related_name='carrier_owner_requests', on_delete=models.CASCADE,
-                                      verbose_name='صاحب  حمل کننده',blank=True,null=True)
+                                      verbose_name='صاحب  حمل کننده', blank=True, null=True)
     road_fleet = models.ForeignKey('carrier_owner.RoadFleet', related_name='road_fleet_fleetasad',
                                    verbose_name='حمل کننده',
                                    on_delete=models.CASCADE, blank=True, null=True)
@@ -273,7 +295,7 @@ class GoodsOwnerReqCarOw(Base_Model):
                                             related_name='international_cargo_carriers2')
 
     # قیمت پیشنهادی
-    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی',blank=True,null=True)
+    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی', blank=True, null=True)
 
     # نتیجه درخواست
     request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')

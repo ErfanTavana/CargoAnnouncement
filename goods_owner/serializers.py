@@ -61,6 +61,13 @@ class CommonCargoSerializer(Base_ModelSerializer):
             'street',
             'address',
             'customName',
+            'cargo_receiver_surname',
+            'destination_country',
+            'destination_state',
+            'destination_city',
+            'destination_street',
+            'destination_address',
+            'destination_custom_name',
         )
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
@@ -73,6 +80,7 @@ class InnerCargoSerializer(CommonCargoSerializer):
         # ارث‌بری از سریالایزر مشترک بار و اضافه کردن فیلد تاریخ و ساعت تحویل بار در مدل بار داخلی
         fields = CommonCargoSerializer.Meta.fields + (
             'deliveryTimeDate',
+            'dischargeTimeDate',
         )
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
