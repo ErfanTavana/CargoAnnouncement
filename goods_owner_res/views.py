@@ -79,3 +79,27 @@ def sent_goods_owner_req(request):
                 return Response({'message': 'هیج درخواستی برای شما وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = InfoGoodsOwnerReqCarOwForGoodsOwnerSerializers(goods_owner_req_car_ow, many=True)
             return Response({'message': 'ok', 'data': serializer.data})
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def accept_request_carrier_owner(request):
+    user = request.user
+    data = request.data
+    try:
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    goods_owner_req_car_ow_id = data.get('goods_owner_req_car_ow_id')
+    try:
+        goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(id=goods_owner_req_car_ow_id, deleted_at=None,
+                                                                goods_owner_id=user.goodsowner.id, is_ok=True, )
+    except:
+        pass

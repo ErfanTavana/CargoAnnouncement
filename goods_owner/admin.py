@@ -36,7 +36,7 @@ from .models import RequiredCarrier
 
 @admin.register(RequiredCarrier)
 class RequiredCarrierAdmin(admin.ModelAdmin):
-    list_display = ('id', "relinquished",'cargo_type', 'cargo_weight', 'counter', 'room_type', 'vehichle_type',
+    list_display = ('id', "relinquished", 'cargo_type', 'cargo_weight', 'counter', 'room_type', 'vehichle_type',
                     'semi_heavy_vehichle', 'heavy_vehichle', 'special_widget_carrier', 'carrier_price',
                     'cargo_price', 'created_at', 'deleted_at', 'is_ok', 'is_changeable')
     list_filter = ('cargo_type', 'room_type', 'vehichle_type', 'semi_heavy_vehichle', 'heavy_vehichle', 'is_ok')
@@ -46,10 +46,26 @@ class RequiredCarrierAdmin(admin.ModelAdmin):
 from django.contrib import admin
 from .models import GoodsOwnerReqCarOw
 
+
 class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
+    list_display = (
+    'id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
     list_filter = ('request_result', 'cancellation_time')
     search_fields = ('user__username', 'goods_owner__name', 'carrier_owner__name')
     readonly_fields = ('id',)
 
+
 admin.site.register(GoodsOwnerReqCarOw, GoodsOwnerReqCarOwAdmin)
+# your_app/admin.py
+
+from django.contrib import admin
+from .models import CargoDeclaration
+
+
+class CargoDeclarationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'cargo_type', 'relinquished', 'is_partial_cargo')
+    list_filter = ('cargo_type', 'relinquished', 'is_partial_cargo')
+    search_fields = ('id', 'user__username', 'route_code')
+
+
+admin.site.register(CargoDeclaration, CargoDeclarationAdmin)

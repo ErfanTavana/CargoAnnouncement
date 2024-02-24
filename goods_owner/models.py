@@ -148,13 +148,18 @@ class CommonCargo(Base_Model):
         ("ازبکستان", "ازبکستان"),
         ("قرقیزستان", "قرقیزستان"),
         ("تاجیکستان", "تاجیکستان"),
-        ("7افغانستان", "افغانستان"),
+        ("افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
     ))
     destination_state = models.CharField(max_length=20, verbose_name="استان مقصد", blank=True, null=True)
     destination_city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مقصد", blank=True, null=True)
     destination_street = models.CharField(max_length=50, verbose_name="خیابان مقصد", blank=True, null=True)
     destination_address = models.CharField(max_length=100, verbose_name="آدرس دقیق مقصد", blank=True, null=True)
+    destination_area = models.CharField(max_length=100, choices=(
+        ('گمرگ', 'گمرگ'),
+        ('بندر', 'بندر'),
+        ('ایستگاه', 'ایستگاه'),
+    ), verbose_name='محدوده مقصد', blank=True, null=True)
     destination_custom_name = models.CharField(max_length=100, verbose_name="نام کمرگ مقصد", default="", blank=True,
                                                null=True)
 
@@ -196,7 +201,7 @@ class InternationalCargo(CommonCargo):
     senderCity = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
     senderStreet = models.CharField(max_length=50, verbose_name="خیابان", blank=True, null=True)
     senderAddress = models.CharField(max_length=100, verbose_name="آدرس دقیق مبدا", blank=True, null=True)
-    deliveryTimeDate = models.DateTimeField(max_length=200, verbose_name="تاریخ و ساعت تحویل بار در مبدا",
+    deliveryTimeDate = models.DateTimeField(max_length=200, verbose_name="تاریخ و ساعت بارگیری بار در مبدا",
                                             default=timezone.now, blank=True, null=True)
     dischargeTimeDate = models.DateTimeField(max_length=200, verbose_name="تاریخ و ساعت تحویل بار در مقصد",
                                              default=timezone.now, blank=True, null=True)
@@ -272,6 +277,16 @@ class RequiredCarrier(Base_Model):
     cargo_price = models.PositiveIntegerField(default=0, verbose_name="ارزش بار هر حمل کننده / خودرو", blank=True,
                                               null=True)
 
+    transferred_to = models.ForeignKey(User, related_name='transferred_to_%(class)s_set', verbose_name="واگذار شده به",
+                                       on_delete=models.CASCADE, blank=True,
+                                       null=True)
+    transferred_at = models.DateTimeField(default=None, verbose_name="واگذار شده در تاریخ", blank=True, null=True)
+
+    def Transferred(self, User):
+        self.transferred_to = User.id
+        self.transferred_at = timezone.now()
+        self.save()
+
     class Meta:
         verbose_name = 'حمل‌کننده مورد نیاز اعلام بار'
         verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
@@ -305,3 +320,84 @@ class GoodsOwnerReqCarOw(Base_Model):
     class Meta:
         verbose_name = 'درخواست همکاری صاحب بار برای صاحب حمل کننده'
         verbose_name_plural = 'درخواست های همکاری صاحب بار برای صاحب حمل کننده'
+
+
+VEHICLE_TYPE_CHOICES = (
+    ('short_edge', 'لبه کوتاه'),
+    ('long_edge', 'لبه بلند'),
+    ('covered', 'مسقف'),
+    ('flatbed', 'مسطح یا پلتفرم'),
+)
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class CargoDeclaration(Base_Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
+    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
+    relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
+    CARGO_TYPE_CHOICES = [
+        ('اعلام بار داخلی', 'اعلام بار داخلی'),
+        ('اعلام بار خارجی', 'اعلام بار خارجی'),
+        ('اعلام بار ریلی', 'اعلام بار ریلی'),
+    ]
+    cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
+    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                    verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers_%(class)s_set')
+    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                            verbose_name='اعلام بار خارجی',
+                                            related_name='international_cargo_carriers_%(class)s_set')
+    # وزن خالص محموله
+    net_weight = models.FloatField(verbose_name="وزن خالص محموله")
+
+    # ویژگی های خاص مورد نیاز (تکست فیلد)
+    special_features = models.TextField(verbose_name="ویژگی‌های خاص مورد نیاز")
+
+    # قیمت تقریبی حمل (فلوت فیلد)
+    approximate_transport_price = models.FloatField(verbose_name="قیمت تقریبی حمل")
+
+    # ارزش بار هر واگن (فلوت فیلد)
+    value_per_wagon = models.FloatField(verbose_name="ارزش بار هر واگن")
+
+    # انواع واگن
+    WAGON_TYPES = [
+        ('short_edge', 'لبه کوتاه'),
+        ('tall_edge', 'لبه بلند'),
+        ('covered', 'مسقف'),
+        ('flatbed', 'مسطح یا پلتفرم'),
+        ('open_roof', 'روباز'),
+        ('bulk', 'فله بر'),
+        ('refrigerated', 'یخچال دار'),
+        ('tanker', 'مخزن دار'),
+        ('sand_carrier', 'شن کش'),
+        ('car_transport', 'حمل خودرو'),
+    ]
+    wagon_type = models.CharField(max_length=20, choices=WAGON_TYPES, verbose_name="نوع واگن")
+
+    # کد مسیر
+    route_code = models.CharField(max_length=50, verbose_name="کد مسیر")
+
+    # کد ایستگاه
+    station_code = models.CharField(max_length=50, verbose_name="کد ایستگاه")
+
+    # آیا بار شما قابلیت برنامه‌ریزی دارد؟ (بولین)
+    is_plannable = models.BooleanField(default=False, verbose_name="آیا بار قابل برنامه‌ریزی است؟")
+
+    # تناژ در هر نوبت
+    tonnage_per_shift = models.FloatField(verbose_name="تناژ در هر نوبت")
+
+    # آیا بار شما خرده بار است؟ (بولین)
+    is_partial_cargo = models.BooleanField(default=False, verbose_name="آیا بار خرده بار است؟")
+
+    # تناژ
+    tonnage = models.FloatField(blank=True, null=True, verbose_name="تناژ")
+
+    # نوع بار (کرفیلد)
+    cargo_type_char_field = models.CharField(blank=True, null=True, max_length=255, verbose_name="نوع بار")
+
+    class Meta:
+        verbose_name = 'واگن  مورد نیاز اعلام بار'
+        verbose_name_plural = 'واگن های مورد نیاز اعلام بار'
+
+    def __str__(self):
+        return f"بار شماره {self.id}"

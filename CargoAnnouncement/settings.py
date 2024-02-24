@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'blog',
     'home',
     'CargoADMIN',
-
+    'E_Wallet',
 ]
 
 # میان‌افزارهای اجرایی برنامه
@@ -98,7 +98,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # تنظیمات زمان و تاریخ
-LANGUAGE_CODE = 'fa'
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True

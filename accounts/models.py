@@ -171,6 +171,8 @@ class Profile(Base_Model):
     user_type = models.CharField(max_length=255, default='انتخاب نشده', verbose_name="نوع کاربر",
                                  choices=type_user_list)
 
+    wallet = models.FloatField(default=0,verbose_name='کیف پول',blank=True,null=True)
+
     # Field for a unique code
     # فیلد کد اختصاصی
     unique_code = models.CharField(max_length=25, verbose_name='کد اختصاصی', unique=True, help_text='کد اختصاصی')
@@ -276,7 +278,8 @@ class CarrierOwner(Base_Model):
 
     # Field for the national code or passport of the vehicle owner
     # فیلد کد ملی یا پاسپورت صاحب ماشین
-    national_code_or_passport = models.CharField(max_length=20, verbose_name="کد ملی یا پاسپورت صاحب ماشین")
+    national_code_or_passport = models.CharField(max_length=20, null=True, blank=True,
+                                                 verbose_name="کد ملی یا پاسپورت صاحب ماشین")
 
     # Field for uploading the national card image or passport
     # فیلد آپلود تصویر کارت ملی یا پاسپورت
@@ -291,6 +294,27 @@ class CarrierOwner(Base_Model):
     # Field for the mobile number of the vehicle owner
     # فیلد شماره موبایل صاحب ماشین
     owner_mobile_number = models.CharField(max_length=15, verbose_name="شماره موبایل صاحب ماشین", blank=True, null=True)
+    # فیلد نام شرکت حمل‌کننده
+    company_name = models.CharField(max_length=255, verbose_name="نام شرکت حمل‌کننده", blank=True, null=True)
+
+    # Field for the national ID of the carrier owner
+    # فیلد شناسه ملی صاحب حمل‌کننده
+    national_id = models.CharField(max_length=20, verbose_name="شناسه ملی صاحب حمل‌کننده", blank=True, null=True)
+
+    # Field for the address of the carrier owner
+    # فیلد آدرس صاحب حمل‌کننده
+    address = models.TextField(verbose_name="آدرس", blank=True, null=True)
+
+    # Field for the nationality of the carrier owner
+    # فیلد ملیت صاحب حمل‌کننده
+    nationality = models.CharField(max_length=50, verbose_name="ملیت", blank=True, null=True)
+
+    # Field for selecting the legal status (individual or legal entity) of the carrier owner
+    # فیلد انتخاب وضعیت حقوقی (حقیقی یا حقوقی) صاحب حمل‌کننده
+    legal_status = models.CharField(max_length=20, verbose_name="وضعیت حقوقی", choices=(
+        ("حقیقی", "حقیقی"),
+        ("حقوقی", "حقوقی"),
+    ), blank=True, null=True)
 
     def __save__(self, *args, **kwargs):
         self.owner_mobile_number = self.user.username

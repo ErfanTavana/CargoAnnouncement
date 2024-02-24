@@ -58,6 +58,8 @@ def Send_verification_code(request):
         data = request.data
         phone_number = data.get('phone_number')
         type_user = data.get('type_user')
+        if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
+            return Response({'message': 'شماره تلفن اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
         # ایجاد یک کد تایید برای شماره موبایل داده شده
         status_send_verification_code = Create_a_verification_code(phone_number=phone_number)
@@ -93,7 +95,8 @@ def register(request):
         otp = data.get('otp')
         # first_name = data.get('first_name')
         # password = data.get('password')
-
+        if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
+            return Response({'message': 'شماره تلفن اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             # دریافت کاربر با شماره تلفن داده شده
             user = User.objects.get(username=phone_number)
@@ -173,6 +176,8 @@ def login(request):
         data = request.data
         phone_number = data.get('phone_number')
         password = data.get('password')
+        if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
+            return Response({'message': 'شماره تلفن اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
         # احراز هویت کاربر با استفاده از شماره تلفن و رمز عبور ارائه شده
         user = authenticate(username=phone_number, password=password)
@@ -223,6 +228,8 @@ def forget_password(request):
         otp = data.get('otp')
         # first_name = data.get('first_name')
         # password = data.get('password')
+        if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
+            return Response({'message': 'شماره تلفن اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # گرفتن کاربر با شماره تلفن داده شده
@@ -284,7 +291,7 @@ def profile_view(request):
                 # If the owner does not exist, create one
                 goodsowner = GoodsOwner.objects.create(user=user)
             serializer = GoodsOwnerSerializer(goodsowner)
-        elif user.profile.user_type in ['صاحب حمل‌ونقل']:
+        elif user.profile.user_type in ['صاحب حمل کننده']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:

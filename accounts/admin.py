@@ -45,19 +45,22 @@ admin.site.register(PasswordSetStatus, PasswordSetStatusAdmin)
 # Admin Configuration for Profile Model
 # تنظیمات ادمین برای مدل Profile
 
+from django.contrib import admin
 from .models import Profile
 
+@admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_ok', 'user_type', 'unique_code')  # Displayed fields in the list view
-    # فیلدهایی که در لیست نمایش داده می‌شوند
+    list_display = ('user', 'is_completed', 'is_ok', 'user_type', 'wallet', 'unique_code')
+    list_filter = ('is_completed', 'is_ok', 'user_type')
+    search_fields = ('user__username', 'unique_code')
 
-    list_filter = ('is_ok', 'user_type')  # Filters available in the filter panel
-    # فیلترهای موجود در پنل فیلتر
+    fieldsets = (
+        ('General Information', {
+            'fields': ('user', 'is_completed', 'is_ok', 'user_type', 'wallet', 'unique_code')
+        }),
+    )
 
-    search_fields = ('user__username', 'unique_code')  # Search based on the username and unique_code fields
-    # جستجو بر اساس نام کاربری و فیلد unique_code
-
-admin.site.register(Profile, ProfileAdmin)
+    readonly_fields = ('unique_code',)
 # Admin Configuration for Driver Model
 # تنظیمات ادمین برای مدل Driver
 

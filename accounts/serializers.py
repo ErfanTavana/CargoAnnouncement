@@ -17,8 +17,20 @@ class GoodsOwnerSerializer(serializers.ModelSerializer):
 class CarrierSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarrierOwner
-        fields = ['car_card_image', 'insurance_image', 'green_sheet_image',
-                  'national_code_or_passport', 'national_card_image', 'owner_full_name', 'owner_mobile_number']
+        fields = ['car_card_image',
+                  'insurance_image',
+                  'green_sheet_image',
+                  'national_code_or_passport',
+                  'national_card_image',
+                  'owner_full_name',
+                  'owner_mobile_number',
+                  'company_name',
+                  'national_id',
+                  'address',
+                  'nationality',
+                  'legal_status',
+
+                  ]
 
 
 from .models import Driver
