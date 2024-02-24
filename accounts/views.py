@@ -281,7 +281,6 @@ def forget_password(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
     user = request.user
-
     if request.method == 'GET':
         # GET request to retrieve user profile information
         if user.profile.user_type in ["صاحب بار"]:
@@ -289,21 +288,21 @@ def profile_view(request):
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:
                 # If the owner does not exist, create one
-                goodsowner = GoodsOwner.objects.create(user=user)
+                goodsowner = GoodsOwner.objects.create(user=user, is_changeable=True)
             serializer = GoodsOwnerSerializer(goodsowner)
         elif user.profile.user_type in ['صاحب حمل کننده']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:
                 # If the carrier does not exist, create one
-                carrier = CarrierOwner.objects.create(user=user)
+                carrier = CarrierOwner.objects.create(user=user, is_changeable=True)
             serializer = CarrierSerializer(carrier)
         elif user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver
             except Driver.DoesNotExist:
                 # If the driver does not exist, create one
-                driver = Driver.objects.create(user=user)
+                driver = Driver.objects.create(user=user, is_changeable=True)
             serializer = DriverSerializer(user.driver)
         else:
             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
@@ -319,23 +318,21 @@ def profile_view(request):
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:
                 # If the owner does not exist, create one
-                goodsowner = GoodsOwner.objects.create(user=user)
+                goodsowner = GoodsOwner.objects.create(user=user, is_changeable=True)
             serializer = GoodsOwnerSerializer(user.goodsowner, data=data)
         elif user.profile.user_type in ['صاحب حمل کننده']:
             try:
                 carrier = user.carrierowner
             except CarrierOwner.DoesNotExist:
                 # If the carrier does not exist, create one
-                carrier = CarrierOwner.objects.create(user=user)
+                carrier = CarrierOwner.objects.create(user=user, is_changeable=True)
             serializer = CarrierSerializer(user.carrierowner, data=data)
         elif user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver
-                if not driver.is_changeable:
-                    return Response({'message':"انجام ویراش فقط با ارسال تیکت"})
             except Driver.DoesNotExist:
                 # If the driver does not exist, create one
-                driver = Driver.objects.create(user=user)
+                driver = Driver.objects.create(user=user, is_changeable=True)
             serializer = DriverSerializer(user.driver, data=data)
         else:
             return Response({'message': 'کاربر یافت نشد'}, status=status.HTTP_400_BAD_REQUEST)
@@ -346,7 +343,10 @@ def profile_view(request):
             # print(sms.verification({'receptor': f'{user.username}', 'type': '1', 'template': 'ProfileRegistered',
             #                         'param1': f'{user.profile.unique_code}', 'param2': f'{user.username}',
             #                         }))
+            if user.profile.is_changeable == False:
+                return Response({'message': "انجام ویراش فقط با ارسال تیکت"}, status=status.HTTP_400_BAD_REQUEST)
             user.profile.is_completed = True
+            user.profile.is_changeable = False
             user.save()
             user.profile.save()
             return Response({'message': 'اطلاعات پروفایل با موفقیت ذخیره شد'})

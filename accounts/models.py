@@ -400,6 +400,12 @@ class Driver(Base_Model):
     # Field for the expiration date of the health card
     # فیلد تاریخ انقضا کارت سلامت
     health_card_expiry_date = models.DateField(verbose_name="تاریخ انقضا کارت سلامت", blank=True, null=True)
+    type_of_cooperation = models.CharField(max_length=255, choices=(
+        ('موقت', 'موقت'),
+        ('دائم', 'دائم'),
+        ('هردو', 'هردو'),
+    ), blank=True, null=True, verbose_name='نوع همکاری')
+    origin = models.CharField(verbose_name='مبدا راننده', max_length=100, blank=True, null=True)
 
     class Meta:
         verbose_name = "راننده"

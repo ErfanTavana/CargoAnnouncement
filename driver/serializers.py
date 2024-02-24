@@ -8,6 +8,7 @@ class CarrierOwnerForDriverSerializers(Base_ModelSerializer):
     class Meta:
         model = CarrierOwner
         fields = (
+            'id',
             'owner_full_name',
         )
 

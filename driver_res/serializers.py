@@ -26,14 +26,15 @@ class InfoRoadFleetForDriverSerializers(Base_ModelSerializer):
             'semiHeavyVehichleOthers',
             'HeavyVehichle',
             'heavy_vehicle_others',
-            'plaque_one_num_check',
-            'plaque_puller_num_check',
-            'plaque_carriage_num_check',
-            'plaque_container_num_check',
+            # 'plaque_one_num_check',
+            # 'plaque_puller_num_check',
+            # 'plaque_carriage_num_check',
+            # 'plaque_container_num_check',
             'vehicle_card_bool',
             'vehicle_property_doc_bool',
             'vehicle_advocate_bool',
             'international_docs_bool',
+            'carrier_type',
         )
 
 

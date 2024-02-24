@@ -168,6 +168,7 @@ class CarOwReqDriver(Base_Model):
     COLLABORATION_TYPES = [
         ('همکاری دائم (تمام وقت)', 'همکاری دائم (تمام وقت)'),
         ('همکاری موقت (پاره وقت)', 'همکاری موقت (پاره وقت)'),
+
     ]
     collaboration_type = models.CharField(max_length=40, choices=COLLABORATION_TYPES, verbose_name='نوع همکاری')
 

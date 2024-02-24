@@ -48,19 +48,15 @@ admin.site.register(PasswordSetStatus, PasswordSetStatusAdmin)
 from django.contrib import admin
 from .models import Profile
 
-@admin.register(Profile)
+from django.contrib import admin
+from .models import Profile
+
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_completed', 'is_ok', 'user_type', 'wallet', 'unique_code')
-    list_filter = ('is_completed', 'is_ok', 'user_type')
-    search_fields = ('user__username', 'unique_code')
+    list_display = ['id', 'user', 'is_completed', 'is_ok', 'wallet', 'unique_code']
+    list_filter = ['is_completed', 'is_ok']
+    search_fields = ['user__username', 'unique_code']
 
-    fieldsets = (
-        ('General Information', {
-            'fields': ('user', 'is_completed', 'is_ok', 'user_type', 'wallet', 'unique_code')
-        }),
-    )
-
-    readonly_fields = ('unique_code',)
+admin.site.register(Profile, ProfileAdmin)
 # Admin Configuration for Driver Model
 # تنظیمات ادمین برای مدل Driver
 
@@ -103,7 +99,7 @@ from .models import GoodsOwner
 
 @admin.register(GoodsOwner)
 class GoodsOwnerAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'phone_number', 'national_code_passport_number', 'company_name', 'trade_license_expiry')
+    list_display = ('full_name', 'is_changeable','phone_number', 'national_code_passport_number', 'company_name', 'trade_license_expiry')
     # Displayed fields in the list view
     # فیلدهایی که در لیست نمایش داده می‌شوند
 
