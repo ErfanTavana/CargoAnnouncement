@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-x+a_w2&j4@+%a9j=c&%4hryln@584$w%^1(#m0i^x0$77g4jv6
 DEBUG = True
 
 # لیست میزبان‌های مجاز برای دسترسی به سایت - در حالت توسعه، می‌تواند خالی باشد
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # افزونه‌های نصب‌شده در پروژه
 INSTALLED_APPS = [

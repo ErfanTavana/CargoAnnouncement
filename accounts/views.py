@@ -331,6 +331,8 @@ def profile_view(request):
         elif user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver
+                if not driver.is_changeable:
+                    return Response({'message':"انجام ویراش فقط با ارسال تیکت"})
             except Driver.DoesNotExist:
                 # If the driver does not exist, create one
                 driver = Driver.objects.create(user=user)

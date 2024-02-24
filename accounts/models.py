@@ -171,7 +171,7 @@ class Profile(Base_Model):
     user_type = models.CharField(max_length=255, default='انتخاب نشده', verbose_name="نوع کاربر",
                                  choices=type_user_list)
 
-    wallet = models.FloatField(default=0,verbose_name='کیف پول',blank=True,null=True)
+    wallet = models.FloatField(default=0, verbose_name='کیف پول', blank=True, null=True)
 
     # Field for a unique code
     # فیلد کد اختصاصی
@@ -330,6 +330,9 @@ class CarrierOwner(Base_Model):
 # مدل راننده
 
 class Driver(Base_Model):
+    # Field: Flag indicating whether the instance is changeable
+    # فیلد: پرچم نشان‌دهنده تغییرپذیر بودن نمونه
+    is_changeable = models.BooleanField(default=False, verbose_name='قابل تغییر است؟')
     # Field for user association
     # فیلد ارتباطی با کاربر
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
@@ -387,6 +390,16 @@ class Driver(Base_Model):
     # Field for the province of the driver
     # فیلد استان
     province = models.CharField(max_length=100, verbose_name="استان", blank=True, null=True)
+
+    # ادرس
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name='ادرس')
+    # Field for uploading the health card image
+    # فیلد آپلود تصویر کارت سلامت
+    health_card_image = models.ImageField(upload_to='drivers/', blank=True, null=True, verbose_name="عکس کارت سلامت")
+
+    # Field for the expiration date of the health card
+    # فیلد تاریخ انقضا کارت سلامت
+    health_card_expiry_date = models.DateField(verbose_name="تاریخ انقضا کارت سلامت", blank=True, null=True)
 
     class Meta:
         verbose_name = "راننده"

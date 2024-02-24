@@ -115,10 +115,11 @@ class RoadFleet(Base_Model):
     CARRIER_CHOICES = (
         ('حمل و نقل داخلی', 'حمل و نقل داخلی'),
         ('حمل و نقل بین المللی', 'حمل و نقل بین المللی'),
-    )
-    carrier_type = models.CharField(max_length=30, default='حمل و نقل بین المللی', choices=CARRIER_CHOICES,
-                                    verbose_name="نوع حمل و نقل")
+        ('داخلی و بین المللی', 'داخلی و بین المللی'),
 
+    )
+    carrier_type = models.CharField(max_length=40, default='حمل و نقل بین المللی', choices=CARRIER_CHOICES,
+                                    verbose_name="نوع حمل و نقل")
     class Meta:
         verbose_name = "حمل کننده های مربوط به صاحب حمل کننده"
         verbose_name_plural = "حمل کننده های مربوط به صاحاب حمل کنندهها "
