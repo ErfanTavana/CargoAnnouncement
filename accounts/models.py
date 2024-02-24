@@ -406,6 +406,8 @@ class Driver(Base_Model):
         ('هردو', 'هردو'),
     ), blank=True, null=True, verbose_name='نوع همکاری')
     origin = models.CharField(verbose_name='مبدا راننده', max_length=100, blank=True, null=True)
+    cooperate_with_carrier_owners = models.BooleanField(default=False,
+                                                        verbose_name="آیا مایل به همکاری با صاحبان حمل کننده می‌باشید؟")
 
     class Meta:
         verbose_name = "راننده"

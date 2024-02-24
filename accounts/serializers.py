@@ -42,4 +42,5 @@ class DriverSerializer(serializers.ModelSerializer):
         fields = ('driver_full_name', 'national_card_or_passport', 'national_card_image',
                   'mobile_number', 'license_expiry_date', 'smart_card_image', 'domestic_license',
                   'international_license', 'city', 'province', 'international_license_expiry_date', 'address',
-                  'health_card_image', 'health_card_expiry_date', 'type_of_cooperation', 'origin',)
+                  'health_card_image', 'health_card_expiry_date', 'type_of_cooperation', 'origin',
+                  'cooperate_with_carrier_owners', 'is_changeable',)

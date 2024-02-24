@@ -277,7 +277,7 @@ def forget_password(request):
 
 # درخواست گت و پست برای مشاهده و ذخیره اطلاعات پروفایل کاربر
 # View for retrieving and updating user profile information via GET and POST requests
-@api_view(['GET', 'POST', ])
+@api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
     user = request.user
@@ -351,3 +351,22 @@ def profile_view(request):
             user.profile.save()
             return Response({'message': 'اطلاعات پروفایل با موفقیت ذخیره شد'})
         return Response({'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'PUT':
+        type_of_cooperation = data.get('type_of_cooperation')
+        origin = data.get('origin', None)
+        cooperate_with_carrier_owners = data.get('cooperate_with_carrier_owners', False)
+        if user.profile.user_type in ['راننده']:
+            try:
+                driver = user.driver
+                driver.type_of_cooperation = type_of_cooperation
+                driver.origin = origin
+                driver.cooperate_with_carrier_owners = cooperate_with_carrier_owners
+                driver.save()
+                return Response({'message': 'فرم اعلام همکاری اپدیت شد'}, status=status.HTTP_400_BAD_REQUEST)
+            except Driver.DoesNotExist:
+                return Response({'message': 'لطفا اول پروفایل خود را تکمیل کنید'}, status=status.HTTP_400_BAD_REQUEST)
+                # If the driver does not exist, create one
+                # driver = Driver.objects.create(user=user, is_changeable=True)
+            # serializer = DriverSerializer(user.driver, data=data)
+        else:
+            return Response({'message': 'فقط راننده به این متود دسترسی دارد'}, status=status.HTTP_400_BAD_REQUEST)
