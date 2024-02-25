@@ -301,6 +301,24 @@ class RequiredCarrier(Base_Model):
         verbose_name_plural = 'حمل‌کننده‌های مورد نیاز اعلام بار'
 
 
+class CargoFleetCoordination(Base_Model):
+    inner_cargo = models.ForeignKey(InnerCargo, on_delete=models.CASCADE, blank=True, null=True,
+                                    verbose_name='اعلام بار داخلی')
+    international_cargo = models.ForeignKey(InternationalCargo, on_delete=models.CASCADE, blank=True, null=True,
+                                            verbose_name='اعلام بار خارجی')
+    required_carrier = models.ForeignKey(RequiredCarrier, on_delete=models.CASCADE, blank=True, null=True,
+                                         verbose_name='حمل کننده ی مورد نیاز اعلام بار')
+    road_fleet = models.ForeignKey('carrier_owner.RoadFleet', on_delete=models.CASCADE, blank=True, null=True,
+                                   verbose_name='حمل کننده')
+    status_result = models.CharField(max_length=100,
+                                     choices=(
+                                         ('واگذار شده', 'وارگذار شده'), ('در انتظار واگذاری', 'در انتظار واگذاری')),
+                                     verbose_name='وضعیت نتیجه', default='در انتظار واگذاری')
+    class Meta:
+        verbose_name = 'ماشین  مورد نیاز و ارتباطات'
+        verbose_name_plural = 'ماشین های مورد نیاز و ارتباطات'
+
+
 class GoodsOwnerReqCarOw(Base_Model):
     user = models.ForeignKey(User, on_delete=models.Model, verbose_name='کاربر', related_name='userss', )
     goods_owner = models.ForeignKey(GoodsOwner, related_name='goods_owner_requests', on_delete=models.CASCADE,

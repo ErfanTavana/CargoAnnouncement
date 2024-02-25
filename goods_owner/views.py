@@ -8,9 +8,10 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
-    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer
+    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer , CargoFleetCoordinationSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
+from .models import CargoFleetCoordination
 
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
@@ -307,38 +308,29 @@ def required_carrier_view(request):
 
             # Calculate the date and time 24 hours ago
             twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
-            counter = 1
+            counter = int(data.get('counter', 1))
 
             if data_copy['cargo_type'] == 'اعلام بار داخلی':
-                required_carrier_inner = RequiredCarrier.objects.filter(
-                    deleted_at=None,
-                    user_id=user.id,
-                    inner_cargo_id=inner_cargo_id,
-                    created_at__gte=twenty_four_hours_ago
-                )
-                number = (required_carrier_inner.count() + counter)
-
+                cargo_fleet_coordination = CargoFleetCoordination.objects.filter(
+                    international_cargo_id=international_cargo.id,
+                    deleted_at = None, is_ok = True,
+                    created_at__gte = twenty_four_hours_ago)
+                number = (cargo_fleet_coordination.count() + counter)
                 # Comment (EN): Check the limit of requests within 24 hours
                 # Comment (FA): بررسی محدودیت تعداد درخواست‌ها در ۲۴ ساعت اخیر
-                if required_carrier_inner.count() > limit_requests_in_24_hours or required_carrier_inner.count() + counter > limit_requests_in_24_hours:
+                if cargo_fleet_coordination.count() > limit_requests_in_24_hours or cargo_fleet_coordination.count() + counter > limit_requests_in_24_hours:
                     return Response({
                         'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
-
             elif data_copy['cargo_type'] == 'اعلام بار خارجی':
-                required_carrier = RequiredCarrier.objects.filter(
-                    deleted_at=None,
-                    user_id=user.id,
-                    international_cargo_id=international_cargo_id,
-                    created_at__gte=twenty_four_hours_ago
-                )
-                number = (required_carrier.count() + counter)
-
+                cargo_fleet_coordination = CargoFleetCoordination.objects.filter(inner_cargo_id=inner_cargo.id,
+                                                                                 deleted_at=None, is_ok=True,
+                                                                                 created_at__gte=twenty_four_hours_ago)
+                number = (cargo_fleet_coordination.count() + counter)
                 # Comment (EN): Check the limit of requests within 24 hours
                 # Comment (FA): بررسی محدودیت تعداد درخواست‌ها در ۲۴ ساعت اخیر
-                if required_carrier.count() > limit_requests_in_24_hours or required_carrier.count() + counter > limit_requests_in_24_hours:
+                if cargo_fleet_coordination.count() > limit_requests_in_24_hours or cargo_fleet_coordination.count() + counter > limit_requests_in_24_hours:
                     return Response({
                         'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
-
             if counter > limit_requests_in_24_hours:
                 return Response({
                     'message': f'در طول 24 ساعت بیشتر از {limit_requests_in_24_hours} حمل کننده نمیتوانید درخواست کنید',
@@ -350,7 +342,7 @@ def required_carrier_view(request):
             # Comment (EN): Loop to save multiple RequiredCarrier instances
             # Comment (FA): حلقه برای ذخیره چندین نمونه از حمل‌کننده موردنیاز
             for i in range(1, counter):
-                serializer = RequiredCarrierSerializer(data=data_copy)
+                serializer = CargoFleetCoordinationSerializer(data=data_copy)
                 if serializer.is_valid():
                     serializer.save()
                     saved_data.append(serializer.data)

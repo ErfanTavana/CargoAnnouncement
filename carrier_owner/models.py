@@ -147,8 +147,6 @@ REQUEST_RESULT_CHOICES = [
     ('رد شده', 'رد شده'),
     ('لغو شده', 'لغو شده'),
 ]
-
-
 # مدل برای ثبت درخواست همکاری صاحب حمل کننده از راننده
 # نام مدل: CarOwReqDriver
 class CarOwReqDriver(Base_Model):

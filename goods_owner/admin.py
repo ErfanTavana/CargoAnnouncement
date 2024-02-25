@@ -44,12 +44,23 @@ class RequiredCarrierAdmin(admin.ModelAdmin):
 
 
 from django.contrib import admin
+from .models import CargoFleetCoordination
+
+
+class CargoFleetCoordinationAdmin(admin.ModelAdmin):
+    list_display = ['id', 'inner_cargo', 'international_cargo', 'required_carrier', 'road_fleet', 'status_result']
+    list_filter = ['status_result']
+    search_fields = ['inner_cargo__id', 'international_cargo__id', 'required_carrier__id', 'road_fleet__id']
+
+
+admin.site.register(CargoFleetCoordination, CargoFleetCoordinationAdmin)
+from django.contrib import admin
 from .models import GoodsOwnerReqCarOw
 
 
 class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
     list_display = (
-    'id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
+        'id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
     list_filter = ('request_result', 'cancellation_time')
     search_fields = ('user__username', 'goods_owner__name', 'carrier_owner__name')
     readonly_fields = ('id',)

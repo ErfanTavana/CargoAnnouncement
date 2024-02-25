@@ -5,6 +5,7 @@
 from django.contrib import admin
 from .models import VerificationCode, Profile
 
+
 @admin.register(VerificationCode)
 class UserOTPAdmin(admin.ModelAdmin):
     # Displayed columns in the admin list view
@@ -20,16 +21,20 @@ class UserOTPAdmin(admin.ModelAdmin):
     # Search fields to enable searching for specific records
     # فیلدهای جستجو برای امکان جستجو برای رکوردهای خاص
 
-    search_fields = ('user__username', 'user__email', 'otp')  # Search for records based on username, email, and otp fields
+    search_fields = (
+    'user__username', 'user__email', 'otp')  # Search for records based on username, email, and otp fields
 
     # Editable field directly in the list view
     # فیلد قابل ویرایش به طور مستقیم در نمایش لیست
 
     list_editable = ('is_valid',)  # Allow editing the validity status directly in the list view
+
+
 # Admin Configuration for PasswordSetStatus Model
 # تنظیمات ادمین برای مدل PasswordSetStatus
 
 from .models import PasswordSetStatus
+
 
 class PasswordSetStatusAdmin(admin.ModelAdmin):
     list_display = ('token', 'is_password_set')  # Displayed fields in the list view
@@ -41,6 +46,7 @@ class PasswordSetStatusAdmin(admin.ModelAdmin):
     search_fields = ('token__user__username',)  # Search based on the username of the user
     # جستجو بر اساس نام کاربری کاربر
 
+
 admin.site.register(PasswordSetStatus, PasswordSetStatusAdmin)
 # Admin Configuration for Profile Model
 # تنظیمات ادمین برای مدل Profile
@@ -51,10 +57,12 @@ from .models import Profile
 from django.contrib import admin
 from .models import Profile
 
+
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'is_completed', 'is_ok', 'wallet', 'unique_code']
+    list_display = ['id', 'user', 'user_type', 'is_completed', 'is_ok', 'wallet', 'unique_code']
     list_filter = ['is_completed', 'is_ok']
     search_fields = ['user__username', 'unique_code']
+
 
 admin.site.register(Profile, ProfileAdmin)
 # Admin Configuration for Driver Model
@@ -62,8 +70,11 @@ admin.site.register(Profile, ProfileAdmin)
 
 from .models import Driver
 
+
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('driver_full_name', 'national_card_or_passport', 'mobile_number', 'license_expiry_date', 'domestic_license', 'international_license')
+    list_display = (
+    'driver_full_name', 'national_card_or_passport', 'mobile_number', 'license_expiry_date', 'domestic_license',
+    'international_license')
     # Displayed fields in the list view
     # فیلدهایی که در لیست نمایش داده می‌شوند
 
@@ -75,11 +86,13 @@ class DriverAdmin(admin.ModelAdmin):
     # Filters available in the filter panel
     # فیلترهای موجود در پنل فیلتر
 
+
 admin.site.register(Driver, DriverAdmin)
 # Admin Configuration for CarrierOwner Model
 # تنظیمات ادمین برای مدل CarrierOwner
 
 from .models import CarrierOwner
+
 
 class CarrierAdmin(admin.ModelAdmin):
     list_display = ('owner_full_name', 'national_code_or_passport', 'owner_mobile_number')
@@ -90,6 +103,7 @@ class CarrierAdmin(admin.ModelAdmin):
     # Search based on the specified fields
     # جستجو بر اساس فیلدهای مشخص شده
 
+
 admin.site.register(CarrierOwner, CarrierAdmin)
 # Admin Configuration for GoodsOwner Model
 # تنظیمات ادمین برای مدل GoodsOwner
@@ -97,9 +111,11 @@ admin.site.register(CarrierOwner, CarrierAdmin)
 from django.contrib import admin
 from .models import GoodsOwner
 
+
 @admin.register(GoodsOwner)
 class GoodsOwnerAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'is_changeable','phone_number', 'national_code_passport_number', 'company_name', 'trade_license_expiry')
+    list_display = ('full_name', 'is_changeable', 'phone_number', 'national_code_passport_number', 'company_name',
+                    'trade_license_expiry')
     # Displayed fields in the list view
     # فیلدهایی که در لیست نمایش داده می‌شوند
 

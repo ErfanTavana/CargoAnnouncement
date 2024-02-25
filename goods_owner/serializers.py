@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from goods_owner.models import InnerCargo, GoodsOwnerReqCarOw, InternationalCargo, CommonCargo, Base_Model, \
-    RequiredCarrier, CargoDeclaration
+    RequiredCarrier, CargoDeclaration , CargoFleetCoordination
 from django.contrib.auth.models import User
 from accounts.serializers import GoodsOwnerSerializer
 from carrier_owner.models import RoadFleet, CarrierOwner
@@ -141,7 +141,16 @@ class RequiredCarrierSerializer(Base_ModelSerializer):
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
 
-
+class CargoFleetCoordinationSerializer(Base_ModelSerializer):
+    class Meta:
+        model = CargoFleetCoordination
+        fields = Base_ModelSerializer.Meta.fields + (
+            'inner_cargo',
+            'international_cargo',
+            'required_carrier',
+            'road_fleet',
+            'status_result',
+        )
 # نمایش اطلاعات صاحب  حمل کننده
 class CarrierOwnerForGoodsOwnerSerializer(Base_ModelSerializer):
     class Meta:
