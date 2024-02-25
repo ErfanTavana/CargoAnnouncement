@@ -8,7 +8,7 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
-    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer , CargoFleetCoordinationSerializer
+    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer, CargoFleetCoordinationSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
 from .models import CargoFleetCoordination
@@ -273,16 +273,17 @@ def required_carrier_view(request):
                 return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    # Comment (EN): Handle POST request to create a new RequiredCarrier
-    # Comment (FA): پردازش درخواست POST برای ایجاد حمل‌کننده موردنیاز جدید
     if request.method == "POST":
         try:
             inner_cargo_id = data.get("inner_cargo_id", None)
             international_cargo_id = data.get("international_cargo_id", None)
-            if international_cargo_id == None and inner_cargo_id == None:
+
+            if international_cargo_id is None and inner_cargo_id is None:
                 return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
             data_copy = request.data.copy()
+            inner_cargo = None
+            international_cargo = None
 
             if inner_cargo_id is not None:
                 try:
@@ -304,58 +305,29 @@ def required_carrier_view(request):
                 except InternationalCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 
-            required_carrier = None
+            # ایجاد یک نمونه از Serializer برای ذخیره اطلاعات
+            serializer = RequiredCarrierSerializer(data=data_copy)
+            if serializer.is_valid():
+                serializer.save()
+                serializer_id = serializer.data.get('id')
 
-            # Calculate the date and time 24 hours ago
-            twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
-            counter = int(data.get('counter', 1))
-
-            if data_copy['cargo_type'] == 'اعلام بار داخلی':
-                cargo_fleet_coordination = CargoFleetCoordination.objects.filter(
-                    international_cargo_id=international_cargo.id,
-                    deleted_at = None, is_ok = True,
-                    created_at__gte = twenty_four_hours_ago)
-                number = (cargo_fleet_coordination.count() + counter)
-                # Comment (EN): Check the limit of requests within 24 hours
-                # Comment (FA): بررسی محدودیت تعداد درخواست‌ها در ۲۴ ساعت اخیر
-                if cargo_fleet_coordination.count() > limit_requests_in_24_hours or cargo_fleet_coordination.count() + counter > limit_requests_in_24_hours:
-                    return Response({
-                        'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
-            elif data_copy['cargo_type'] == 'اعلام بار خارجی':
-                cargo_fleet_coordination = CargoFleetCoordination.objects.filter(inner_cargo_id=inner_cargo.id,
-                                                                                 deleted_at=None, is_ok=True,
-                                                                                 created_at__gte=twenty_four_hours_ago)
-                number = (cargo_fleet_coordination.count() + counter)
-                # Comment (EN): Check the limit of requests within 24 hours
-                # Comment (FA): بررسی محدودیت تعداد درخواست‌ها در ۲۴ ساعت اخیر
-                if cargo_fleet_coordination.count() > limit_requests_in_24_hours or cargo_fleet_coordination.count() + counter > limit_requests_in_24_hours:
-                    return Response({
-                        'message': f"صاحب بار محترم امکان درخواست   ناوگان  روزانه  حداکثر  {limit_requests_in_24_hours} عدد میباشد در صورت نیاز به ناوگان بیش از ۵۰ عدد پس از گذشت ۲۴ ساعت مجدد اقدام به درخواست فرمایید ( امکان انتخاب {number - limit_requests_in_24_hours}  ناوگان دیگر وجود دارد ) "})
-            if counter > limit_requests_in_24_hours:
-                return Response({
-                    'message': f'در طول 24 ساعت بیشتر از {limit_requests_in_24_hours} حمل کننده نمیتوانید درخواست کنید',
-                    'data': ''},
-                    status=status.HTTP_400_BAD_REQUEST)
-            counter = counter + 1
-            saved_data = []
-
-            # Comment (EN): Loop to save multiple RequiredCarrier instances
-            # Comment (FA): حلقه برای ذخیره چندین نمونه از حمل‌کننده موردنیاز
-            for i in range(1, counter):
-                serializer = CargoFleetCoordinationSerializer(data=data_copy)
-                if serializer.is_valid():
-                    serializer.save()
-                    saved_data.append(serializer.data)
-
-            # Comment (EN): Respond after the loop ends
-            # Comment (FA): پاسخ پس از پایان حلقه
-            return Response({'message': 'حمل کننده ی درخواستی اضافه شد', 'data': saved_data},
-                            status=status.HTTP_200_OK)
+                # ایجاد چندین رکورد CargoFleetCoordination با استفاده از serializer_id
+                counter = int(data.get('counter', 1))
+                for i in range(0, counter):
+                    CargoFleetCoordination.objects.create(international_cargo=international_cargo,
+                                                          inner_cargo=inner_cargo,
+                                                          required_carrier_id=serializer_id,
+                    status_result = 'در انتظار واگذاری')
+                return Response({'message': 'حمل کننده ی درخواستی اضافه شد'}, status=status.HTTP_200_OK)
+            else:
+                print(str(serializer.errors))
+                return Response({'message': serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print(e)
-            return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                print(e)
+                return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Comment (EN): Handle PUT request to update RequiredCarrier information
     # Comment (FA): پردازش درخواست PUT برای به‌روزرسانی اطلاعات حمل‌کننده موردنیاز
@@ -532,11 +504,8 @@ def goods_owner_req_car_ow(request):
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = user.goodsowner.id
-        # print(carrier_owner_id)
         data_copy['carrier_owner'] = road_fleet.carrier_owner.id
-        print(inner_cargo_id)
         data_copy['inner_cargo'] = inner_cargo_id
-        print(international_cargo_id)
         data_copy['international_cargo'] = international_cargo_id
         data_copy['road_fleet'] = road_fleet.id
         data_copy['request_result'] = 'در انتظار پاسخ'

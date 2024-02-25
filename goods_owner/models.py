@@ -87,20 +87,16 @@ class CommonCargo(Base_Model):
         ("روباری", "روباری"),
         ("نیاز به بارنامه ندارد", "نیاز به بارنامه ندارد"),
         ("بارنامه خودم میگیرم", "بارنامه خودم میگیرم"),
+        ('درخواست بارنامه', 'درخواست بارنامه'),
     ), blank=True, null=True)
-    storageBillNum = models.CharField(max_length=20, verbose_name="شماره قبض انبار", default="", blank=True, null=True)
-    storagePrice = models.TextField(max_length=9999, verbose_name="هزینه انبارداری", default="", blank=True, null=True)
-    loadigPrice = models.TextField(max_length=9999, verbose_name="هزینه بارگیری", default="", blank=True, null=True)
-    basculPrice = models.TextField(max_length=9999, verbose_name="هزینه باسکول", default="", blank=True, null=True)
     specialDesc = models.TextField(max_length=9999, verbose_name="توضیحات خاص", default="", blank=True, null=True)
-    sendersName = models.CharField(max_length=100, verbose_name="نام فرستنده", default="", blank=True, null=True)
-    sendersFamName = models.CharField(max_length=100, verbose_name="نام خانوادگی فرستنده", default="", blank=True,
-                                      null=True)
+    sendersName = models.CharField(max_length=100, verbose_name="نام و نام خانوادگی فرستنده", default="", blank=True,
+                                   null=True)
     senderMobileNum = models.CharField(max_length=12, verbose_name="شماره تلفن / موبایل فرستنده", default="",
                                        blank=True, null=True)
-    dischargeTimeDate = models.DateTimeField(max_length=200, verbose_name="تاریخ و ساعت تحویل بار در مقصد",
+    dischargeTimeDate = models.DateTimeField(max_length=200, verbose_name="حدود تاریخ و ساعت تحویل بار در مقصد",
                                              default=timezone.now, blank=True, null=True)
-    duratio_ndischargeTime = models.DurationField(max_length=200, verbose_name="مدت زمان تخلیه بار در مقصد",
+    duratio_ndischargeTime = models.DurationField(max_length=200, verbose_name=" مدت زمان تخلیه بار در مقصد",
                                                   default=timezone.timedelta(hours=0, minutes=0, seconds=0), blank=True,
                                                   null=True)
 
@@ -130,7 +126,7 @@ class CommonCargo(Base_Model):
         ("ازبکستان", "ازبکستان"),
         ("قرقیزستان", "قرقیزستان"),
         ("تاجیکستان", "تاجیکستان"),
-        ("7افغانستان", "افغانستان"),
+        ("افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
     ), blank=True, null=True)
     state = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
@@ -159,18 +155,45 @@ class CommonCargo(Base_Model):
         ('گمرگ', 'گمرگ'),
         ('بندر', 'بندر'),
         ('ایستگاه', 'ایستگاه'),
+        ('گمرک/ایستگاه', 'گمرک/ایستگاه'),
     ), verbose_name='محدوده مقصد', blank=True, null=True)
-    destination_custom_name = models.CharField(max_length=100, verbose_name="نام کمرگ مقصد", default="", blank=True,
+    destination_custom_name = models.CharField(max_length=100, verbose_name="نام  مقصد", default="", blank=True,
                                                null=True)
     is_bulk_cargo = models.BooleanField(default=False, verbose_name="آیا بار شما خرده بار است؟")
     bulk_cargo_tonnage = models.FloatField(verbose_name="تناژ خرده بار", default=0, blank=True, null=True)
     is_plannable = models.BooleanField(default=False, verbose_name="آیا بار شما قابلیت برنامه‌ریزی دارد؟")
-    weekly_days = models.CharField(max_length=50, verbose_name="روزهای هفته", blank=True, null=True)
-    is_perishable = models.BooleanField(default=False, verbose_name="آیا بار شما فسادپذیر است؟")
+    weekly_days = models.CharField(max_length=100, verbose_name="روزهای هفته", blank=True, null=True)
+    is_perishable = models.BooleanField(default=False, blank=True, null=True, verbose_name="آیا بار شما فسادپذیر است؟")
     refrigeration_temperature = models.FloatField(default=0, verbose_name="دمای سردخانه")
     is_hazardous = models.BooleanField(default=False, verbose_name="آیا بار شما خطرناک است؟")
     un_code = models.CharField(max_length=20, verbose_name="کد UN (کد کالای خطرناک)", blank=True, null=True)
     customs_hs_code = models.CharField(max_length=20, verbose_name="کد HS گمرکی", blank=True, null=True)
+
+    pallet_size = models.CharField(max_length=100, verbose_name="سایز پالت (مشخصات بسته بندی)", blank=True, null=True)
+    pallet_arrangement_type = models.CharField(max_length=50, verbose_name="نوع چیدمان پالت", choices=(
+        ("کف", "کف"),
+        ("طبقاتی", "طبقاتی"),
+    ), blank=True, null=True)
+    approximate_weight_per_packaging = models.FloatField(verbose_name="وزن حدودی هر یک بسته بندی", blank=True,
+                                                         null=True)
+    is_all_cargo_type = models.BooleanField(default=False, verbose_name="آیا تمام بار تیپ است؟")
+    approximate_weight_per_type = models.FloatField(verbose_name="وزن حدودی هر تیپ", blank=True, null=True)
+    specialized_lashing_required = models.BooleanField(default=False,
+                                                       verbose_name="آیا بار نیاز به مهار بندی تخصصی دارد؟")
+    specialized_lashing_type_upload = models.ImageField(upload_to='lashing_types/', blank=True, null=True,
+                                                        verbose_name="آپلود نوع مهار بندی تخصصی")
+    specialized_lashing_type_description = models.TextField(max_length=5000,
+                                                            verbose_name="توضیح نوع مهار بندی تخصصی", blank=True,
+                                                            null=True)
+    need_warehouse = models.BooleanField(default=False, verbose_name="آیا نیاز به انبار دارید؟")
+    warehouse_duration = models.DurationField(verbose_name="مدت زمان انبار داری", blank=True, null=True)
+    sender_additional_requests = models.TextField(max_length=5000, verbose_name="درخواست های تکمیلی فرستنده",
+                                                  blank=True, null=True)
+    cargo_procedure_type = models.CharField(max_length=20, verbose_name="نوع رویه بار", choices=(
+        ("صادراتی", "صادراتی"),
+        ("وارداتی", "وارداتی"),
+        ("ترانزیتی", "ترانزیتی"),
+    ), blank=True, null=True)
 
     class Meta:
         verbose_name = 'اعلام بار اطلاعات  مشترک'
@@ -203,7 +226,7 @@ class InternationalCargo(CommonCargo):
         ("ازبکستان", "ازبکستان"),
         ("قرقیزستان", "قرقیزستان"),
         ("تاجیکستان", "تاجیکستان"),
-        ("7افغانستان", "افغانستان"),
+        ("افغانستان", "افغانستان"),
         ("ارمنستان", "ارمنستان"),
     ), blank=True, null=True)
     senderState = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
@@ -248,35 +271,20 @@ class RequiredCarrier(Base_Model):
         ("چادری", "چادری"),
         ("روباز", "روباز"),
         ("یخچالی", "یخچالی"),
+        ("کمپرسی", "کمپرسی"),
+        ("مسقف", "مسقف"),
+        ("کفی", "کفی"),
+        ("بفل دار", "بقل دار"),
+
     ), blank=True, null=True)
     vehichle_type = models.CharField(max_length=100, verbose_name="نوع وسیله حمل کننده مورد نیاز", choices=(
-        ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
-        ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
-        ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
-    ), blank=True, null=True)
-
-    semi_heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین ", choices=(
-        ("کامیون", "کامیون"),
-        ("خاور", "خاور"),
-        ("هیوندا", "هیوندا"),
-        ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
-        ("کامیونت", "کامیونت"),
-    ), blank=True, null=True)
-    semi_heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="", blank=True,
-                                                  null=True)
-
-    heavy_vehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", choices=(
         ("تریلی", "تریلی"),
-        ("ترانزیت", "ترانزیت"),
-        ("ده تن", "ده تن"),
-        ("کفی", "کفی"),
-        ("ترانزیت یخچالی", "ترانزیت یخچالی"),
-        ("بیست تن", "بیست تن"),
-        ("چادری سه محور", "چادری سه محور"),
-        ("کمپرسی", "کمپرسی"),
-        ("تریلی تانکر فاو", "تریلی تانکر فاو"),
+        ("جفت", "جفت"),
+        ("تک", "تک"),
+        ("خاور", "خاور"),
+        ("وانت و نیسان", "وانت ونیسان"),
+        ("خاور", "خاور"),
     ), blank=True, null=True)
-    heavy_vehichle_others = models.CharField(max_length=100, verbose_name="سایر", default="", blank=True, null=True)
 
     special_widget_carrier = models.TextField(max_length=9999, verbose_name="ویژگی های خاص حمل کننده مورد نیاز",
                                               blank=True, null=True)
@@ -314,6 +322,7 @@ class CargoFleetCoordination(Base_Model):
                                      choices=(
                                          ('واگذار شده', 'وارگذار شده'), ('در انتظار واگذاری', 'در انتظار واگذاری')),
                                      verbose_name='وضعیت نتیجه', default='در انتظار واگذاری')
+
     class Meta:
         verbose_name = 'ماشین  مورد نیاز و ارتباطات'
         verbose_name_plural = 'ماشین های مورد نیاز و ارتباطات'
