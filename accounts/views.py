@@ -13,8 +13,8 @@ from accounts.permissions import IsLoggedInAndPasswordSet
 import ghasedakpack
 from django.contrib.auth.hashers import make_password
 from rest_framework.permissions import IsAuthenticated
-from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver
-from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer
+from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver, WagonOwner
+from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer, WagonOwnerSerializer
 
 
 # تابع ایجاد یک کد تایید برای شماره موبایل داده شده
@@ -282,8 +282,15 @@ def forget_password(request):
 def profile_view(request):
     user = request.user
     if request.method == 'GET':
+        if user.profile.user_type in ["صاحب واگن"]:
+            try:
+                wagonowner = user.wagonowner
+            except WagonOwner.DoesNotExist:
+                # If the owner does not exist, create one
+                wagonowner = WagonOwner.objects.create(user=user, is_changeable=True)
+            serializer = WagonOwnerSerializer(wagonowner)
         # GET request to retrieve user profile information
-        if user.profile.user_type in ["صاحب بار"]:
+        elif user.profile.user_type in ["صاحب بار"]:
             try:
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:
@@ -305,7 +312,7 @@ def profile_view(request):
                 driver = Driver.objects.create(user=user, is_changeable=True)
             serializer = DriverSerializer(user.driver)
         else:
-            return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': user.profile.user_type}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {"message": 'اطلاعات پروفایل', 'data': serializer.data, 'user_type': user.profile.user_type})
@@ -313,7 +320,14 @@ def profile_view(request):
     data = request.data
 
     if request.method == 'POST':
-        if user.profile.user_type in ["صاحب بار"]:
+        if user.profile.user_type in ["صاحب واگن"]:
+            try:
+                wagonowner = user.wagonowner
+            except WagonOwner.DoesNotExist:
+                # If the owner does not exist, create one
+                wagonowner = WagonOwner.objects.create(user=user, is_changeable=True)
+            serializer = WagonOwnerSerializer(user.wagonowner, data=data)
+        elif user.profile.user_type in ["صاحب بار"]:
             try:
                 goodsowner = user.goodsowner
             except GoodsOwner.DoesNotExist:

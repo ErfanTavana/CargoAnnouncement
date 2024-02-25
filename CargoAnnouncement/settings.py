@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'home',
     'CargoADMIN',
     'E_Wallet',
+    'wagon_owner.apps.WagonOwnerConfig'
 ]
 
 # میان‌افزارهای اجرایی برنامه

@@ -137,6 +137,7 @@ type_user_list = (
     ("صاحب بار", "صاحب بار"),
     ("صاحب حمل کننده", "صاحب حمل کننده"),
     ("راننده", 'راننده'),
+    ("صاحب واگن", 'صاحب واگن'),
     ("ادمین", 'ادمین'),
 )
 
@@ -147,6 +148,7 @@ type_user_code_mapping = {
     "صاحب بار": "CO",
     "صاحب حمل کننده": "CC",
     "راننده": "DR",
+    "صاحب واگن": "WO"
 }
 
 
@@ -194,7 +196,28 @@ class Profile(Base_Model):
         verbose_name_plural = 'پروفایل ها'
 
 
-# GoodsOwner Model
+# کلاس مالک واگن
+class WagonOwner(Base_Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, help_text='کاربر', verbose_name='کاربر')
+    company_name = models.CharField(max_length=200, verbose_name="نام شرکت", blank=True, null=True)
+    ceo_full_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی مدیر عامل", blank=True, null=True)
+    mobile_number = models.CharField(max_length=12, verbose_name="شماره موبایل", blank=True, null=True)
+    national_id = models.CharField(max_length=20, verbose_name="شناسه ملی", blank=True, null=True)
+    ownership_type = models.CharField(max_length=20, verbose_name="نوع مالکیت", choices=(
+        ("خصوصی", "خصوصی"),
+        ("دولتی", "دولتی"),
+    ), blank=True, null=True)
+    national_code_passport = models.CharField(max_length=20, verbose_name="کد ملی/شماره پاسپورت", blank=True, null=True)
+    national_id_passport_image = models.ImageField(upload_to='national_id_passport/', blank=True, null=True,
+                                                   verbose_name="عکس کارت ملی/پاسپورت")
+    country = models.CharField(max_length=20, verbose_name="کشور", blank=True, null=True)
+    state = models.CharField(max_length=20, verbose_name="استان", blank=True, null=True)
+    city = models.CharField(max_length=20, verbose_name="شهر", blank=True, null=True)
+    address = models.CharField(max_length=200, verbose_name="آدرس شرکت", blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'صاحب  واگن'
+        verbose_name_plural = "صاحبان واگن"
 # مدل صاحب بار
 
 class GoodsOwner(Base_Model):

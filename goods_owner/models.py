@@ -194,6 +194,8 @@ class CommonCargo(Base_Model):
         ("وارداتی", "وارداتی"),
         ("ترانزیتی", "ترانزیتی"),
     ), blank=True, null=True)
+    need_route_code = models.BooleanField(default=False, verbose_name="آیا نیاز به کد مسیر دارید؟")
+    route_code = models.CharField(max_length=20, verbose_name="کد مسیر", blank=True, null=True)
 
     class Meta:
         verbose_name = 'اعلام بار اطلاعات  مشترک'
@@ -437,3 +439,17 @@ class CargoDeclaration(Base_Model):
 
     def __str__(self):
         return f"بار شماره {self.id}"
+class RequiredWagons(Base_Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
+    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
+    relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
+    CARGO_TYPE_CHOICES = [
+        ('اعلام بار داخلی', 'اعلام بار داخلی'),
+        ('اعلام بار خارجی', 'اعلام بار خارجی'),
+        ('اعلام بار ریلی', 'اعلام بار ریلی'),
+    ]
+    cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
+    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                    verbose_name='اعلام بار داخلی', related_name='wagon_inner_cargo_carriers')
+    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
+                                            verbose_name='اعلام بار خارجی', related_name='wagon_international_cargo_carriers')

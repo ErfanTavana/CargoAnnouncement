@@ -1,7 +1,26 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Profile, GoodsOwner, Driver, CarrierOwner
+from .models import Profile, GoodsOwner, Driver, CarrierOwner, WagonOwner
 import random
+
+
+class WagonOwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WagonOwner
+        fields = (
+            'company_name',
+            'ceo_full_name',
+            'mobile_number',
+            'national_id',
+            'ownership_type',
+            'national_code_passport',
+            'national_id_passport_image',
+            'country',
+            'state',
+            'city',
+            'address',
+
+        )
 
 
 # Serializer Class: GoodsOwnerSerializer
@@ -29,7 +48,6 @@ class CarrierSerializer(serializers.ModelSerializer):
                   'address',
                   'nationality',
                   'legal_status',
-
                   ]
 
 

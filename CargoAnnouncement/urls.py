@@ -40,5 +40,5 @@ urlpatterns = [
                   path('', include("CargoADMIN.urls")),
 
                   path('', include("E_Wallet.urls")),
-
+                  path('', include("wagon_owner.urls")),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
