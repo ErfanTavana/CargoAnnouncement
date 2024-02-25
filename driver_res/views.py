@@ -78,8 +78,41 @@ def sent_driver_req(request):
             if not any(request_result == choice[0] for choice in REQUEST_RESULT_CHOICES):
                 return Response({'message': 'وضعیت درخواست ارسال شده معتبر نیست'}, status=status.HTTP_400_BAD_REQUEST)
             driver_req_carrier_owner = DriverReqCarrierOwner.objects.filter(driver=driver, deleted_at=None,
-                                                                            user_id=user.id , request_result=request_result)
+                                                                            user_id=user.id,
+                                                                            request_result=request_result)
             if driver_req_carrier_owner.count() <= 0:
                 return Response({'message': 'هیچ درخواستی ارسال نکرده اید'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = SentDriverReqSerializers(driver_req_carrier_owner, many=True)
             return Response({'message': 'ok', 'data': serializer.data})
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def delivered_driver_req_detail(request):
+    user = request.user
+    data = request.data
+    try:
+        # هشتگ: دریافت ��ا��ب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        driver = Driver.objects.get(user=user)
+    except Driver.DoesNotExist:
+        return Response({"message": "لطفا�� پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        driver = Driver.objects.get(user=user)
+    except Driver.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.user.profile.user_type != 'راننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == "GET":
+        delivered_driver_req_id = data.get('delivered_driver_req_id', None)
+        if delivered_driver_req_id is None:
+            return Response({'message': 'درخواستی با این ایدی برای شما وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            delivered_driver_req = CarOwReqDriver.objects.get(id=delivered_driver_req_id, is_ok=True, deleted_at=None,
+                                                              driver=driver)
+            serializer = DeliveredDriverReqSerializers(delivered_driver_req)
+            return Response({'message': 'ok', 'data': serializer.data})
+        except:
+            return Response({'message': 'درخواستی با این ایدی برای شما وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)

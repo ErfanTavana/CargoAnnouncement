@@ -5,4 +5,6 @@ from . import views
 urlpatterns = [
     path('delivered_driver_req/', views.delivered_driver_req, name='delivered_driver_req_name'),
     path('sent_driver_req/', views.sent_driver_req, name='sent_driver_req_name'),
+    path('delivered_driver_req_detail/', views.delivered_driver_req_detail, name='delivered_driver_req_detail_name'),
+
 ]

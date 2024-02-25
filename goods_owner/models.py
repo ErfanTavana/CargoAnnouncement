@@ -162,6 +162,15 @@ class CommonCargo(Base_Model):
     ), verbose_name='محدوده مقصد', blank=True, null=True)
     destination_custom_name = models.CharField(max_length=100, verbose_name="نام کمرگ مقصد", default="", blank=True,
                                                null=True)
+    is_bulk_cargo = models.BooleanField(default=False, verbose_name="آیا بار شما خرده بار است؟")
+    bulk_cargo_tonnage = models.FloatField(verbose_name="تناژ خرده بار", default=0, blank=True, null=True)
+    is_plannable = models.BooleanField(default=False, verbose_name="آیا بار شما قابلیت برنامه‌ریزی دارد؟")
+    weekly_days = models.CharField(max_length=50, verbose_name="روزهای هفته", blank=True, null=True)
+    is_perishable = models.BooleanField(default=False, verbose_name="آیا بار شما فسادپذیر است؟")
+    refrigeration_temperature = models.FloatField(default=0, verbose_name="دمای سردخانه")
+    is_hazardous = models.BooleanField(default=False, verbose_name="آیا بار شما خطرناک است؟")
+    un_code = models.CharField(max_length=20, verbose_name="کد UN (کد کالای خطرناک)", blank=True, null=True)
+    customs_hs_code = models.CharField(max_length=20, verbose_name="کد HS گمرکی", blank=True, null=True)
 
     class Meta:
         verbose_name = 'اعلام بار اطلاعات  مشترک'

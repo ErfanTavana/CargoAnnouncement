@@ -67,7 +67,18 @@ class CommonCargoSerializer(Base_ModelSerializer):
             'destination_city',
             'destination_street',
             'destination_address',
+            'destination_area',
             'destination_custom_name',
+            'is_bulk_cargo',
+            'bulk_cargo_tonnage',
+            'is_plannable',
+            'weekly_days',
+            'is_perishable',
+            'refrigeration_temperature',
+            'is_hazardous',
+            'un_code',
+            'customs_hs_code',
+
         )
         # تنظیم فیلدهای فقط خواندنی در سریالایزر
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
