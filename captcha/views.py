@@ -1,6 +1,12 @@
 from django.shortcuts import render
 from .models import Captcha
 from django.utils import timezone
+from rest_framework.response import Response
+import threading
+from rest_framework import status, permissions
+from rest_framework.decorators import api_view, permission_classes
+from .serializers import CaptchaSerializer
+
 
 def captcha_validation(id_captcha, captcha_answer):
     """
@@ -16,7 +22,7 @@ def captcha_validation(id_captcha, captcha_answer):
 
     try:
         # Attempt to retrieve a valid captcha with the specified ID
-        captcha = Captcha.objects.get(id=id_captcha, is_valid=True, expires_at__gt=timezone.now())
+        captcha = Captcha.objects.get(deleted_at=None, id=id_captcha, is_valid=True, expires_at__gt=timezone.now())
         # If correct, mark the captcha as invalid and save changes
         captcha.is_valid = False
         captcha.save()
@@ -49,33 +55,27 @@ def cleanup_expired_captchas():
         captcha.delete()
 
 
-# Function to create a new captcha
-def create_captcha(request):
+# Function to generate and save a new captcha
+def generate_new_captcha():
     """
-    Create and return a random Captcha.
-
-    Filters used for data retrieval:
-        Expired captchas are filtered, and associated images are deleted.
-
-    Threading Purpose:
-        To retrieve and delete expired captchas and their associated images concurrently using a separate thread.
+    Generate a new random Captcha and save it.
 
     Captcha Generation Steps:
-        1. Start a thread to clean up expired captchas.
-        2. Generate a random Captcha.
-        3. Save the Captcha.
-        4. Return the Captcha details as a JSON response.
+        1. Generate a random Captcha.
+        2. Save the Captcha.
 
     Returns:
-        JsonResponse: Response containing a success message, Captcha details, and guide.
+        Captcha: The generated Captcha instance.
     """
-    # Retrieve and delete expired captchas and their associated images using a separate thread
-    cleanup_thread = threading.Thread(target=cleanup_expired_captchas)
-    cleanup_thread.start()
-
-    # Generate a random Captcha, save it, and return its details as a JSON response
+    cleanup_expired_captchas()
     captcha = Captcha.generate_random_captcha()
     captcha.save()
-    return JsonResponse(
-        {'message': "Captcha created", 'data': {'image': captcha.image.url, 'id': captcha.id}, 'guide': captcha.guide},
-        status=200)
+    return captcha
+
+
+# Function to create a new captcha
+@api_view(['GET'])
+def create_captcha(request):
+    captcha = generate_new_captcha()
+    serializer = CaptchaSerializer(captcha, many=False)
+    return Response({'message': 'کپچا با موفقیت ایجاد شد', 'data': serializer.data}, status=status.HTTP_200_OK)

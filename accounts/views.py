@@ -15,7 +15,8 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.permissions import IsAuthenticated
 from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver, WagonOwner
 from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer, WagonOwnerSerializer
-
+from captcha.views import captcha_validation, create_captcha , generate_new_captcha
+from captcha.serializers import CaptchaSerializer
 
 # تابع ایجاد یک کد تایید برای شماره موبایل داده شده
 # Function to create a verification code for a given phone number
@@ -31,10 +32,10 @@ def Create_a_verification_code(phone_number):
             # ایجاد یک کد تایید جدید در صورت منقضی شدن آخرین کد
             verification_code = VerificationCode.objects.create(user_id=user.id)
             # ارسال کد تایید از طریق سرویس پیامکی
-            # sms = ghasedakpack.Ghasedak("1feaff6b0fb9ab14d5f1b9acc9fcad839699b313816e3001e128cef8e6271850")
-            # print(sms.verification({'receptor': f'{phone_number}', 'type': '1', 'template': 'mziSmsOtp',
-            #                         'param1': f'{phone_number}', 'param2': f'{phone_number}',
-            #                         'param3': f'{verification_code.random_code}'}))
+            sms = ghasedakpack.Ghasedak("1feaff6b0fb9ab14d5f1b9acc9fcad839699b313816e3001e128cef8e6271850")
+            print(sms.verification({'receptor': f'{phone_number}', 'type': '1', 'template': 'mziSmsOtp',
+                                    'param1': f'{phone_number}', 'param2': f'{phone_number}',
+                                    'param3': f'{verification_code.random_code}'}))
             return {'status': True, 'verify_code': verification_code.random_code}
         else:
             # اگر آخرین کد هنوز اعتبار دارد، یک کد تایید خالی برگردان
@@ -52,12 +53,22 @@ def Create_a_verification_code(phone_number):
 
 # نمایش برای ارسال کد تایید از طریق درخواست POST
 # View to send a verification code via POST request
-@api_view(["POST"])
+@api_view(["POST", 'GET'])
 def Send_verification_code(request):
+    if request.method == "GET":
+        captcha = generate_new_captcha()
+        serializer = CaptchaSerializer(captcha, many=False)
+        return Response({'message': 'کپچا با موفقیت ایجاد شد', 'data': serializer.data}, status=status.HTTP_200_OK)
+
     if request.method == "POST":
         data = request.data
         phone_number = data.get('phone_number')
         type_user = data.get('type_user')
+        captcha_id = data.get('captcha_id')
+        captcha_answer = data.get('captcha_answer')
+        captcha = captcha_validation(captcha_id, captcha_answer)
+        if not captcha:
+            return Response({'message': 'کپچا وارد شده اشتباه میباشد '}, status=status.HTTP_400_BAD_REQUEST)
         if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
             return Response({'message': 'شماره تلفن اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
 

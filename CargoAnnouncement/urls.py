@@ -41,4 +41,7 @@ urlpatterns = [
 
                   path('', include("E_Wallet.urls")),
                   path('', include("wagon_owner.urls")),
+
+                  path('', include("captcha.urls")),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

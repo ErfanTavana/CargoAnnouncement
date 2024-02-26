@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 from django.utils import timezone
 from django.conf import settings
 from io import BytesIO
+from goods_owner.models import Base_Model
 
 
 # Function to generate a complex ID consisting of letters and numbers
@@ -27,7 +28,7 @@ def generate_complex_id():
 
 
 # Captcha Class
-class Captcha(models.Model):
+class Captcha(Base_Model):
     # Unique identifier for the captcha
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=18, unique=True)
     # Image field to store the captcha image
@@ -99,7 +100,7 @@ class Captcha(models.Model):
         self.image.save(image_name, content=BytesIO(image_buffer.getvalue()), save=False)
         self.text = captcha_text
         self.answer = captcha_text
-        self.guide = 'Enter the text from the image'
+        self.guide = 'متن تصویر را وارد کنید'
         super().save()
 
     def generate_math_captcha(self):
@@ -162,7 +163,7 @@ class Captcha(models.Model):
         self.image.save(image_name, content=BytesIO(image_buffer.getvalue()), save=False)
         self.text = text
         self.answer = str(result)
-        self.guide = 'Enter image math operations'
+        self.guide = 'پاسخ  عملیات ریاضی تصویر را وارد کنید'
         super().save()
 
     @classmethod
