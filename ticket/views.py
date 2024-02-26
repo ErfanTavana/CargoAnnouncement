@@ -13,7 +13,6 @@ def ticket_view(request):
     else:
         data = request.data
     if request.method == 'POST':
-        data = request.data
         serializer = TicketsSerializers(data=data)
         if serializer.is_valid():
             serializer.save()

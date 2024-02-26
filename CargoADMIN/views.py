@@ -18,7 +18,8 @@ from .serializers import DriverSerializer
 @permission_classes([IsLoggedInAndIsAdmin])
 def drivers_list(request):
     user = request.user
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data

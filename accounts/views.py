@@ -56,7 +56,8 @@ def Create_a_verification_code(phone_number):
 # View to send a verification code via POST request
 @api_view(["POST", 'GET'])
 def Send_verification_code(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -66,7 +67,6 @@ def Send_verification_code(request):
         return Response({'message': 'کپچا با موفقیت ایجاد شد', 'data': serializer.data}, status=status.HTTP_200_OK)
 
     if request.method == "POST":
-        data = request.data
         phone_number = data.get('phone_number')
         type_user = data.get('type_user')
         captcha_id = data.get('captcha_id')
@@ -105,12 +105,12 @@ def Send_verification_code(request):
 # View to handle user registration via POST request
 @api_view(["POST"])
 def register(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
     if request.method == "POST":
-        data = request.data
         phone_number = data.get('phone_number')
         otp = data.get('otp')
         # first_name = data.get('first_name')
@@ -165,12 +165,12 @@ def register(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def set_password(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
     if request.method == "POST":
-        data = request.data
         new_password = data.get('new_password')
 
         try:
@@ -196,12 +196,12 @@ def set_password(request):
 # View to handle user login via POST request
 @api_view(["POST"])
 def login(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
     if request.method == "POST":
-        data = request.data
         phone_number = data.get('phone_number')
         password = data.get('password')
         if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
@@ -235,7 +235,8 @@ def login(request):
 @api_view(["POST"])
 @permission_classes([IsLoggedInAndPasswordSet])
 def logout(request):
-    if request.method =='GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -254,12 +255,12 @@ def logout(request):
 # View to handle the "forget password" process via POST request
 @api_view(["POST"])
 def forget_password(request):
-    if request.method =='GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
     if request.method == "POST":
-        data = request.data
         phone_number = data.get('phone_number')
         otp = data.get('otp')
         # first_name = data.get('first_name')
@@ -316,7 +317,8 @@ def forget_password(request):
 @api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
-    if request.method =='GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -357,7 +359,6 @@ def profile_view(request):
         return Response(
             {"message": 'اطلاعات پروفایل', 'data': serializer.data, 'user_type': user.profile.user_type})
 
-    data = request.data
 
     if request.method == 'POST':
         if user.profile.user_type in ["صاحب واگن"]:

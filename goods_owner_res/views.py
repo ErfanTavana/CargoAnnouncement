@@ -14,7 +14,11 @@ from goods_owner.models import GoodsOwnerReqCarOw
 @permission_classes([IsLoggedInAndPasswordSet])
 def delivered_goods_owner_req(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -47,7 +51,10 @@ def delivered_goods_owner_req(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def sent_goods_owner_req(request):
     user = request.user
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -85,7 +92,11 @@ def sent_goods_owner_req(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def accept_request_carrier_owner(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user

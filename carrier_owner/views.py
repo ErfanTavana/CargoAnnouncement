@@ -21,7 +21,11 @@ from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, Interna
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def road_fleet_view(request):
-    data = request.data
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
@@ -155,7 +159,8 @@ def driver_list_carrier_owner(request):
 @api_view(['GET'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_road_fleet(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -192,7 +197,8 @@ def list_road_fleet(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def car_ow_req_driver_view(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -448,7 +454,11 @@ def required_carrier_list_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def car_ow_req_goods_owner(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user

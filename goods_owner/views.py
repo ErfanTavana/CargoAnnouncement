@@ -19,7 +19,8 @@ from .models import CargoFleetCoordination
 @permission_classes([IsLoggedInAndPasswordSet])
 def inner_cargo_view(request):
     # استخراج داده و کاربر از درخواست
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -135,7 +136,8 @@ def inner_cargo_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def international_cargo_view(request):
     # استخراج داده و کاربر از درخواست
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -407,7 +409,8 @@ def required_carrier_view(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def road_fleet_list_goods_owner(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -428,7 +431,8 @@ def road_fleet_list_goods_owner(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_cargo(request):
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -452,7 +456,11 @@ def list_cargo(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def goods_owner_req_car_ow(request):
-    data = request.data
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
 
     # Check user's permission

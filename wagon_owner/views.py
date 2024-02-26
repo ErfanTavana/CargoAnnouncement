@@ -16,8 +16,6 @@ def wagon_details_view(request):
         data = request.GET
     else:
         data = request.data
-    # استخراج داده و کاربر از درخواست
-    data = request.data
     user = request.user
     # بررسی نوع کاربر برای کنترل دسترسی
     if request.user.profile.user_type != "صاحب واگن":

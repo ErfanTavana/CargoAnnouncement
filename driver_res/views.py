@@ -15,7 +15,11 @@ from goods_owner.models import REQUEST_RESULT_CHOICES
 @permission_classes([IsLoggedInAndPasswordSet])
 def delivered_driver_req(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -52,7 +56,11 @@ def delivered_driver_req(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def sent_driver_req(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -91,7 +99,8 @@ def sent_driver_req(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def delivered_driver_req_detail(request):
     user = request.user
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
     else:
         data = request.data

@@ -18,7 +18,11 @@ from django.utils import timezone
 @permission_classes([IsLoggedInAndPasswordSet])
 def carrier_owner_list_for_driver(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
 
     # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
     # Hash: Check user type for access verification
@@ -40,7 +44,11 @@ def carrier_owner_list_for_driver(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def driver_req_carrier_owner(request):
     user = request.user
-    data = request.data
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user

@@ -11,10 +11,12 @@ from .serializers import BlogSerializers
 @api_view(['GET'])
 def blog_view(request):
     user = request.user
-    data = request.data
-    print(data)
-    if request.method == 'GET':
+    is_body = bool(request.body)
+    if request.method =='GET' and not is_body:
         data = request.GET
+    else:
+        data = request.data
+    if request.method == 'GET' :
         blog_id = data.get('blog_id', None)
         if blog_id is None:
             # تعداد مطالب در هر صفحه
