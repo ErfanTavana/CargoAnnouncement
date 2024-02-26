@@ -155,8 +155,11 @@ def driver_list_carrier_owner(request):
 @api_view(['GET'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_road_fleet(request):
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
-    data = request.data
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -189,7 +192,10 @@ def list_road_fleet(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def car_ow_req_driver_view(request):
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی

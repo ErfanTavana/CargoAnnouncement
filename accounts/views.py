@@ -15,8 +15,9 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.permissions import IsAuthenticated
 from .models import GoodsOwner, PasswordSetStatus, CarrierOwner, Driver, WagonOwner
 from accounts.serializers import GoodsOwnerSerializer, CarrierSerializer, DriverSerializer, WagonOwnerSerializer
-from captcha.views import captcha_validation, create_captcha , generate_new_captcha
+from captcha.views import captcha_validation, create_captcha, generate_new_captcha
 from captcha.serializers import CaptchaSerializer
+
 
 # تابع ایجاد یک کد تایید برای شماره موبایل داده شده
 # Function to create a verification code for a given phone number
@@ -55,6 +56,10 @@ def Create_a_verification_code(phone_number):
 # View to send a verification code via POST request
 @api_view(["POST", 'GET'])
 def Send_verification_code(request):
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "GET":
         captcha = generate_new_captcha()
         serializer = CaptchaSerializer(captcha, many=False)
@@ -100,6 +105,10 @@ def Send_verification_code(request):
 # View to handle user registration via POST request
 @api_view(["POST"])
 def register(request):
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "POST":
         data = request.data
         phone_number = data.get('phone_number')
@@ -156,6 +165,10 @@ def register(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def set_password(request):
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "POST":
         data = request.data
         new_password = data.get('new_password')
@@ -183,6 +196,10 @@ def set_password(request):
 # View to handle user login via POST request
 @api_view(["POST"])
 def login(request):
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "POST":
         data = request.data
         phone_number = data.get('phone_number')
@@ -218,6 +235,10 @@ def login(request):
 @api_view(["POST"])
 @permission_classes([IsLoggedInAndPasswordSet])
 def logout(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "POST":
         user = request.user
 
@@ -233,6 +254,10 @@ def logout(request):
 # View to handle the "forget password" process via POST request
 @api_view(["POST"])
 def forget_password(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == "POST":
         data = request.data
         phone_number = data.get('phone_number')
@@ -291,6 +316,10 @@ def forget_password(request):
 @api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
     if request.method == 'GET':
         if user.profile.user_type in ["صاحب واگن"]:

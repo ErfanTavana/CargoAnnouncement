@@ -69,14 +69,4 @@ class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
 admin.site.register(GoodsOwnerReqCarOw, GoodsOwnerReqCarOwAdmin)
 # your_app/admin.py
 
-from django.contrib import admin
-from .models import CargoDeclaration
 
-
-class CargoDeclarationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'cargo_type', 'relinquished', 'is_partial_cargo')
-    list_filter = ('cargo_type', 'relinquished', 'is_partial_cargo')
-    search_fields = ('id', 'user__username', 'route_code')
-
-
-admin.site.register(CargoDeclaration, CargoDeclarationAdmin)

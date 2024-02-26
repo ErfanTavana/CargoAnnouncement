@@ -53,6 +53,8 @@ def driver_req_carrier_owner(request):
     if request.user.profile.user_type != 'راننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
     if request.method == 'GET':
+        data = request.GET
+
         driver_req_carrier_owner_id = data.get('driver_req_carrier_owner_id')
         if driver_req_carrier_owner_id is None or len(str(driver_req_carrier_owner_id)) < 6:
             driver_req_carrier_owner = DriverReqCarrierOwner.objects.filter(is_ok=True, deleted_at=None,

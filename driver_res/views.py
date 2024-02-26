@@ -65,7 +65,8 @@ def sent_driver_req(request):
     if request.user.profile.user_type != 'راننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
     if request.method == "GET":
-        request_result = data.get('request_result')
+        data = request.GET
+        request_result = data.get('request_result',None)
         if request_result is None:
             driver_req_carrier_owner = DriverReqCarrierOwner.objects.filter(driver=driver, deleted_at=None,
                                                                             user_id=user.id)
@@ -90,13 +91,16 @@ def sent_driver_req(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def delivered_driver_req_detail(request):
     user = request.user
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     try:
         # هشتگ: دریافت ��ا��ب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
         driver = Driver.objects.get(user=user)
     except Driver.DoesNotExist:
-        return Response({"message": "لطفا�� پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "لطفا پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
         # Hash: Retrieve CarrierOwner related to the current user
@@ -106,6 +110,7 @@ def delivered_driver_req_detail(request):
     if request.user.profile.user_type != 'راننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
     if request.method == "GET":
+        data = request.GET
         delivered_driver_req_id = data.get('delivered_driver_req_id', None)
         if delivered_driver_req_id is None:
             return Response({'message': 'درخواستی با این ایدی برای شما وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)

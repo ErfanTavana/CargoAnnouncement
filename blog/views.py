@@ -14,6 +14,7 @@ def blog_view(request):
     data = request.data
     print(data)
     if request.method == 'GET':
+        data = request.GET
         blog_id = data.get('blog_id', None)
         if blog_id is None:
             # تعداد مطالب در هر صفحه

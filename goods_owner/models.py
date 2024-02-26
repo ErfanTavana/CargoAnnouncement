@@ -366,79 +366,147 @@ VEHICLE_TYPE_CHOICES = (
     ('covered', 'مسقف'),
     ('flatbed', 'مسطح یا پلتفرم'),
 )
-from django.db import models
-from django.contrib.auth.models import User
 
 
-class CargoDeclaration(Base_Model):
+class RailCargo(Base_Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
-    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
-    relinquished = models.BooleanField(default=False, verbose_name="واگذار شده؟")
-    CARGO_TYPE_CHOICES = [
-        ('اعلام بار داخلی', 'اعلام بار داخلی'),
-        ('اعلام بار خارجی', 'اعلام بار خارجی'),
-        ('اعلام بار ریلی', 'اعلام بار ریلی'),
-    ]
-    cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
-    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                    verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers_%(class)s_set')
-    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                            verbose_name='اعلام بار خارجی',
-                                            related_name='international_cargo_carriers_%(class)s_set')
-    # وزن خالص محموله
-    net_weight = models.FloatField(verbose_name="وزن خالص محموله")
+    goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
+                                    verbose_name='پروفایل صاحب بار')
 
-    # ویژگی های خاص مورد نیاز (تکست فیلد)
-    special_features = models.TextField(verbose_name="ویژگی‌های خاص مورد نیاز")
+    # فیلدهای مشترک
+    length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
+    width = models.IntegerField(verbose_name="عرض", default=0, blank=True, null=True)
+    height = models.IntegerField(verbose_name="ارتفاع", default=0, blank=True, null=True)
+    cargoType = models.CharField(max_length=800, verbose_name="عنوان محموله", default="", blank=True, null=True)
+    pkgType = models.CharField(max_length=20, verbose_name='نوع بسته بندی', choices=(
+        ("کیسه", "کیسه"),
+        ("فله", "فله"),
+        ("پالت", "پالت"),
+        ("جامبو", "جامبو"),
+        ("کانتینر", "کانتینر"),
+        ("بندی", "بندی"),
+        ("رول", "رول"),
+        ("سواری", "سواری"),
+        ("جعبه", "جعبه"),
+        ("کالای خاص", "کالای خاص"),
+        ("غیر پالیتیزه", "غیر پالیتیزه"),
+        ("غیرمعمول", "غیرمعمول"),
+    ), blank=True, null=True)
+    description = models.TextField(max_length=5000, verbose_name="توضیحات", default="", blank=True, null=True)
 
-    # قیمت تقریبی حمل (فلوت فیلد)
-    approximate_transport_price = models.FloatField(verbose_name="قیمت تقریبی حمل")
+    specialDesc = models.TextField(max_length=9999, verbose_name="توضیحات خاص", default="", blank=True, null=True)
+    sendersName = models.CharField(max_length=100, verbose_name="نام و نام خانوادگی فرستنده", default="", blank=True,
+                                   null=True)
+    senderMobileNum = models.CharField(max_length=12, verbose_name="شماره تلفن / موبایل فرستنده", default="",
+                                       blank=True, null=True)
+    dischargeTimeDate = models.DateTimeField(max_length=200, verbose_name="حدود تاریخ و ساعت تحویل بار در مقصد",
+                                             default=timezone.now, blank=True, null=True)
+    duratio_ndischargeTime = models.DurationField(max_length=200, verbose_name=" مدت زمان تخلیه بار در مقصد",
+                                                  default=timezone.timedelta(hours=0, minutes=0, seconds=0), blank=True,
+                                                  null=True)
 
-    # ارزش بار هر واگن (فلوت فیلد)
-    value_per_wagon = models.FloatField(verbose_name="ارزش بار هر واگن")
+    # فیلدهای ارائه‌دهنده تحویل
+    delivery_provider_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل دهنده", blank=True,
+                                              null=True)
+    delivery_provider_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل دهنده", blank=True,
+                                                     null=True)
+    delivery_provider_full_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی تحویل دهنده",
+                                                   blank=True, null=True)
+    delivery_provider_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل دهنده",
+                                                blank=True, null=True)
 
-    # انواع واگن
-    WAGON_TYPES = [
-        ('short_edge', 'لبه کوتاه'),
-        ('tall_edge', 'لبه بلند'),
-        ('covered', 'مسقف'),
-        ('flatbed', 'مسطح یا پلتفرم'),
-        ('open_roof', 'روباز'),
-        ('bulk', 'فله بر'),
-        ('refrigerated', 'یخچال دار'),
-        ('tanker', 'مخزن دار'),
-        ('sand_carrier', 'شن کش'),
-        ('car_transport', 'حمل خودرو'),
-    ]
-    wagon_type = models.CharField(max_length=20, choices=WAGON_TYPES, verbose_name="نوع واگن")
+    # فیلدهای گیرنده بار
+    cargo_receiver_name = models.CharField(max_length=100, verbose_name="نام شرکت تحویل گیرنده", blank=True, null=True)
+    cargo_receiver_national_id = models.CharField(max_length=20, verbose_name="شناسه ملی تحویل گیرنده", blank=True,
+                                                  null=True)
+    cargo_receiver_full_name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی تحویل گیرنده",
+                                                blank=True, null=True)
+    cargo_receiver_mobile = models.CharField(max_length=12, verbose_name="شماره موبایل مدیر عامل تحویل گیرنده",
+                                             blank=True, null=True)
+    # Comment: فیلدهای منحصر به فرد برای InnerCargo
+    country = models.CharField(max_length=20, verbose_name="کشور مبدا", choices=(
+        ("ایران", "ایران"),
+        ("روسیه", "روسیه"),
+        ("قزاقستان", "قزاقستان"),
+        ("ازبکستان", "ازبکستان"),
+        ("قرقیزستان", "قرقیزستان"),
+        ("تاجیکستان", "تاجیکستان"),
+        ("افغانستان", "افغانستان"),
+        ("ارمنستان", "ارمنستان"),
+    ), blank=True, null=True)
+    state = models.CharField(max_length=20, verbose_name="استان مبدا", blank=True, null=True)
+    city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مبدا", blank=True, null=True)
+    street = models.CharField(max_length=50, verbose_name="خیابان مبدا", blank=True, null=True)
+    address = models.CharField(max_length=100, verbose_name="آدرس دقیق مبدا", blank=True, null=True)
+    customName = models.CharField(max_length=100, verbose_name="نام کمرگ مبدا", default="", blank=True, null=True)
 
-    # کد مسیر
-    route_code = models.CharField(max_length=50, verbose_name="کد مسیر")
+    cargo_receiver_surname = models.CharField(max_length=100, verbose_name="نام خانوادگی تحویل گیرنده", blank=True,
+                                              null=True)
+    destination_country = models.CharField(max_length=20, verbose_name="کشور مقصد", blank=True, null=True, choices=(
+        ("ایران", "ایران"),
+        ("روسیه", "روسیه"),
+        ("قزاقستان", "قزاقستان"),
+        ("ازبکستان", "ازبکستان"),
+        ("قرقیزستان", "قرقیزستان"),
+        ("تاجیکستان", "تاجیکستان"),
+        ("افغانستان", "افغانستان"),
+        ("ارمنستان", "ارمنستان"),
+    ))
+    destination_state = models.CharField(max_length=20, verbose_name="استان مقصد", blank=True, null=True)
+    destination_city = models.CharField(max_length=20, verbose_name="شهر / منطقه / محدوده مقصد", blank=True, null=True)
+    destination_street = models.CharField(max_length=50, verbose_name="خیابان مقصد", blank=True, null=True)
+    destination_address = models.CharField(max_length=100, verbose_name="آدرس دقیق مقصد", blank=True, null=True)
+    destination_area = models.CharField(max_length=100, choices=(
+        ('گمرگ', 'گمرگ'),
+        ('بندر', 'بندر'),
+        ('ایستگاه', 'ایستگاه'),
+        ('گمرک/ایستگاه', 'گمرک/ایستگاه'),
+    ), verbose_name='محدوده مقصد', blank=True, null=True)
+    destination_custom_name = models.CharField(max_length=100, verbose_name="نام  مقصد", default="", blank=True,
+                                               null=True)
+    is_bulk_cargo = models.BooleanField(default=False, verbose_name="آیا بار شما خرده بار است؟")
+    bulk_cargo_tonnage = models.FloatField(verbose_name="تناژ خرده بار", default=0, blank=True, null=True)
+    is_plannable = models.BooleanField(default=False, verbose_name="آیا بار شما قابلیت برنامه‌ریزی دارد؟")
+    weekly_days = models.CharField(max_length=100, verbose_name="روزهای هفته", blank=True, null=True)
+    is_perishable = models.BooleanField(default=False, blank=True, null=True, verbose_name="آیا بار شما فسادپذیر است؟")
+    refrigeration_temperature = models.FloatField(default=0, verbose_name="دمای سردخانه")
+    is_hazardous = models.BooleanField(default=False, verbose_name="آیا بار شما خطرناک است؟")
+    un_code = models.CharField(max_length=20, verbose_name="کد UN (کد کالای خطرناک)", blank=True, null=True)
+    customs_hs_code = models.CharField(max_length=20, verbose_name="کد HS گمرکی", blank=True, null=True)
 
-    # کد ایستگاه
-    station_code = models.CharField(max_length=50, verbose_name="کد ایستگاه")
-
-    # آیا بار شما قابلیت برنامه‌ریزی دارد؟ (بولین)
-    is_plannable = models.BooleanField(default=False, verbose_name="آیا بار قابل برنامه‌ریزی است؟")
-
-    # تناژ در هر نوبت
-    tonnage_per_shift = models.FloatField(verbose_name="تناژ در هر نوبت")
-
-    # آیا بار شما خرده بار است؟ (بولین)
-    is_partial_cargo = models.BooleanField(default=False, verbose_name="آیا بار خرده بار است؟")
-
-    # تناژ
-    tonnage = models.FloatField(blank=True, null=True, verbose_name="تناژ")
-
-    # نوع بار (کرفیلد)
-    cargo_type_char_field = models.CharField(blank=True, null=True, max_length=255, verbose_name="نوع بار")
+    pallet_size = models.CharField(max_length=100, verbose_name="سایز پالت (مشخصات بسته بندی)", blank=True, null=True)
+    pallet_arrangement_type = models.CharField(max_length=50, verbose_name="نوع چیدمان پالت", choices=(
+        ("کف", "کف"),
+        ("طبقاتی", "طبقاتی"),
+    ), blank=True, null=True)
+    approximate_weight_per_packaging = models.FloatField(verbose_name="وزن حدودی هر یک بسته بندی", blank=True,
+                                                         null=True)
+    is_all_cargo_type = models.BooleanField(default=False, verbose_name="آیا تمام بار تیپ است؟")
+    approximate_weight_per_type = models.FloatField(verbose_name="وزن حدودی هر تیپ", blank=True, null=True)
+    specialized_lashing_required = models.BooleanField(default=False,
+                                                       verbose_name="آیا بار نیاز به مهار بندی تخصصی دارد؟")
+    specialized_lashing_type_upload = models.ImageField(upload_to='lashing_types/', blank=True, null=True,
+                                                        verbose_name="آپلود نوع مهار بندی تخصصی")
+    specialized_lashing_type_description = models.TextField(max_length=5000,
+                                                            verbose_name="توضیح نوع مهار بندی تخصصی", blank=True,
+                                                            null=True)
+    need_warehouse = models.BooleanField(default=False, verbose_name="آیا نیاز به انبار دارید؟")
+    warehouse_duration = models.DurationField(verbose_name="مدت زمان انبار داری", blank=True, null=True)
+    sender_additional_requests = models.TextField(max_length=5000, verbose_name="درخواست های تکمیلی فرستنده",
+                                                  blank=True, null=True)
+    cargo_procedure_type = models.CharField(max_length=20, verbose_name="نوع رویه بار", choices=(
+        ("صادراتی", "صادراتی"),
+        ("وارداتی", "وارداتی"),
+        ("ترانزیتی", "ترانزیتی"),
+    ), blank=True, null=True)
+    need_route_code = models.BooleanField(default=False, verbose_name="آیا نیاز به کد مسیر دارید؟")
+    route_code = models.CharField(max_length=20, verbose_name="کد مسیر", blank=True, null=True)
 
     class Meta:
-        verbose_name = 'واگن  مورد نیاز اعلام بار'
-        verbose_name_plural = 'واگن های مورد نیاز اعلام بار'
+        verbose_name = 'اعلام بار ریلی'
+        verbose_name_plural = 'اعلام بار های ریلی'
 
-    def __str__(self):
-        return f"بار شماره {self.id}"
+
 class RequiredWagons(Base_Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
     goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, blank=True, null=True)
@@ -452,4 +520,23 @@ class RequiredWagons(Base_Model):
     inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='اعلام بار داخلی', related_name='wagon_inner_cargo_carriers')
     international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                            verbose_name='اعلام بار خارجی', related_name='wagon_international_cargo_carriers')
+                                            verbose_name='اعلام بار خارجی',
+                                            related_name='wagon_international_cargo_carriers')
+    wagon_type = models.CharField(max_length=20, blank=True, null=True, verbose_name='نوع واگن',
+                                  choices=(
+                                      ("مسقف", "مسقف"),
+                                      ("فله بر", "فله بر"),
+                                      ("مسطح", "مسطح"),
+                                      ("یخچال دار", "یخچال دار"),
+                                      ("مخزن دار", "مخزن دار"),
+                                      ("لبه بلند", "لبه بلند"),
+                                      ("لبه کوتاه", "لبه کوتاه"),
+                                      ("حمل خودرو", "حمل خودرو"),))
+    capacity = models.CharField(max_length=20, blank=True, null=True, verbose_name="ظرفیت حمل", default="",
+                                choices=(
+                                    ("واگن 24", "واگن 24"),
+                                    ("واگن 26", "واگن 26"),
+                                    ("واگن 28", "واگن 28"),
+                                    ("واگن 29", "واگن 29"),
+                                    ("سایر", "سایر"),))
+    net_weight = models.FloatField(verbose_name="وزن خالص محموله")

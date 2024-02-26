@@ -8,6 +8,10 @@ from .serializers import TicketsSerializers
 
 @api_view(['GET', 'POST'])
 def ticket_view(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     if request.method == 'POST':
         data = request.data
         serializer = TicketsSerializers(data=data)

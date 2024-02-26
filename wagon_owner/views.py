@@ -12,6 +12,10 @@ from .serializers import WagonDetailsSerializer
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def wagon_details_view(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     # استخراج داده و کاربر از درخواست
     data = request.data
     user = request.user

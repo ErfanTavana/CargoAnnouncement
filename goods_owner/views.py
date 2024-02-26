@@ -19,7 +19,10 @@ from .models import CargoFleetCoordination
 @permission_classes([IsLoggedInAndPasswordSet])
 def inner_cargo_view(request):
     # استخراج داده و کاربر از درخواست
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
 
     # بررسی نوع کاربر برای کنترل دسترسی
@@ -132,7 +135,10 @@ def inner_cargo_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def international_cargo_view(request):
     # استخراج داده و کاربر از درخواست
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
 
     # بررسی نوع کاربر برای کنترل دسترسی
@@ -237,9 +243,12 @@ def international_cargo_view(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_carrier_view(request):
+    if request.method =='GET':
+        data = request.GET
+    else:
+        data = request.data
     # Extract data and user from the request
     limit_requests_in_24_hours = 50  # Limit for the number of requests within 24 hours
-    data = request.data
     user = request.user
 
     # Check user's permission
@@ -398,7 +407,10 @@ def required_carrier_view(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def road_fleet_list_goods_owner(request):
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
     if request.user.profile.user_type != 'صاحب بار':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
@@ -416,7 +428,10 @@ def road_fleet_list_goods_owner(request):
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_cargo(request):
-    data = request.data
+    if request.method == 'GET':
+        data = request.GET
+    else:
+        data = request.data
     user = request.user
     # Check user's permission
     if request.user.profile.user_type != 'صاحب بار':
