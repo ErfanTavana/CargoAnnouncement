@@ -5,4 +5,5 @@ from . import views
 urlpatterns = [
 
     path('create_captcha/', views.create_captcha, name='create_captcha_name'),
+
 ]

@@ -10,4 +10,6 @@ urlpatterns = [
     path('goods_owner_req_car_ow/', views.goods_owner_req_car_ow, name='goods_owner_req_car_ow_name'),
     path('list_cargo/', views.list_cargo, name='list_cargolist_cargo_name'),
     path('wagon_cargo_view/', views.wagon_cargo_view, name='wagon_cargo_view_name'),
+    path('required_wagon_view/', views.required_wagon_view, name='required_wagon_view_name'),
+
 ]

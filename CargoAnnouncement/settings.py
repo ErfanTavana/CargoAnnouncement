@@ -8,6 +8,7 @@ from django.urls import path
 # مسیر پایه پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # کلید مخفی برای موارد حساس (مثل SECRET_KEY) - در محیط توسعه این مورد مهم نیست
 SECRET_KEY = 'django-insecure-x+a_w2&j4@+%a9j=c&%4hryln@584$w%^1(#m0i^x0$77g4jv6'
 

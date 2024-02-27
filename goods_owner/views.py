@@ -9,7 +9,7 @@ from rest_framework import permissions
 from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
     RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer, RailCargoSerializer, \
-    CargoFleetCoordinationSerializer
+    CargoFleetCoordinationSerializer, RequiredWagonsSerializer, CargoWagonCoordinationSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
 from .models import CargoFleetCoordination, RailCargo
@@ -332,6 +332,80 @@ def wagon_cargo_view(request):
         except:
             return Response({'message': ' شناسه بار ریلی  اشتباه است.'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def required_wagon_view(request):
+    user = request.user
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
+
+    # Check user's permission
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Comment (EN): Retrieve GoodsOwner related to the current user
+        # Comment (FA): بازیابی صاحب بار مرتبط با کاربر فعلی
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        required_wagons_id = data.get('required_wagons_id', None)
+        if required_wagons_id == None:
+            required_wagons_id = RequiredWagons.objects.filter(user_id=user.id, goods_owner=goods_owner,
+                                                               deleted_at=None,
+                                                               is_ok=True)
+            if required_wagons_id.exists():
+                serializer = RequiredWagonsSerializer(required_wagons_id, many=True)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                required_wagons_id = RequiredWagons.objects.get(id=required_wagons_id, user_id=user.id,
+                                                                goods_owner=goods_owner,
+                                                                deleted_at=None, is_ok=True)
+                serializer = RequiredWagonsSerializer(required_wagons_id, many=False)
+                return Response({"message": 'OK', 'data': serializer.data})
+            except:
+                return Response({'message': 'هیچ ایتمی با این شناسه وجود ندارد', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'POST':
+        data_list = request.data
+        for data in data_list:
+
+            rail_cargo_id = data.get('rail_cargo_id')
+            try:
+                rail_cargo = RailCargo.objects.get(id=rail_cargo_id, user=user, goods_owner=goods_owner,
+                                                   deleted_at=None, is_ok=True)
+                data['user'] = user.id
+
+                data['goods_owner'] = goods_owner.id
+
+                data['rail_cargo'] = rail_cargo.id
+            except Exception as p:
+                print(p)
+                return Response({'message': 'شناسه بار ریلی اشتباه است', "data": ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+            serializer = RequiredWagonsSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                serializer_id = serializer.data.get('id')
+                counter = int(data.get('counter', 1))
+                for i in range(0, counter):
+                    cargo_wagon_coordination = CargoWagonCoordination.objects.create(rail_cargo=rail_cargo,
+                                                                                     required_wagons_id=serializer_id)
+                    cargo_wagon_coordination.save()
+            else:
+                return Response({'message': 'مقادیر ارسالی را بررسی کنید', 'data': serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'واگن های مورد نیاز ثبت شد'})
+    if request.method == 'PUT':
+        pass
 
 
 # Define the API view for handling RequiredCarrier operations

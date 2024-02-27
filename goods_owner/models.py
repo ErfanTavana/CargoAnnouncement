@@ -15,6 +15,7 @@ from django.utils import timezone
 # from cachetools import TTLCache
 from datetime import datetime, timedelta
 from carrier_owner.models import CarrierOwner
+from accounts.models import WagonOwner
 
 # CHOICES برای نتایج ممکن برای درخواست همکاری
 REQUEST_RESULT_CHOICES = [
@@ -516,11 +517,8 @@ class RequiredWagons(Base_Model):
         ('اعلام بار ریلی', 'اعلام بار ریلی'),
     ]
     cargo_type = models.CharField(max_length=20, choices=CARGO_TYPE_CHOICES, verbose_name='نوع بار')
-    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                    verbose_name='اعلام بار داخلی', related_name='wagon_inner_cargo_carriers')
-    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                            verbose_name='اعلام بار خارجی',
-                                            related_name='wagon_international_cargo_carriers')
+    rail_cargo = models.ForeignKey(RailCargo, on_delete=models.CASCADE, null=True, blank=True,
+                                   verbose_name='اعلام بار ریلی', related_name='rail_cargo_related_name')
     wagon_type = models.CharField(max_length=20, blank=True, null=True, verbose_name='نوع واگن',
                                   choices=(
                                       ("مسقف", "مسقف"),
@@ -538,4 +536,26 @@ class RequiredWagons(Base_Model):
                                     ("واگن 28", "واگن 28"),
                                     ("واگن 29", "واگن 29"),
                                     ("سایر", "سایر"),))
-    net_weight = models.FloatField(verbose_name="وزن خالص محموله")
+    net_weight = models.FloatField(verbose_name="وزن خالص محموله", blank=True, null=True)
+    counter = models.IntegerField(verbose_name="تعداد واگن", default=0)
+
+    class Meta:
+        verbose_name = 'واگن مورد نیاز'
+        verbose_name_plural = 'واگن های مورد نیاز'
+
+
+class CargoWagonCoordination(Base_Model):
+    rail_cargo = models.ForeignKey(RailCargo, on_delete=models.CASCADE, null=True, blank=True,
+                                   verbose_name='اعلام بار ریلی')
+    required_wagons = models.ForeignKey(RequiredWagons, on_delete=models.CASCADE, blank=True, null=True,
+                                        verbose_name='واگن مورد نیاز')
+    wagon_owner = models.ForeignKey(WagonOwner, on_delete=models.CASCADE, blank=True, null=True,
+                                    verbose_name='صاحب واگن')
+    status_result = models.CharField(max_length=100,
+                                     choices=(
+                                         ('واگذار شده', 'وارگذار شده'), ('در انتظار واگذاری', 'در انتظار واگذاری')),
+                                     verbose_name='وضعیت نتیجه', default='در انتظار واگذاری')
+
+    class Meta:
+        verbose_name = 'واگن  مورد نیاز و ارتباطات'
+        verbose_name_plural = 'واگن  های مورد نیاز و ارتباطات'

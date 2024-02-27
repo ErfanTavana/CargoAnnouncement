@@ -6,6 +6,7 @@ import threading
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from .serializers import CaptchaSerializer
+from django_hosts.resolvers import reverse
 
 
 def captcha_validation(id_captcha, captcha_answer):
@@ -71,8 +72,6 @@ def generate_new_captcha():
     captcha = Captcha.generate_random_captcha()
     captcha.save()
     return captcha
-
-
 # Function to create a new captcha
 @api_view(['GET'])
 def create_captcha(request):
