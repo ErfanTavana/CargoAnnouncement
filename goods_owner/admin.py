@@ -69,4 +69,14 @@ class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
 admin.site.register(GoodsOwnerReqCarOw, GoodsOwnerReqCarOwAdmin)
 # your_app/admin.py
 
+from django.contrib import admin
+from .models import RailCargo
 
+class RailCargoAdmin(admin.ModelAdmin):
+    list_display = ('user', 'goods_owner', 'length', 'width', 'height', 'cargoType', 'pkgType', 'description')
+    search_fields = ['user__username', 'goods_owner__user__username', 'cargoType', 'pkgType']
+    list_filter = ('cargoType', 'pkgType', 'is_bulk_cargo', 'is_plannable', 'is_perishable', 'is_hazardous')
+    ordering = ('-created_at',)  # Replace 'created_at' with the actual field you want to use for sorting
+
+# Register the RailCargo model with the custom admin class
+admin.site.register(RailCargo, RailCargoAdmin)

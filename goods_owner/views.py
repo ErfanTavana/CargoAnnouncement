@@ -8,10 +8,11 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
-    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer, CargoFleetCoordinationSerializer
+    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer, RailCargoSerializer, \
+    CargoFleetCoordinationSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
-from .models import CargoFleetCoordination
+from .models import CargoFleetCoordination, RailCargo
 
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
@@ -20,7 +21,7 @@ from .models import CargoFleetCoordination
 def inner_cargo_view(request):
     # استخراج داده و کاربر از درخواست
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -137,7 +138,7 @@ def inner_cargo_view(request):
 def international_cargo_view(request):
     # استخراج داده و کاربر از درخواست
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -241,18 +242,109 @@ def international_cargo_view(request):
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
 
-# Define the API view for handling RequiredCarrier operations
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
-def required_carrier_view(request):
-    if request.method =='GET':
+def wagon_cargo_view(request):
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
     # Extract data and user from the request
-    limit_requests_in_24_hours = 50  # Limit for the number of requests within 24 hours
     user = request.user
 
+    # Check user's permission
+    if request.user.profile.user_type != 'صاحب بار':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Comment (EN): Retrieve GoodsOwner related to the current user
+        # Comment (FA): بازیابی صاحب بار مرتبط با کاربر فعلی
+        goods_owner = GoodsOwner.objects.get(user=user)
+    except GoodsOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        rail_cargo_id = data.get('rail_cargo_id', None)
+        if rail_cargo_id == None:
+            rail_cargo = RailCargo.objects.filter(user_id=user.id, goods_owner_id=goods_owner.id, deleted_at=None,
+                                                  is_ok=True)
+            if rail_cargo.exists():
+                serializer = RailCargoSerializer(rail_cargo, many=True)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                rail_cargo = RailCargo.objects.get(id=rail_cargo_id, deleted_at=None, user_id=user.id,
+                                                   goods_owner=goods_owner, is_ok=True)
+                serializer = RailCargoSerializer(rail_cargo, many=False)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            except RequiredCarrier.DoesNotExist:
+                return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'POST':
+        data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['goods_owner'] = goods_owner.id
+        serializer = RailCargoSerializer(data=data_copy)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'اعلام بار ریلی  موفقیت ذخیره شد', 'data': serializer.data},
+                            status=status.HTTP_200_OK)
+        return Response({'message': 'مقادیر ارسالی را بررسی کنید', 'data': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'PUT':
+        rail_cargo_id = data.get('rail_cargo_id', None)
+        if rail_cargo_id == None:
+            return Response({'message': 'لطفاً شناسه بار ریلی  را مشخص کنید.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            rail_cargo = RailCargo.objects.get(id=rail_cargo_id, goods_owner_id=goods_owner.id, user_id=user.id,
+                                               deleted_at=None, is_ok=True)
+            if rail_cargo.is_changeable != True:
+                return Response({'message': 'این ایتم دیگر قابل اپدیت نیست  '}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': ' شناسه بار ریلی  اشتباه است.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        data_copy = request.data.copy()
+        data_copy['user'] = user.id
+        data_copy['goods_owner'] = goods_owner.id
+        serializer = RailCargoSerializer(instance=rail_cargo, data=data_copy)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'اعلام بار ریلی  موفقیت اپدیت شد', 'data': serializer.data},
+                            status=status.HTTP_200_OK)
+        return Response({'message': 'مقادیر ارسالی را بررسی کنید', 'data': serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        rail_cargo_id = data.get('rail_cargo_id', None)
+        if rail_cargo_id == None:
+            return Response({'message': 'لطفاً شناسه بار ریلی  را مشخص کنید.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            rail_cargo = RailCargo.objects.get(id=rail_cargo_id, goods_owner_id=goods_owner.id, user_id=user.id,
+                                               deleted_at=None, is_ok=True)
+            if rail_cargo.is_deletable == True:
+                rail_cargo.soft_delete(user)
+                return Response({'message': 'اعلام بار ریلی با موفقیت حذف شد'})
+            else:
+                return Response({'message': 'این ایتم دیگر قابل حذف نیست'}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'message': ' شناسه بار ریلی  اشتباه است.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+# Define the API view for handling RequiredCarrier operations
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def required_carrier_view(request):
+    user = request.user
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
+    limit_requests_in_24_hours = 50
     # Check user's permission
     if request.user.profile.user_type != 'صاحب بار':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
@@ -291,6 +383,9 @@ def required_carrier_view(request):
 
             if international_cargo_id is None and inner_cargo_id is None:
                 return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+            counter = int(data.get('counter', 1))
+            if counter > limit_requests_in_24_hours:
+                return Response({'message': f'در طول 24 ساعت بیشتر از 50 حمل کننده نمیتوانید درخواست کنید '})
 
             data_copy = request.data.copy()
             inner_cargo = None
@@ -315,20 +410,17 @@ def required_carrier_view(request):
                     data_copy['user'] = user.id
                 except InternationalCargo.DoesNotExist:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
-
             # ایجاد یک نمونه از Serializer برای ذخیره اطلاعات
             serializer = RequiredCarrierSerializer(data=data_copy)
             if serializer.is_valid():
                 serializer.save()
                 serializer_id = serializer.data.get('id')
-
                 # ایجاد چندین رکورد CargoFleetCoordination با استفاده از serializer_id
-                counter = int(data.get('counter', 1))
                 for i in range(0, counter):
                     CargoFleetCoordination.objects.create(international_cargo=international_cargo,
                                                           inner_cargo=inner_cargo,
                                                           required_carrier_id=serializer_id,
-                    status_result = 'در انتظار واگذاری')
+                                                          status_result='در انتظار واگذاری')
                 return Response({'message': 'حمل کننده ی درخواستی اضافه شد'}, status=status.HTTP_200_OK)
             else:
                 print(str(serializer.errors))
@@ -336,9 +428,9 @@ def required_carrier_view(request):
                                 status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-                print(e)
-                return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(e)
+            return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Comment (EN): Handle PUT request to update RequiredCarrier information
     # Comment (FA): پردازش درخواست PUT برای به‌روزرسانی اطلاعات حمل‌کننده موردنیاز
@@ -410,7 +502,7 @@ def required_carrier_view(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def road_fleet_list_goods_owner(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -432,7 +524,7 @@ def road_fleet_list_goods_owner(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def list_cargo(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -457,7 +549,7 @@ def list_cargo(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def goods_owner_req_car_ow(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data

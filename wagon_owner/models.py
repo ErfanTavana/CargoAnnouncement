@@ -44,7 +44,6 @@ class WagonDetails(Base_Model):
 
     wagon_counts = models.PositiveIntegerField(verbose_name="تعداد واگن", blank=True, null=True, default=0)
     wagon_nums = models.CharField(max_length=20, verbose_name="شماره واگن", blank=True, null=True, default="")
-
     class Meta:
         verbose_name = "جزئیات واگن"
         verbose_name_plural = "جزئیات واگن ها"

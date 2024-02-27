@@ -373,7 +373,6 @@ class RailCargo(Base_Model):
     goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='پروفایل صاحب بار')
 
-    # فیلدهای مشترک
     length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
     width = models.IntegerField(verbose_name="عرض", default=0, blank=True, null=True)
     height = models.IntegerField(verbose_name="ارتفاع", default=0, blank=True, null=True)
