@@ -357,8 +357,9 @@ def required_carrier_view(request):
 
     # Comment (EN): Handle GET request to retrieve RequiredCarrier information
     # Comment (FA): پردازش درخواست GET برای دریافت اطلاعات حمل‌کننده موردنیاز
-    required_carrier_id = data.get("required_carrier_id", None)
+
     if request.method == "GET":
+        required_carrier_id = data.get("required_carrier_id", None)
         if required_carrier_id == None:
             required_carrier = RequiredCarrier.objects.filter(deleted_at=None, user_id=user.id, is_ok=True)
             if required_carrier.exists():
@@ -376,62 +377,71 @@ def required_carrier_view(request):
                 return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method == "POST":
+    elif request.method == "POST":
         try:
-            inner_cargo_id = data.get("inner_cargo_id", None)
-            international_cargo_id = data.get("international_cargo_id", None)
+            data_list = request.data  # داده‌ها به صورت لیست درخواست شده‌اند
 
-            if international_cargo_id is None and inner_cargo_id is None:
-                return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
-            counter = int(data.get('counter', 1))
-            if counter > limit_requests_in_24_hours:
-                return Response({'message': f'در طول 24 ساعت بیشتر از 50 حمل کننده نمیتوانید درخواست کنید '})
-
-            data_copy = request.data.copy()
-            inner_cargo = None
-            international_cargo = None
-
-            if inner_cargo_id is not None:
-                try:
-                    inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
-                    data_copy['inner_cargo'] = inner_cargo.id
-                    data_copy['goods_owner'] = user.goodsowner.id
-                    data_copy['cargo_type'] = 'اعلام بار داخلی'
-                    data_copy['user'] = user.id
-                except InnerCargo.DoesNotExist:
+            for data in data_list:
+                inner_cargo_id = data.get("inner_cargo_id", None)
+                print(inner_cargo_id)
+                international_cargo_id = data.get("international_cargo_id", None)
+                print(international_cargo_id)
+                if international_cargo_id is None and inner_cargo_id is None:
                     return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+                counter = int(data.get('counter', 1))
+                if counter > limit_requests_in_24_hours:
+                    return Response({'message': f'در طول 24 ساعت بیشتر از 50 حمل کننده نمی‌توانید درخواست کنید '})
 
-            elif international_cargo_id is not None:
-                try:
-                    international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
-                                                                         deleted_at=None)
-                    data_copy['international_cargo'] = international_cargo.id
-                    data_copy['cargo_type'] = 'اعلام بار خارجی'
-                    data_copy['user'] = user.id
-                except InternationalCargo.DoesNotExist:
-                    return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
-            # ایجاد یک نمونه از Serializer برای ذخیره اطلاعات
-            serializer = RequiredCarrierSerializer(data=data_copy)
-            if serializer.is_valid():
-                serializer.save()
-                serializer_id = serializer.data.get('id')
-                # ایجاد چندین رکورد CargoFleetCoordination با استفاده از serializer_id
-                for i in range(0, counter):
-                    CargoFleetCoordination.objects.create(international_cargo=international_cargo,
-                                                          inner_cargo=inner_cargo,
-                                                          required_carrier_id=serializer_id,
-                                                          status_result='در انتظار واگذاری')
-                return Response({'message': 'حمل کننده ی درخواستی اضافه شد'}, status=status.HTTP_200_OK)
-            else:
-                print(str(serializer.errors))
-                return Response({'message': serializer.errors},
-                                status=status.HTTP_400_BAD_REQUEST)
+                data_copy = data.copy()
+                inner_cargo = None
+                international_cargo = None
+
+                if inner_cargo_id is not None:
+                    try:
+                        inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
+                        data_copy['inner_cargo'] = inner_cargo.id
+                        data_copy['goods_owner'] = user.goodsowner.id
+                        data_copy['cargo_type'] = 'اعلام بار داخلی'
+                        data_copy['user'] = user.id
+                    except InnerCargo.DoesNotExist:
+                        return Response({'message': 'ایدی بار ارسال شده اشتباه است'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+
+                elif international_cargo_id is not None:
+                    try:
+                        international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
+                                                                             deleted_at=None)
+                        data_copy['international_cargo'] = international_cargo.id
+                        data_copy['cargo_type'] = 'اعلام بار خارجی'
+                        data_copy['user'] = user.id
+                    except InternationalCargo.DoesNotExist:
+                        return Response({'message': 'ایدی بار ارسال شده اشتباه است'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+
+                # ایجاد یک نمونه از Serializer برای ذخیره اطلاعات
+                serializer = RequiredCarrierSerializer(data=data_copy)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    serializer_id = serializer.data.get('id')
+
+                    # ایجاد چندین رکورد CargoFleetCoordination با استفاده از serializer_id
+                    for i in range(0, counter):
+                        CargoFleetCoordination.objects.create(international_cargo=international_cargo,
+                                                              inner_cargo=inner_cargo,
+                                                              required_carrier_id=serializer_id,
+                                                              status_result='در انتظار واگذاری')
+
+                else:
+                    print(str(serializer.errors))
+                    return Response({'message': serializer.errors},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'حمل‌کننده های درخواستی اضافه شد'}, status=status.HTTP_200_OK)
 
         except Exception as e:
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     # Comment (EN): Handle PUT request to update RequiredCarrier information
     # Comment (FA): پردازش درخواست PUT برای به‌روزرسانی اطلاعات حمل‌کننده موردنیاز
     if request.method == 'PUT':
