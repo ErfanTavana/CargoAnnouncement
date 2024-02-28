@@ -287,6 +287,7 @@ class RequiredWagonsSerializer(Base_ModelSerializer):
             'wagon_type',
             'capacity',
             'net_weight',
+            'counter',
         )
 
 class CargoWagonCoordinationSerializer(Base_ModelSerializer):

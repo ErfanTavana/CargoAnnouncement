@@ -405,7 +405,38 @@ def required_wagon_view(request):
                                 status=status.HTTP_400_BAD_REQUEST)
         return Response({'message': 'واگن های مورد نیاز ثبت شد'})
     if request.method == 'PUT':
-        pass
+        required_wagon_id = data.get('required_wagon_id', None)
+        if required_wagon_id == None:
+            return Response({'message': 'شناسه واگن موردنیاز را وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id, goods_owner=goods_owner,
+                                                        deleted_at=None,
+                                                        is_ok=True)
+            data_copy = data.copy()
+            data_copy['counter'] = required_wagon.counter
+            serializer = RequiredWagonsSerializer(instance=required_wagon, data=data_copy)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'واگن مورد نیاز با موفقیت ویرایش شد','data':serializer.data})
+        except RequiredWagons.DoesNotExist:
+            return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as p:
+            print(p)
+            return Response({'message': 'خطا در ویرایش واگن مورد نیاز'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if request.method == 'DELETE':
+        required_wagon_id = data.get('required_wagon_id', None)
+        if required_wagon_id == None:
+            return Response({'message': 'شناسه واگن موردنیاز را وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id, goods_owner=goods_owner,
+                                                        deleted_at=None,
+                                                        is_ok=True)
+            required_wagon.soft_delete(user)
+            return Response({'message': 'واگن مورد نیاز با موفقیت حذف شد'})
+        except RequiredWagons.DoesNotExist:
+            return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as p:
+            print(p)
 
 
 # Define the API view for handling RequiredCarrier operations
