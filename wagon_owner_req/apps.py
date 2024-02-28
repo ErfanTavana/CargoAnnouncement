@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class CarrierOwnerResConfig(AppConfig):
+class WagonOwnerReqConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'carrier_owner_res'
+    name = 'wagon_owner_req'

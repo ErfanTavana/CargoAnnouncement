@@ -5,7 +5,6 @@ from rest_framework import status
 from accounts.models import GoodsOwner
 from carrier_owner.models import CarOwReqGoodsOwner
 from goods_owner.models import REQUEST_RESULT_CHOICES
-from goods_owner.models import GoodsOwnerReqCarOw
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])

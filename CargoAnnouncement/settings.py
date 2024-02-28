@@ -8,7 +8,6 @@ from django.urls import path
 # مسیر پایه پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # کلید مخفی برای موارد حساس (مثل SECRET_KEY) - در محیط توسعه این مورد مهم نیست
 SECRET_KEY = 'django-insecure-x+a_w2&j4@+%a9j=c&%4hryln@584$w%^1(#m0i^x0$77g4jv6'
 
@@ -31,7 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'carrier_owner',
-    'carrier_owner_res',
+    'carrier_owner_req',
     'driver',
     'driver_res',
     'goods_owner',
@@ -42,6 +41,7 @@ INSTALLED_APPS = [
     'CargoADMIN',
     'E_Wallet',
     'wagon_owner',
+    'wagon_owner_req',
     'captcha',
 ]
 

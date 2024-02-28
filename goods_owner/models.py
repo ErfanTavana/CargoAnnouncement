@@ -331,35 +331,6 @@ class CargoFleetCoordination(Base_Model):
         verbose_name_plural = 'ماشین های مورد نیاز و ارتباطات'
 
 
-class GoodsOwnerReqCarOw(Base_Model):
-    user = models.ForeignKey(User, on_delete=models.Model, verbose_name='کاربر', related_name='userss', )
-    goods_owner = models.ForeignKey(GoodsOwner, related_name='goods_owner_requests', on_delete=models.CASCADE,
-                                    verbose_name='صاحب بار', blank=True, null=True)
-
-    carrier_owner = models.ForeignKey(CarrierOwner, related_name='carrier_owner_requests', on_delete=models.CASCADE,
-                                      verbose_name='صاحب  حمل کننده', blank=True, null=True)
-    road_fleet = models.ForeignKey('carrier_owner.RoadFleet', related_name='road_fleet_fleetasad',
-                                   verbose_name='حمل کننده',
-                                   on_delete=models.CASCADE, blank=True, null=True)
-
-    inner_cargo = models.ForeignKey(InnerCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                    verbose_name='اعلام بار داخلی', related_name='inner_cargo_carriers2')
-    international_cargo = models.ForeignKey(InternationalCargo, blank=True, null=True, on_delete=models.CASCADE,
-                                            verbose_name='اعلام بار خارجی',
-                                            related_name='international_cargo_carriers2')
-
-    # قیمت پیشنهادی
-    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی', blank=True, null=True)
-
-    # نتیجه درخواست
-    request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
-    # زمان لغو درخواست
-    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
-
-    class Meta:
-        verbose_name = 'درخواست همکاری صاحب بار برای صاحب حمل کننده'
-        verbose_name_plural = 'درخواست های همکاری صاحب بار برای صاحب حمل کننده'
-
 
 VEHICLE_TYPE_CHOICES = (
     ('short_edge', 'لبه کوتاه'),

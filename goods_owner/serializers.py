@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from goods_owner.models import InnerCargo, GoodsOwnerReqCarOw, InternationalCargo, CommonCargo, Base_Model, \
+from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, \
     RequiredCarrier, CargoFleetCoordination, RailCargo, RequiredWagons , CargoWagonCoordination
 from django.contrib.auth.models import User
 from accounts.serializers import GoodsOwnerSerializer

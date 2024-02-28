@@ -54,19 +54,6 @@ class CargoFleetCoordinationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CargoFleetCoordination, CargoFleetCoordinationAdmin)
-from django.contrib import admin
-from .models import GoodsOwnerReqCarOw
-
-
-class GoodsOwnerReqCarOwAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'user', 'goods_owner', 'carrier_owner', 'proposed_price', 'request_result', 'cancellation_time')
-    list_filter = ('request_result', 'cancellation_time')
-    search_fields = ('user__username', 'goods_owner__name', 'carrier_owner__name')
-    readonly_fields = ('id',)
-
-
-admin.site.register(GoodsOwnerReqCarOw, GoodsOwnerReqCarOwAdmin)
 # your_app/admin.py
 
 from django.contrib import admin

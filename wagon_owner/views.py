@@ -12,7 +12,9 @@ from .serializers import WagonDetailsSerializer
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def wagon_details_view(request):
-    if request.method =='GET':
+    # استخراج داده و کاربر از درخواست
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -27,6 +29,7 @@ def wagon_details_view(request):
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'GET':
         wagon_detail_id = data.get("wagon_detail_id", None)
+        print(wagon_detail_id)
         if wagon_detail_id == None:
             try:
                 # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
@@ -41,7 +44,7 @@ def wagon_details_view(request):
                 # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
                 wagon_detaile = WagonDetails.objects.get(id=wagon_detail_id, user_id=user.id, deleted_at=None,
                                                          is_ok=True)
-                serializer = WagonDetailsSerializer(wagon_detaile)
+                serializer = WagonDetailsSerializer(wagon_detaile, many=False)
                 return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
             except WagonDetails.DoesNotExist:
                 return Response({'message': 'هیچ واگنی با این شناسه وجود ندارد.'},

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from carrier_owner.models import CarOwReqDriver, CarOwReqGoodsOwner
 from accounts.models import CarrierOwner, GoodsOwner, Driver
-from goods_owner.models import REQUEST_RESULT_CHOICES, GoodsOwnerReqCarOw
+from goods_owner.models import REQUEST_RESULT_CHOICES
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 

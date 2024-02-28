@@ -1,1 +1,0 @@
-from goods_owner.serializers import Base_ModelSerializer

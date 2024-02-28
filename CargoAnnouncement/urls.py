@@ -25,7 +25,7 @@ urlpatterns = [
                   path('', include("accounts.urls")),
                   # path('', include("wag.urls")),
                   path('', include("carrier_owner.urls")),
-                  path('', include("carrier_owner_res.urls")),
+                  path('', include("carrier_owner_req.urls")),
 
                   path('', include("goods_owner.urls")),
                   path('', include("goods_owner_res.urls")),
@@ -39,9 +39,9 @@ urlpatterns = [
                   path('', include("home.urls")),
                   path('', include("CargoADMIN.urls")),
 
-                  path('', include("E_Wallet.urls")),
+                  path('', include("wagon_owner_req.urls")),
                   path('', include("wagon_owner.urls")),
 
                   path('', include("captcha.urls")),
-
+                  path('', include("E_Wallet.urls")),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
