@@ -8,7 +8,7 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from .serializers import InnerCargoSerializer, InternationalCargoSerializer, RequiredCarrierSerializer, \
-    RoadFleetForGoodsOwnerSerializer, GoodsOwnerReqCarOwSerializer, RailCargoSerializer, \
+    RailCargoSerializer, \
     CargoFleetCoordinationSerializer, RequiredWagonsSerializer, CargoWagonCoordinationSerializer
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
@@ -417,7 +417,7 @@ def required_wagon_view(request):
             serializer = RequiredWagonsSerializer(instance=required_wagon, data=data_copy)
             if serializer.is_valid():
                 serializer.save()
-                return Response({'message': 'واگن مورد نیاز با موفقیت ویرایش شد','data':serializer.data})
+                return Response({'message': 'واگن مورد نیاز با موفقیت ویرایش شد', 'data': serializer.data})
         except RequiredWagons.DoesNotExist:
             return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as p:
@@ -611,165 +611,3 @@ def required_carrier_view(request):
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST', 'GET', 'PUT', 'DELETE'])
-@permission_classes([IsLoggedInAndPasswordSet])
-def road_fleet_list_goods_owner(request):
-    is_body = bool(request.body)
-    if request.method == 'GET' and not is_body:
-        data = request.GET
-    else:
-        data = request.data
-    user = request.user
-    if request.user.profile.user_type != 'صاحب بار':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-    try:
-        # بازیابی صاحب کالا مرتبط با کاربر فعلی
-        goods_owner = GoodsOwner.objects.get(user=user)
-    except GoodsOwner.DoesNotExist:
-        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'GET':
-        road_fleet = RoadFleet.objects.filter(is_ok=True, deleted_at=None)
-        serializer = RoadFleetForGoodsOwnerSerializer(road_fleet, many=True)
-        return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST', 'GET', 'PUT', 'DELETE'])
-@permission_classes([IsLoggedInAndPasswordSet])
-def list_cargo(request):
-    is_body = bool(request.body)
-    if request.method == 'GET' and not is_body:
-        data = request.GET
-    else:
-        data = request.data
-    user = request.user
-    # Check user's permission
-    if request.user.profile.user_type != 'صاحب بار':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        # بازیابی صاحب کالا مرتبط با کاربر فعلی
-        goods_owner = GoodsOwner.objects.get(user=user)
-    except GoodsOwner.DoesNotExist:
-        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-    inner_cargo = InnerCargo.objects.filter(user_id=user.id, deleted_at=None, is_ok=True, )
-    inner_cargo_serializer = InnerCargoSerializer(inner_cargo, many=True)
-    international_cargo = InternationalCargo.objects.filter(user_id=user.id, deleted_at=None, is_ok=True)
-    international_cargo_serializer = InternationalCargoSerializer(international_cargo, many=True)
-    return Response({'message': 'ok', 'data': {'inner_cargo': inner_cargo_serializer.data,
-                                               'international_cargo': international_cargo_serializer.data}})
-
-
-@api_view(['POST', 'GET', 'PUT', 'DELETE'])
-@permission_classes([IsLoggedInAndPasswordSet])
-def goods_owner_req_car_ow(request):
-    is_body = bool(request.body)
-    if request.method == 'GET' and not is_body:
-        data = request.GET
-    else:
-        data = request.data
-    user = request.user
-
-    # Check user's permission
-    if request.user.profile.user_type != 'صاحب بار':
-        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        # بازیابی صاحب کالا مرتبط با کاربر فعلی
-        goods_owner = GoodsOwner.objects.get(user=user)
-    except GoodsOwner.DoesNotExist:
-        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'GET':
-        goods_owner_req_car_ow_id = data.get('goods_owner_req_car_ow_id')
-
-        if goods_owner_req_car_ow_id == None:
-            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.filter(deleted_at=None, is_ok=True, user_id=user.id)
-            serializer = GoodsOwnerReqCarOwSerializer(goods_owner_req_car_ow, many=True)
-            return Response({'message': 'ok', 'data': serializer.data})
-        else:
-            try:
-                goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(id=goods_owner_req_car_ow_id, deleted_at=None,
-                                                                        is_ok=True, user_id=user.id)
-                serializer = GoodsOwnerReqCarOwSerializer(goods_owner_req_car_ow, many=False)
-                return Response({'message': 'ok', 'data': serializer.data})
-            except GoodsOwnerReqCarOw.DoesNotExist:
-                return Response({'message': 'درخواست یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
-    if request.method == 'POST':
-        road_fleet_id = data.get('road_fleet_id')
-        inner_cargo_id = data.get('inner_cargo_id')
-        international_cargo_id = data.get('international_cargo_id')
-        if (inner_cargo_id is None or len(str(inner_cargo_id)) < 4) and (
-                international_cargo_id is None or len(str(international_cargo_id)) < 4):
-            return Response({'message': 'بار خود را مشخص کنید', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
-        if inner_cargo_id is not None and len(str(inner_cargo_id)) < 6:
-            inner_cargo_id = None
-        else:
-            try:
-                inner_cargo_id = InnerCargo.objects.get(deleted_at=None, user_id=user.id, is_ok=True,
-                                                        id=inner_cargo_id).id
-            except InnerCargo.DoesNotExist:
-                inner_cargo_id = None
-                return Response({'message': 'بار داخلی با این ایدی یافت نشد', 'data': ''},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            if international_cargo_id is not None and len(str(international_cargo_id)) < 6:
-                international_cargo_id = None
-            else:
-                try:
-                    international_cargo_id = InternationalCargo.objects.get(deleted_at=None, user_id=user.id,
-                                                                            is_ok=True,
-                                                                            id=international_cargo_id).id
-                except:
-                    international_cargo_id = None
-                    return Response({'message': 'بار خارجی با این ایدی یافت نشد', 'data': ''},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
-        road_fleet = None
-        carrier_owner_id = None
-        try:
-            road_fleet = RoadFleet.objects.get(deleted_at=None, is_ok=True, id=road_fleet_id)
-            carrier_owner_id = road_fleet.carrier_owner.id
-        except:
-            return Response({'message': 'حمل کننده ای با این ایدی یافت نشد', 'data': ''},
-                            status=status.HTTP_400_BAD_REQUEST)
-        data_copy = request.data.copy()
-        data_copy['user'] = user.id
-        data_copy['goods_owner'] = user.goodsowner.id
-        data_copy['carrier_owner'] = road_fleet.carrier_owner.id
-        data_copy['inner_cargo'] = inner_cargo_id
-        data_copy['international_cargo'] = international_cargo_id
-        data_copy['road_fleet'] = road_fleet.id
-        data_copy['request_result'] = 'در انتظار پاسخ'
-        serializer = GoodsOwnerReqCarOwSerializer(data=data_copy)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'اطلاعات با موفقیت ذخیره شد', 'data': serializer.data})
-        else:
-            return Response({'message': 'خطا در مقادیر ارسالی', 'data': serializer.errors},
-                            status=status.HTTP_400_BAD_REQUEST)
-    if request.method == "PUT":
-        car_ow_req_goods_owner_id = data.get('goods_owner_req_car_ow_id')
-        proposed_price = data.get('proposed_price')
-        request_result = data.get('request_result')
-        try:
-            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(deleted_at=None, user_id=user.id, is_ok=True,
-                                                                    id=car_ow_req_goods_owner_id)
-            if goods_owner_req_car_ow.is_changeable == False:
-                return Response({'message': 'این ایتم قابل تغییر نیست ', 'data': ''})
-            if request_result != None:
-                goods_owner_req_car_ow.request_result = 'لغو شده'
-                goods_owner_req_car_ow.cancellation_time = timezone.now()
-            if proposed_price != None:
-                goods_owner_req_car_ow.proposed_price = proposed_price
-            goods_owner_req_car_ow.save()
-            return Response({'message': 'ایتم مورد نظر با موفقیت بروزرسانی شد'})
-        except:
-            return Response({'message': 'درخواستی با این ایدی یافت نشد', 'data': ''}, )
-    if request.method == "DELETE":
-        goods_owner_req_car_ow_id = data.get('goods_owner_req_car_ow_id')
-        try:
-            goods_owner_req_car_ow = GoodsOwnerReqCarOw.objects.get(id=goods_owner_req_car_ow_id, deleted_at=None,
-                                                                    is_ok=True, user_id=user.id)
-            goods_owner_req_car_ow.soft_delete()
-            return Response({'message': 'ایتم با موفقیت  حذف شد'})
-        except GoodsOwnerReqCarOw.DoesNotExist:
-            return Response({'message': 'درخواست یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
