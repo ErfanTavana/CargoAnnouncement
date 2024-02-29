@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from .permissions import IsLoggedInAndIsAdmin
 from rest_framework.response import Response
 from rest_framework import status
-from carrier_owner.models import CarOwReqDriver, CarOwReqGoodsOwner
+from carrier_owner.models import CarOwReqDriver
 from accounts.models import CarrierOwner, GoodsOwner, Driver
 from goods_owner.models import REQUEST_RESULT_CHOICES
 from django.contrib.auth.models import User

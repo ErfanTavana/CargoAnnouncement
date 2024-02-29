@@ -23,13 +23,3 @@ class CarOwReqDriverAdmin(admin.ModelAdmin):
     search_fields = ('goods_owner__full_name', 'carrier_owner__full_name', 'driver__driver_full_name')
     list_filter = ('collaboration_type', 'origin', 'destination')
 
-
-from .models import CarOwReqGoodsOwner
-
-
-@admin.register(CarOwReqGoodsOwner)
-class CarOwReqGoodsOwnerAdmin(admin.ModelAdmin):
-    list_display = ['user', 'carrier_owner', 'road_fleet', 'goods_owner', 'required_carrier', 'proposed_price',
-                    'request_result']
-    search_fields = ['user__username', 'goods_owner__name']  # جستجو بر اساس نام کاربری و نام صاحب بار
-    list_filter = ['request_result', 'road_fleet']  # فیلتر کردن بر اساس نتیجه درخواست و حمل کننده

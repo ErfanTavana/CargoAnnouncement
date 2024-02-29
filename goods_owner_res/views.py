@@ -3,13 +3,12 @@ from accounts.permissions import IsLoggedInAndPasswordSet
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import GoodsOwner
-from carrier_owner.models import CarOwReqGoodsOwner
 from goods_owner.models import REQUEST_RESULT_CHOICES
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
-def delivered_goods_owner_req(request):
+def requests_received_carrier_owner(request):
     user = request.user
     is_body = bool(request.body)
     if request.method == 'GET' and not is_body:

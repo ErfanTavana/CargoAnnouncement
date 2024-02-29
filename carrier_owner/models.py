@@ -190,35 +190,3 @@ class CarOwReqDriver(Base_Model):
     class Meta:
         verbose_name = "درخواست همکاری صاحب حمل کننده از راننده"
         verbose_name_plural = "درخواست‌های همکاری صاحب حمل کننده از راننده"
-
-
-# مدل برای ثبت درخواست همکاری صاحب حمل کننده از صاحب بار
-# نام مدل: CarOwReqGoodsOwner
-class CarOwReqGoodsOwner(Base_Model):
-    # اطلاعات مرتبط با کاربر
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
-
-    # اطلاعات مرتبط با صاحب حمل کننده
-    carrier_owner = models.ForeignKey(CarrierOwner, on_delete=models.CASCADE, verbose_name='صاحب حمل کننده')
-
-    # اطلاعات مرتبط با حمل کننده
-    road_fleet = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, related_name='car_owners',
-                                   verbose_name='حمل کننده')
-
-    # اطلاعات مرتبط با صاحب بار
-    goods_owner = models.ForeignKey(GoodsOwner, on_delete=models.CASCADE, verbose_name='صاحب بار')
-
-    # اطلاعات مرتبط با درخواست صاحب بار
-    required_carrier = models.ForeignKey(RequiredCarrier, on_delete=models.CASCADE, verbose_name='درخواست صاحب بار')
-
-    # قیمت پیشنهادی
-    proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی')
-
-    # نتیجه درخواست
-    request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
-    # زمان لغو درخواست
-    cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
-
-    class Meta:
-        verbose_name = "درخواست همکاری صاحب حمل کننده از صاحب بار"
-        verbose_name_plural = "درخواست‌های همکاری صاحب حمل کننده از صاحب بار"

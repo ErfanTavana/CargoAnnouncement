@@ -545,7 +545,7 @@ def required_carrier_view(request):
 
         except Exception as e:
             print(e)
-            return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.'},
+            return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.', 'data': f"{str(e)}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     # Comment (EN): Handle PUT request to update RequiredCarrier information
     # Comment (FA): پردازش درخواست PUT برای به‌روزرسانی اطلاعات حمل‌کننده موردنیاز

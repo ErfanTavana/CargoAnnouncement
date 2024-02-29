@@ -3,7 +3,6 @@ from .models import RoadFleet, CarOwReqDriver
 from goods_owner.serializers import Base_ModelSerializer
 from accounts.models import Driver, CarrierOwner, GoodsOwner
 from goods_owner.models import RequiredCarrier, CommonCargo
-from .models import CarOwReqGoodsOwner
 from goods_owner.models import  InnerCargo,InternationalCargo
 
 # سریالایزر برای مدل RoadFleet
@@ -202,23 +201,3 @@ class RequiredCarrierSerializer(serializers.ModelSerializer):
             'carrier_price',
             'cargo_price',
         ]
-
-# سریالایزر برای مدل CarOwReqGoodsOwner
-class CarOwReqGoodsOwnerSerializer(serializers.ModelSerializer):
-    # road_fleet = RoadFleet2Serializer(read_only=True)
-    # required_carrier = RequiredCarrierSerializer(read_only=True)
-
-    class Meta:
-        model = CarOwReqGoodsOwner
-        fields = (
-            'user',
-            'id',
-            'carrier_owner',
-            'road_fleet',
-            'goods_owner',
-            'required_carrier',
-            'proposed_price',
-            'request_result',
-            'cancellation_time',
-        )
-        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
