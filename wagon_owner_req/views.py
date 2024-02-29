@@ -13,8 +13,8 @@ from .models import WagonDetails
 from wagon_owner.serializers import WagonDetailsSerializer
 from .models import WagonDetails
 from goods_owner.models import CargoWagonCoordination
-from goods_owner.serializers import CargoWagonCoordinationSerializer
-
+# from goods_owner.serializers import CargoWagonCoordinationSerializer
+from .serializers import InfoCargoWagonCoordinationShowSerializer
 from .serializers import SentCollaborationRequestToRailCargoSerializer
 from .models import SentCollaborationRequestToRailCargo
 
@@ -43,7 +43,7 @@ def cargo_wagon_coordination(request):
             cargo_wagon_coordination = CargoWagonCoordination.objects.filter(is_ok=True, deleted_at=None,
                                                                              wagon_owner=None,
                                                                              status_result='در انتظار واگذاری')
-            serializer = CargoWagonCoordinationSerializer(cargo_wagon_coordination, many=True)
+            serializer = InfoCargoWagonCoordinationShowSerializer(cargo_wagon_coordination, many=True)
             return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
 
 

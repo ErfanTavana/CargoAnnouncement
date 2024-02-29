@@ -473,6 +473,7 @@ class RailCargo(Base_Model):
     need_route_code = models.BooleanField(default=False, verbose_name="آیا نیاز به کد مسیر دارید؟")
     route_code = models.CharField(max_length=20, verbose_name="کد مسیر", blank=True, null=True)
 
+
     class Meta:
         verbose_name = 'اعلام بار ریلی'
         verbose_name_plural = 'اعلام بار های ریلی'
