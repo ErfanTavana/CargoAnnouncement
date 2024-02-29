@@ -8,7 +8,7 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
-from .serializers import RoadFleet2Serializer, DriverListCarrierOwner, CarOwReqDriverSerializer,  RoadFleetSerializer
+from .serializers import RoadFleet2Serializer,  RoadFleetSerializer
 
 from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
 

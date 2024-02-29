@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from goods_owner.serializers import Base_ModelSerializer
-from carrier_owner.models import CarrierOwner, CarOwReqDriver, RoadFleet
+from carrier_owner.models import CarrierOwner, RoadFleet
 from driver.models import DriverReqCarrierOwner
 
 
@@ -36,31 +36,6 @@ class InfoRoadFleetForDriverSerializers(Base_ModelSerializer):
             'international_docs_bool',
             'carrier_type',
         )
-
-
-# اطلاعات قابل نمایش یک درخواست برای راننده
-class DeliveredDriverReqSerializers(Base_ModelSerializer):
-    carrier_owner_full = InfoCarrierOwnerResForDriverSerializers(source='carrier_owner', read_only=True)
-    carrier_full = InfoRoadFleetForDriverSerializers(source='carrier', read_only=True)
-
-    class Meta:
-        model = CarOwReqDriver
-        fields = Base_ModelSerializer.Meta.fields + (
-            'carrier_owner',
-            'carrier_owner_full',
-            'carrier',
-            'carrier_full',
-            'collaboration_type',
-            'origin',
-            'destination',
-            'proposed_price',
-            'request_result',
-            'cancellation_time',
-        )
-        # تنظیم فیلدهای فقط خواندنی در سریالایزر
-        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + (
-            'request_result', 'cancellation_time', 'origin', 'destination', 'proposed_price', 'collaboration_type')
-
 
 class SentDriverReqSerializers(Base_ModelSerializer):
     carrier_owner_full = InfoCarrierOwnerResForDriverSerializers(source='carrier_owner', read_only=True)
