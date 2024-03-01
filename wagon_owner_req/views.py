@@ -93,6 +93,19 @@ def sent_collaboration_request_to_railCargo(request):
         cargo_wagon_coordination = None
         data = request.data.copy()  # از copy() برای ایجاد یک نسخه قابل تغییر استفاده کنید
         wagon_details_id = data.get('wagon_details_id', None)
+        cargo_wagon_coordination_id = data.get('cargo_wagon_coordination_id', None)
+        # چک کردن وجود یک درخواست همکاری مشابه
+        existing_request = SentCollaborationRequestToRailCargo.objects.filter(
+            user=user,
+            wagon_details=wagon_details_id,
+            cargo_wagon_coordination=cargo_wagon_coordination_id,
+            request_result='در انتظار پاسخ'
+        ).exists()
+
+        if existing_request:
+            return Response({'message': 'شما قبلاً یک درخواست همکاری برای این بار ثبت کرده‌اید'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if wagon_details_id != None:
             print(wagon_details_id)
 
@@ -109,7 +122,6 @@ def sent_collaboration_request_to_railCargo(request):
         else:
             return Response({"message": "شناسه  واگن  ارسال نشده است"},
                             status=status.HTTP_400_BAD_REQUEST)
-        cargo_wagon_coordination_id = data.get('cargo_wagon_coordination_id', None)
         print(cargo_wagon_coordination_id)
         if cargo_wagon_coordination_id != None:
 
@@ -142,6 +154,8 @@ def sent_collaboration_request_to_railCargo(request):
     if request.method == 'PUT':
         sent_collaboration_request_to_rail_cargo_id = data.get('sent_collaboration_request_to_rail_cargo_id')
         request_result = data.get('request_result', None)
+
+
         try:
             sent_collaboration_request_to_rail_cargo = SentCollaborationRequestToRailCargo.objects.get(
                 id=sent_collaboration_request_to_rail_cargo_id, user_id=user.id, wagon_owner=wagon_owner, is_ok=True,

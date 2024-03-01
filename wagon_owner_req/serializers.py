@@ -96,6 +96,3 @@ class SentCollaborationRequestToRailCargoSerializer(Base_ModelSerializer):
             'cargo_wagon_coordination',
             'request_result'
         )
-        read_only_fields = Base_ModelSerializer.Meta.read_only_fields + (
-            'request_result',
-        )

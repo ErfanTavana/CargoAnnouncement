@@ -23,13 +23,16 @@ class SentCollaborationRequestToGoodsOwner(Base_Model):
                                     verbose_name='پروفایل صاحب بار')
 
     # اطلاعات مرتبط با درخواست صاحب بار
-    required_carrier = models.ForeignKey(RequiredCarrier, on_delete=models.CASCADE, verbose_name='درخواست صاحب بار')
+    required_carrier = models.ForeignKey(RequiredCarrier, on_delete=models.CASCADE,
+                                         verbose_name='ماشین مورد نیاز اعلام بار')
 
     cargo_fleet_coordination = models.ForeignKey(CargoFleetCoordination, on_delete=models.CASCADE,
                                                  verbose_name='ماشین های مورد نیاز اعلام بار ماشینی(جدول ارتباطات)')
 
     proposed_price = models.DecimalField(blank=True, null=True, max_digits=10, decimal_places=2,
                                          verbose_name='قیمت پیشنهادی')
+    request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
+
     class Meta:
         verbose_name = 'درخواست همکاری صاحب حمل کننده برای اعلام بار ماشینی'
         verbose_name_plural = 'درخواست های همکاری صاحب حمل کننده برای اعلام بار ماشینی'

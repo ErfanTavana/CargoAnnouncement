@@ -41,9 +41,8 @@ def road_fleet_view(request):
     # هشتگ: نمایش حمل‌کننده‌ها
     # Hash: Display road fleets
     if request.method == 'GET':
-        road_fleet_id = data.get('road_fleet_id')
-        print(road_fleet_id)
-        if road_fleet_id is not None and len(str(road_fleet_id)) < 6:
+        road_fleet_id = data.get('road_fleet_id',None)
+        if road_fleet_id == None:
             road_fleet = RoadFleet.objects.filter(user_id=user.id, deleted_at=None)
             if road_fleet.exists():
                 serializer = RoadFleet2Serializer(road_fleet, many=True)  # Fix: Pass instances, not data

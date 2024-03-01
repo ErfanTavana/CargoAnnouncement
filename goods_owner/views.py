@@ -518,6 +518,7 @@ def required_carrier_view(request):
                                                                              deleted_at=None)
                         data_copy['international_cargo'] = international_cargo.id
                         data_copy['cargo_type'] = 'اعلام بار خارجی'
+                        data_copy['goods_owner'] = user.goodsowner.id
                         data_copy['user'] = user.id
                     except InternationalCargo.DoesNotExist:
                         return Response({'message': 'ایدی بار ارسال شده اشتباه است'},

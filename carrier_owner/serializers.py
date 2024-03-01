@@ -45,6 +45,7 @@ class RoadFleet2Serializer(serializers.ModelSerializer):
     class Meta:
         model = RoadFleet
         fields = [
+            'id',
             'ownerType',
             'roomType',
             'vehichleType',

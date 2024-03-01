@@ -7,4 +7,5 @@ urlpatterns = [
     path('sent_collaboration_request_to_railCargo/', views.sent_collaboration_request_to_railCargo,
          name='sent_collaboration_request_to_railCargo_name'),
 
+
 ]
