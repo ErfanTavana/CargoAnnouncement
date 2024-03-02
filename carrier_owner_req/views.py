@@ -4,9 +4,10 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework import permissions
 from accounts.permissions import IsLoggedInAndPasswordSet
-from accounts.models import CarrierOwner
+from accounts.models import CarrierOwner , Driver
 from rest_framework import viewsets
 from goods_owner.models import CargoFleetCoordination
+
 from carrier_owner_req.serializers import CargoFleetCoordinationSerializer, RoadFleet, \
     SentCollaborationRequestToGoodsOwnerSerializer
 from .models import SentCollaborationRequestToGoodsOwner
@@ -156,7 +157,7 @@ def sent_collaboration_request_to_goods_owner(request):
         except:
             return Response({'message': 'درخواست همکاری با این شناسه وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
 ################################################################
-### ارسال درخواست همکاری به راننده
+## ارسال درخواست همکاری به راننده
 # @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 # @permission_classes([IsLoggedInAndPasswordSet])
 # def info_driver(request):
@@ -179,4 +180,4 @@ def sent_collaboration_request_to_goods_owner(request):
 #         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
 #     driver_id = data.get('driver_id',None)
 #     if driver_id != None:
-#
+

@@ -153,7 +153,7 @@ class CommonCargo(Base_Model):
     destination_street = models.CharField(max_length=50, verbose_name="خیابان مقصد", blank=True, null=True)
     destination_address = models.CharField(max_length=100, verbose_name="آدرس دقیق مقصد", blank=True, null=True)
     destination_area = models.CharField(max_length=100, choices=(
-        ('گمرگ', 'گمرگ'),
+        ('گمرک', 'گمرک'),
         ('بندر', 'بندر'),
         ('ایستگاه', 'ایستگاه'),
         ('گمرک/ایستگاه', 'گمرک/ایستگاه'),
