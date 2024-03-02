@@ -3,7 +3,10 @@ from accounts.permissions import IsLoggedInAndPasswordSet
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import GoodsOwner
-from goods_owner.models import REQUEST_RESULT_CHOICES
+from wagon_owner_req.models import SentCollaborationRequestToRailCargo
+from wagon_owner_req.serializers import SentCollaborationRequestToRailCargoSerializer
+from .serializers import RequestReceivedFromTheWagonOwnerSerializer, RequestReceivedFromTheCarrierOwnerSerializer
+from carrier_owner_req.models import SentCollaborationRequestToGoodsOwner
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -23,3 +26,50 @@ def requests_received_carrier_owner(request):
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
     if request.user.profile.user_type != 'صاحب بار':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    if request.method == 'GET':
+        sent_collaboration_request_to_rail_cargo_id = data.get('sent_collaboration_request_to_rail_cargo_id', None)
+        sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
+        request_result = data.get('request_result', 'در انتظار پاسخ')
+        selected = data.get('selected', None)
+        if sent_collaboration_request_to_rail_cargo_id == None and sent_collaboration_request_to_goods_owner_id == None:
+            sent_collaboration_request_to_rail_cargo = SentCollaborationRequestToRailCargo.objects.filter(
+                cargo_wagon_coordination__rail_cargo__goods_owner=goods_owner, request_result=request_result,
+                is_ok=True, deleted_at=None)
+            serializer1 = RequestReceivedFromTheWagonOwnerSerializer(sent_collaboration_request_to_rail_cargo,
+                                                                     many=True)
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                goods_owner=goods_owner,
+                request_result=request_result,
+                deleted_at=None, is_ok=True)
+            serializer2 = RequestReceivedFromTheCarrierOwnerSerializer(sent_collaboration_request_to_goods_owner,
+                                                                       many=True)
+            return Response(
+                {'message': 'ok', 'data': {'wagon_owner': serializer1.data, 'carrier_owner': serializer2.data}},
+                status=status.HTTP_200_OK)
+        elif sent_collaboration_request_to_rail_cargo_id != None:
+            try:
+                sent_collaboration_request_to_rail_cargo = SentCollaborationRequestToRailCargo.objects.get(
+                    cargo_wagon_coordination__rail_cargo__goods_owner=goods_owner,
+                    is_ok=True, deleted_at=None, id=sent_collaboration_request_to_rail_cargo_id)
+                serializer = RequestReceivedFromTheWagonOwnerSerializer(sent_collaboration_request_to_rail_cargo)
+                return Response(
+                    {'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                print(e)
+                return Response({'message': 'درخواست همکاری ای با این شناسه وجود ندارد'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        elif sent_collaboration_request_to_goods_owner_id != None:
+            print(sent_collaboration_request_to_rail_cargo_id)
+            try:
+                sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.get(
+                    id=sent_collaboration_request_to_goods_owner_id,
+                    goods_owner=goods_owner,
+                    deleted_at=None, is_ok=True)
+                serializer = RequestReceivedFromTheCarrierOwnerSerializer(sent_collaboration_request_to_goods_owner)
+                return Response(
+                    {'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            except Exception as e:
+                print(e)
+                return Response({'message': 'درخواست همکاری ای با این شناسه وجود ندارد'},
+                                status=status.HTTP_400_BAD_REQUEST)
