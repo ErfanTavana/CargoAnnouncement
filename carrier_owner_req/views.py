@@ -157,3 +157,6 @@ def sent_collaboration_request_to_goods_owner(request):
             return Response({'message': 'درخواست همکاری با این شناسه وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
 ################################################################
 # ارسال درخواست همکاری به راننده
+# @api_view(['POST', 'GET', 'PUT', 'DELETE'])
+# @permission_classes([IsLoggedInAndPasswordSet])
+# def info_driver(request):
