@@ -155,3 +155,5 @@ def sent_collaboration_request_to_goods_owner(request):
             return Response({'message': 'درخواست همکاری شما برای صاحب بار ویرایش شد'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'درخواست همکاری با این شناسه وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
+################################################################
+# ارسال درخواست همکاری به راننده

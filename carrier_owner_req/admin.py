@@ -8,3 +8,5 @@ class SentCollaborationRequestToGoodsOwnerAdmin(admin.ModelAdmin):
     list_filter = ('request_result',)
 
 admin.site.register(SentCollaborationRequestToGoodsOwner, SentCollaborationRequestToGoodsOwnerAdmin)
+################################################################
+# ارسال درخواست همکاری به راننده

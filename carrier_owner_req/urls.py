@@ -8,4 +8,7 @@ urlpatterns = [
     path('sent_collaboration_request_to_goods_owner/', views.sent_collaboration_request_to_goods_owner,
          name='sent_collaboration_request_to_goods_owner_name'),
 
+    ################################################################
+    # ارسال درخواست همکاری به راننده
+
 ]

@@ -36,3 +36,4 @@ class SentCollaborationRequestToGoodsOwner(Base_Model):
     class Meta:
         verbose_name = 'درخواست همکاری صاحب حمل کننده برای اعلام بار ماشینی'
         verbose_name_plural = 'درخواست های همکاری صاحب حمل کننده برای اعلام بار ماشینی'
+# ارسال درخواست همکاری به راننده
