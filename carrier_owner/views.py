@@ -8,7 +8,7 @@ from rest_framework import permissions
 # from rest_framework import viewsets
 from .models import *
 from accounts.permissions import IsLoggedInAndPasswordSet
-from .serializers import RoadFleet2Serializer,  RoadFleetSerializer
+from .serializers import RoadFleet2Serializer, RoadFleetSerializer
 
 from goods_owner.models import RequiredCarrier, CommonCargo, InnerCargo, InternationalCargo
 
@@ -41,7 +41,7 @@ def road_fleet_view(request):
     # هشتگ: نمایش حمل‌کننده‌ها
     # Hash: Display road fleets
     if request.method == 'GET':
-        road_fleet_id = data.get('road_fleet_id',None)
+        road_fleet_id = data.get('road_fleet_id', None)
         if road_fleet_id == None:
             road_fleet = RoadFleet.objects.filter(user_id=user.id, deleted_at=None)
             if road_fleet.exists():
@@ -68,7 +68,8 @@ def road_fleet_view(request):
         if serializer.is_valid():
             serializer.save()
             return Response({'message': f'حمل کننده ی شما با موفقیت اضافه شد', 'data': serializer.data})
-        return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': ''})
+        else:
+            return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': serializer.errors})
 
     # هشتگ: ویرایش حمل‌کننده
     # Hash: Edit road fleet
@@ -109,5 +110,3 @@ def road_fleet_view(request):
         except RoadFleet.DoesNotExist:
             return Response({'message': "ایتم با این ایدی وجود ندارد", 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
-
-
