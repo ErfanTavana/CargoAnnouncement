@@ -156,7 +156,27 @@ def sent_collaboration_request_to_goods_owner(request):
         except:
             return Response({'message': 'درخواست همکاری با این شناسه وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
 ################################################################
-# ارسال درخواست همکاری به راننده
+### ارسال درخواست همکاری به راننده
 # @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 # @permission_classes([IsLoggedInAndPasswordSet])
 # def info_driver(request):
+#     is_body = bool(request.body)
+#     if request.method == 'GET' and not is_body:
+#         data = request.GET
+#     else:
+#         data = request.data
+#     user = request.user
+#     try:
+#         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+#         # Hash: Retrieve CarrierOwner related to the current user
+#         carrier_owner = CarrierOwner.objects.get(user=user)
+#     except CarrierOwner.DoesNotExist:
+#         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+#
+#     # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+#     # Hash: Check user type for access verification
+#     if request.user.profile.user_type != 'صاحب حمل کننده':
+#         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+#     driver_id = data.get('driver_id',None)
+#     if driver_id != None:
+#

@@ -1,12 +1,11 @@
-from django.shortcuts import render
+
 from .models import Captcha
 from django.utils import timezone
 from rest_framework.response import Response
 import threading
-from rest_framework import status, permissions
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from .serializers import CaptchaSerializer
-from django_hosts.resolvers import reverse
 
 
 def captcha_validation(id_captcha, captcha_answer):
