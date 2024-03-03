@@ -32,7 +32,6 @@ def requests_received_carrier_owner_DRIVER(request):
 
     if request.method == "GET":
         sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
-        print(sent_collaboration_request_to_driver_id)
         request_result = data.get('request_result', 'در انتظار پاسخ')
         if sent_collaboration_request_to_driver_id == None:
             sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(driver=driver,
@@ -47,10 +46,24 @@ def requests_received_carrier_owner_DRIVER(request):
                 sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(
                     id=sent_collaboration_request_to_driver_id, driver=driver,
                     deleted_at=None,
-                    is_ok=True,)
+                    is_ok=True, )
                 serializer = InfoSentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver)
 
                 return Response({'message': 'اطلاعات  درخواست  راننده', 'data': serializer.data})
             except Exception as e:
                 print(e)
                 return Response({"message": "شناسه درخواست ارسال شده اشتباه است", 'data': ''})
+    if request.method == "DELETE":
+        sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
+        try:
+            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(driver=driver,
+                                                                                                is_ok=True,
+                                                                                                deleted_at=None,
+                                                                                                request_result='در انتظار پاسخ')
+            sent_collaboration_request_to_driver.request_result = 'رد شده'
+            sent_collaboration_request_to_driver.is_changeable = False
+            sent_collaboration_request_to_driver.save()
+            return Response({"message": 'درخواست با موفقیت رد شد'})
+        except Exception as e:
+            print(e)
+            return Response({"message": 'شناسه درخواست ارسالی اشتباه است', 'data': ''})
