@@ -73,3 +73,40 @@ def requests_received_carrier_owner(request):
                 print(e)
                 return Response({'message': 'درخواست همکاری ای با این شناسه وجود ندارد'},
                                 status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        sent_collaboration_request_to_rail_cargo_id = data.get('sent_collaboration_request_to_rail_cargo_id', None)
+        sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
+        request_result = 'در انتظار پاسخ'
+        if sent_collaboration_request_to_rail_cargo_id != None:
+            try:
+
+                sent_collaboration_request_to_rail_cargo = SentCollaborationRequestToRailCargo.objects.get(
+                    id=sent_collaboration_request_to_rail_cargo_id,
+                    cargo_wagon_coordination__rail_cargo__goods_owner=goods_owner, is_ok=True, deleted_at=None,
+                    request_result=request_result)
+                sent_collaboration_request_to_rail_cargo.request_result = 'رد شده'
+                sent_collaboration_request_to_rail_cargo.is_changeable = False
+                sent_collaboration_request_to_rail_cargo.save()
+                return Response({"message": 'درخواست با موفقیت رد شد'})
+            except Exception as e:
+                print(e)
+                return Response({"message": 'شناسه درخواست ارسالی اشتباه است', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+        elif sent_collaboration_request_to_goods_owner_id != None:
+            try:
+                sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.get(
+                    id=sent_collaboration_request_to_goods_owner_id,
+                    goods_owner=goods_owner,
+                    request_result=request_result,
+                    deleted_at=None, is_ok=True)
+                sent_collaboration_request_to_goods_owner.request_result = 'رد شده'
+                sent_collaboration_request_to_goods_owner.is_changeable = False
+                sent_collaboration_request_to_goods_owner.save()
+                return Response({"message": 'درخواست با موفقیت رد شد'})
+            except Exception as e:
+                print(e)
+                return Response({"message": 'شناسه درخواست ارسالی اشتباه است', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": 'شناسه درخواست ارسالی اشتباه است', 'data': ''},
+                            status=status.HTTP_400_BAD_REQUEST)
