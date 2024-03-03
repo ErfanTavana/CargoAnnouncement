@@ -69,7 +69,8 @@ def road_fleet_view(request):
             serializer.save()
             return Response({'message': f'حمل کننده ی شما با موفقیت اضافه شد', 'data': serializer.data})
         else:
-            return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': serializer.errors})
+            return Response({'message': f'مقادیر اشتباه ارسال شده است', 'data': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     # هشتگ: ویرایش حمل‌کننده
     # Hash: Edit road fleet

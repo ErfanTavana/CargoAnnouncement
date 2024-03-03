@@ -426,7 +426,7 @@ class Driver(Base_Model):
     type_of_cooperation = models.CharField(max_length=255, choices=(
         ('موقت', 'موقت'),
         ('دائم', 'دائم'),
-        ('هردو', 'هردو'),
+        ('موقت و دائم', 'موقت و دائم'),
     ), blank=True, null=True, verbose_name='نوع همکاری')
     origin = models.CharField(verbose_name='مبدا راننده', max_length=100, blank=True, null=True)
     cooperate_with_carrier_owners = models.BooleanField(default=False,

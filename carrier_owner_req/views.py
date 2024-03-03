@@ -4,13 +4,14 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework import permissions
 from accounts.permissions import IsLoggedInAndPasswordSet
-from accounts.models import CarrierOwner , Driver
+from accounts.models import CarrierOwner, Driver
 from rest_framework import viewsets
 from goods_owner.models import CargoFleetCoordination
 
 from carrier_owner_req.serializers import CargoFleetCoordinationSerializer, RoadFleet, \
     SentCollaborationRequestToGoodsOwnerSerializer
-from .models import SentCollaborationRequestToGoodsOwner
+from .models import SentCollaborationRequestToGoodsOwner, SentCollaborationRequestToDriver
+from .serializers import InfoDriverSerializer, SentCollaborationRequestToDriverSerializer
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -75,18 +76,49 @@ def sent_collaboration_request_to_goods_owner(request):
     # Hash: Check user type for access verification
     if request.user.profile.user_type != 'صاحب حمل کننده':
         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-    if request.method == "GET":
+    if request.method == 'GET':
+        sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
         sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
         request_result = data.get('request_result', 'در انتظار پاسخ')
 
-        # ذخیره نتایج در یک متغیر
-        requests = SentCollaborationRequestToGoodsOwner.objects.filter(user_id=user.id, request_result=request_result,
-                                                                       deleted_at=None, is_ok=True)
+        if sent_collaboration_request_to_driver_id == None and sent_collaboration_request_to_goods_owner_id == None:
+            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(user_id=user.id,
+                                                                                                   is_ok=True,
+                                                                                                   deleted_at=None,
+                                                                                                   request_result=request_result)
+            # ذخیره نتایج در یک متغیر
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                user_id=user.id,
+                request_result=request_result,
+                deleted_at=None, is_ok=True)
 
-        # اجرای سریالایزر بر روی نتایج
-        serializer = SentCollaborationRequestToGoodsOwnerSerializer(requests, many=True)
+            # اجرای سریالایزر بر روی نتایج
 
-        return Response({'message': 'ok', 'data': serializer.data})
+            serializer = SentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver, many=True)
+            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner,
+                                                                         many=True)
+
+            return Response({"message": 'OK', 'data': {'driver': serializer.data, 'goods_owner': serializer2.data}})
+        if sent_collaboration_request_to_driver_id != None:
+            try:
+                sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(
+                    id=sent_collaboration_request_to_driver_id, user_id=user.id,
+                    is_ok=True,
+                    deleted_at=None,
+                    request_result=request_result)
+                serializer = SentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver)
+                return Response({"message": 'OK', 'data': serializer.data})
+            except:
+                return Response({"message": 'شناسه درخواست همکاری به راننده اشتباه است', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+        if sent_collaboration_request_to_goods_owner_id != None:
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                user_id=user.id,
+                request_result=request_result,
+                deleted_at=None, is_ok=True)
+            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner,
+                                                                         many=True)
+            return Response({"message": 'OK', 'data': serializer2.data})
     if request.method == 'POST':
         data = request.data.copy()
         road_fleet_id = data.get('road_fleet_id', None)
@@ -96,7 +128,6 @@ def sent_collaboration_request_to_goods_owner(request):
             user=user,
             road_fleet_id=road_fleet_id,
             cargo_fleet_coordination_id=cargo_fleet_coordination_id,
-            request_result='در انتظار پاسخ'
         ).exists()
 
         if existing_request:
@@ -156,28 +187,134 @@ def sent_collaboration_request_to_goods_owner(request):
             return Response({'message': 'درخواست همکاری شما برای صاحب بار ویرایش شد'}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'درخواست همکاری با این شناسه وجود ندارد'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 ################################################################
 ## ارسال درخواست همکاری به راننده
-# @api_view(['POST', 'GET', 'PUT', 'DELETE'])
-# @permission_classes([IsLoggedInAndPasswordSet])
-# def info_driver(request):
-#     is_body = bool(request.body)
-#     if request.method == 'GET' and not is_body:
-#         data = request.GET
-#     else:
-#         data = request.data
-#     user = request.user
-#     try:
-#         # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
-#         # Hash: Retrieve CarrierOwner related to the current user
-#         carrier_owner = CarrierOwner.objects.get(user=user)
-#     except CarrierOwner.DoesNotExist:
-#         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
-#
-#     # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
-#     # Hash: Check user type for access verification
-#     if request.user.profile.user_type != 'صاحب حمل کننده':
-#         return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
-#     driver_id = data.get('driver_id',None)
-#     if driver_id != None:
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def drivers_info(request):
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
+    user = request.user
+    try:
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
 
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    if request.method == 'GET':
+        driver_id = data.get('driver_id', None)
+        if driver_id == None:
+            drivers = Driver.objects.filter(deleted_at=None, is_ok=True, cooperate_with_carrier_owners=True)
+            serializer = InfoDriverSerializer(drivers, many=True)
+            return Response({'message': 'لیست راننده ها', 'data': serializer.data})
+        else:
+            drivers = Driver.objects.get(id=driver_id, deleted_at=None, is_ok=True, cooperate_with_carrier_owners=True)
+            serializer = InfoDriverSerializer(drivers, many=False)
+            return Response({'message': 'اطلاعات راننده', 'data': serializer.data})
+
+
+## ارسال درخواست همکاری به راننده
+@api_view(['POST', 'GET', 'PUT', 'DELETE'])
+@permission_classes([IsLoggedInAndPasswordSet])
+def sent_collaboration_request_to_driver(request):
+    is_body = bool(request.body)
+    if request.method == 'GET' and not is_body:
+        data = request.GET
+    else:
+        data = request.data
+    user = request.user
+
+    try:
+        # هشتگ: دریافت صاحب حمل کننده مرتبط با کاربر فعلی
+        # Hash: Retrieve CarrierOwner related to the current user
+        carrier_owner = CarrierOwner.objects.get(user=user)
+    except CarrierOwner.DoesNotExist:
+        return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # هشتگ: بررسی نوع کاربر برای اطمینان از دسترسی
+    # Hash: Check user type for access verification
+    if request.user.profile.user_type != 'صاحب حمل کننده':
+        return Response({'message': 'شما دسترسی به این صفحه ندارید'}, status=status.HTTP_403_FORBIDDEN)
+    if request.method == 'GET':
+        sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
+        sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
+        request_result = data.get('request_result', 'در انتظار پاسخ')
+
+        if sent_collaboration_request_to_driver_id == None and sent_collaboration_request_to_goods_owner_id == None:
+            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(user_id=user.id,
+                                                                                                   is_ok=True,
+                                                                                                   deleted_at=None,
+                                                                                                   request_result=request_result)
+            # ذخیره نتایج در یک متغیر
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                user_id=user.id,
+                request_result=request_result,
+                deleted_at=None, is_ok=True)
+
+            # اجرای سریالایزر بر روی نتایج
+
+            serializer = SentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver, many=True)
+            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner,
+                                                                         many=True)
+
+            return Response({"message": 'OK', 'data': {'driver': serializer.data, 'goods_owner': serializer2.data}})
+        if sent_collaboration_request_to_driver_id != None:
+            try:
+                sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(
+                    id=sent_collaboration_request_to_driver_id, user_id=user.id,
+                    is_ok=True,
+                    deleted_at=None,
+                    request_result=request_result)
+                serializer = SentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver)
+                return Response({"message": 'OK', 'data': serializer.data})
+            except:
+                return Response({"message": 'شناسه درخواست همکاری به راننده اشتباه است', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
+        if sent_collaboration_request_to_goods_owner_id != None:
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                user_id=user.id,
+                request_result=request_result,
+                deleted_at=None, is_ok=True)
+            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner,
+                                                                         many=True)
+            return Response({"message": 'OK', 'data': serializer2.data})
+
+    if request.method == 'POST':
+        data = request.data.copy()
+        driver_id = data.get('driver_id')
+        road_fleet_id = data.get('road_fleet_id')
+        existing_request = SentCollaborationRequestToDriver.objects.filter(
+            user=user,
+            driver_id=driver_id,
+            road_fleet=road_fleet_id,
+        ).exists()
+
+        if existing_request:
+            return Response({'message': 'شما قبلاً یک درخواست همکاری برای این راننده ثبت کرده‌اید'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            driver = Driver.objects.get(id=driver_id, deleted_at=None, is_ok=True, cooperate_with_carrier_owners=True)
+        except:
+            return Response({'message': 'شناسه ی ارسالی راننده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+        data['user'] = user.id
+        data['road_fleet'] = road_fleet_id
+        data['carrier_owner'] = carrier_owner.id
+        data['request_result'] = 'در انتظار پاسخ'
+        data['driver'] = driver.id
+        serializer = SentCollaborationRequestToDriverSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'درخواست همکاری  شما برای راننده ثبت شد'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'خطا در مقادیر ارسالی', 'data': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)

@@ -39,7 +39,7 @@ class SentCollaborationRequestToGoodsOwner(Base_Model):
 
 
 REQUEST_TYPE_CHOICES = [
-    ('دائمی', 'دائمی'),
+    ('دائم', 'دائم'),
     ('موقت', 'موقت'),
 ]
 
@@ -51,7 +51,7 @@ class SentCollaborationRequestToDriver(Base_Model):
     carrier_owner = models.ForeignKey(CarrierOwner, on_delete=models.CASCADE, verbose_name='صاحب حمل کننده', blank=True,
                                       null=True)
     road_fleet = models.ForeignKey(RoadFleet, on_delete=models.CASCADE, verbose_name='حمل کننده')
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, verbose_name='راننده')
     request_type = models.CharField(max_length=20, choices=REQUEST_TYPE_CHOICES, verbose_name='نوع درخواست')
     # اگر دائم باشد مقصد ندارد
     source_location = models.CharField(max_length=255, blank=True, null=True, verbose_name='مبدا بار')

@@ -99,7 +99,6 @@ def sent_collaboration_request_to_railCargo(request):
             user=user,
             wagon_details=wagon_details_id,
             cargo_wagon_coordination=cargo_wagon_coordination_id,
-            request_result='در انتظار پاسخ'
         ).exists()
 
         if existing_request:

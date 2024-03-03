@@ -1,9 +1,12 @@
 # serializers.py
 from rest_framework import serializers
-from .models import SentCollaborationRequestToGoodsOwner
+from .models import SentCollaborationRequestToGoodsOwner, SentCollaborationRequestToDriver
 from goods_owner.serializers import Base_ModelSerializer
 from goods_owner.models import CargoFleetCoordination, InnerCargo, InternationalCargo, RequiredCarrier
-from  carrier_owner.models import RoadFleet
+from carrier_owner.models import RoadFleet
+from carrier_owner.serializers import RoadFleetSerializer
+from accounts.models import Driver
+
 
 class InfoInnerCargoSerializer(Base_ModelSerializer):
     class Meta:
@@ -137,6 +140,8 @@ class InfoRequiredCarrierSerializer(Base_ModelSerializer):
             'carrier_price',
             'cargo_price',
         )
+
+
 class InfoRoadFleetSerializer(Base_ModelSerializer):
     class Meta:
         model = RoadFleet
@@ -177,7 +182,11 @@ class CargoFleetCoordinationSerializer(Base_ModelSerializer):
             'status_result',
         )
 
+
 class SentCollaborationRequestToGoodsOwnerSerializer(Base_ModelSerializer):
+    road_fleet_full = InfoRoadFleetSerializer(source='road_fleet', read_only=True)
+    cargo_fleet_coordination_full = CargoFleetCoordinationSerializer(source='cargo_fleet_coordination', read_only=True)
+
     class Meta:
         model = SentCollaborationRequestToGoodsOwner
         fields = (
@@ -185,11 +194,56 @@ class SentCollaborationRequestToGoodsOwnerSerializer(Base_ModelSerializer):
             'user',
             'carrier_owner',
             'road_fleet',
+            'road_fleet_full',
             'goods_owner',
             'required_carrier',
             'cargo_fleet_coordination',
+            'cargo_fleet_coordination_full',
             'proposed_price',
             'request_result',
         )
+
+
 ################################################################
 # ارسال درخواست همکاری به راننده
+
+class InfoDriverSerializer(Base_ModelSerializer):
+    class Meta:
+        model = Driver
+        fields = (
+            'id',
+            'national_card_image_bool',
+            'license_expiry_date',
+            'smart_card_image_bool',
+            'domestic_license',
+            'international_license',
+            'international_license_expiry_date',
+            'city',
+            'province',
+            'health_card_expiry_date',
+            'type_of_cooperation',
+            'origin',
+            'cooperate_with_carrier_owners',
+        )
+
+
+class SentCollaborationRequestToDriverSerializer(Base_ModelSerializer):
+    road_fleet_full = RoadFleetSerializer(source='road_fleet', read_only=True)
+
+    class Meta:
+        model = SentCollaborationRequestToDriver
+        fields = (
+            'id',
+            'user',
+            'carrier_owner',
+            'road_fleet',
+            'road_fleet_full',
+            'driver',
+            'request_type',
+            'source_location',
+            'destination_location',
+            'proposed_price',
+            'request_result',
+            'estimated_loading_time_at_source',
+            'estimated_delivery_time_at_destination',
+        )
