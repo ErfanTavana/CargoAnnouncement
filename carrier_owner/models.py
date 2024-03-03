@@ -37,47 +37,54 @@ class RoadFleet(Base_Model):
                                     ("چادری", "چادری"),
                                     ("روباز", "روباز"),
                                     ("یخچالی", "یخچالی"),
+                                    ("کمپرسی", "کمپرسی"),
+                                    ("مسقف", "مسقف"),
+                                    ("کفی", "کفی"),
+                                    ("بفل دار", "بقل دار"),
                                 ))
 
     # اطلاعات نوع وسیله حمل‌ونقل
     vehichleType = models.CharField(max_length=100, verbose_name="نوع وسیله حمل کننده", default="",
                                     choices=(
-                                        ("ماشین باربری کوچک و سبک", "ماشین باربری کوچک و سبک"),
-                                        ("ماشین باربری نیمه سنگین", "ماشین باربری نیمه سنگین"),
-                                        ("ماشین حمل بار سنگین", "ماشین حمل بار سنگین"),
+                                        ("تریلی", "تریلی"),
+                                        ("جفت", "جفت"),
+                                        ("تک", "تک"),
+                                        ("خاور", "خاور"),
+                                        ("وانت و نیسان", "وانت ونیسان"),
+                                        ("خاور", "خاور"),
 
                                     ))
-    vehichleTypeOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
+    # vehichleTypeOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
 
     # اطلاعات نوع ماشین باربری نیمه سنگین
-    semiHeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین", default="",
-                                         choices=(
-                                             ("کامیون", "کامیون"),
-                                             ("خاور", "خاور"),
-                                             ("هیوندا", "هیوندا"),
-                                             ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
-                                             ("کامیونت", "کامیونت"),
-                                             ("سایر", "سایر"),
-
-                                         ))
-    semiHeavyVehichleOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
+    # # semiHeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری نیمه سنگین", default="",
+    #                                      choices=(
+    #                                          ("کامیون", "کامیون"),
+    #                                          ("خاور", "خاور"),
+    #                                          ("هیوندا", "هیوندا"),
+    #                                          ("ماشین باربری ایسوزو", "ماشین باربری ایسوزو"),
+    #                                          ("کامیونت", "کامیونت"),
+    #                                          ("سایر", "سایر"),
+    #
+    #                                      ))
+    # semiHeavyVehichleOthers = models.CharField(max_length=100, verbose_name="سایر", default="")
 
     # اطلاعات نوع ماشین باربری سنگین
-    HeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", default="",
-                                     choices=(
-                                         ("تریلی", "تریلی"),
-                                         ("ترانزیت", "ترانزیت"),
-                                         ("ده تن", "ده تن"),
-                                         ("کفی", "کفی"),
-                                         ("ترانزیت یخچالی", "ترانزیت یخچالی"),
-                                         ("بیست تن", "بیست تن"),
-                                         ("چادری سه محور", "چادری سه محور"),
-                                         ("کمپرسی", "کمپرسی"),
-                                         ("تریلی تانکر فاو", "تریلی تانکر فاو"),
-                                         ("سایر", "سایر"),
-
-                                     ))
-    heavy_vehicle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
+    # HeavyVehichle = models.CharField(max_length=20, verbose_name="ماشین باربری سنگین", default="",
+    #                                  choices=(
+    #                                      ("تریلی", "تریلی"),
+    #                                      ("ترانزیت", "ترانزیت"),
+    #                                      ("ده تن", "ده تن"),
+    #                                      ("کفی", "کفی"),
+    #                                      ("ترانزیت یخچالی", "ترانزیت یخچالی"),
+    #                                      ("بیست تن", "بیست تن"),
+    #                                      ("چادری سه محور", "چادری سه محور"),
+    #                                      ("کمپرسی", "کمپرسی"),
+    #                                      ("تریلی تانکر فاو", "تریلی تانکر فاو"),
+    #                                      ("سایر", "سایر"),
+    #
+    #                                  ))
+    # heavy_vehicle_others = models.CharField(max_length=100, verbose_name="سایر", default="")
 
     # اطلاعات شماره پلاک‌ها
     plaque_one_num_check = models.BooleanField(verbose_name="شماره پلاک واحد(تک پلاک)", default="")
@@ -120,6 +127,7 @@ class RoadFleet(Base_Model):
     )
     carrier_type = models.CharField(max_length=40, default='حمل و نقل بین المللی', choices=CARRIER_CHOICES,
                                     verbose_name="نوع حمل و نقل")
+
     class Meta:
         verbose_name = "حمل کننده های مربوط به صاحب حمل کننده"
         verbose_name_plural = "حمل کننده های مربوط به صاحاب حمل کنندهها "
