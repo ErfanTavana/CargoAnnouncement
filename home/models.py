@@ -27,6 +27,52 @@ class HomePageInfo(Base_Model):
     instagram_mz = models.URLField(blank=True, null=True, verbose_name='آدرس اینستاگرام MZ')
     telegram_mz = models.URLField(blank=True, null=True, verbose_name='آدرس تلگرام MZ')
     vichat_mz = models.URLField(blank=True, null=True, verbose_name='ویچت MZ')
+    rail_cargo_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='نرخ پرداختی بار ریلی'
+    )
+
+    domestic_truck_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+
+        verbose_name='نرخ پرداختی بار ماشینی داخلی'
+    )
+
+    international_truck_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+
+        verbose_name='نرخ پرداختی بار ماشینی خارجی'
+    )
+
+    wagon_owner_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+
+        verbose_name='نرخ پرداختی صاحب واگن'
+    )
+
+    carrier_owner_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+
+        verbose_name='نرخ پرداختی صاحب حمل‌کننده'
+    )
+
+    driver_payment_rate = models.FloatField(
+        blank=True,
+        null=True,
+        default=0,
+
+        verbose_name='نرخ پرداختی راننده'
+    )
 
     def __str__(self):
         return f'{self.country} - {self.province} - {self.city}'

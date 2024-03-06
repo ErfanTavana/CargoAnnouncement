@@ -13,6 +13,15 @@ from .serializers import InnerCargoSerializer, InternationalCargoSerializer, Req
 from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
 from .models import CargoFleetCoordination, RailCargo
+from home.models import HomePageInfo
+
+
+def check_user_balance(user):
+    wallet = user.profile.wallet
+
+
+def check_purchase_amount(user):
+    pass
 
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
@@ -525,7 +534,8 @@ def required_carrier_view(request):
                         data_copy['cargo_type'] = 'اعلام بار خارجی'
                         data_copy['goods_owner'] = user.goodsowner.id
                         data_copy['user'] = user.id
-                    except InternationalCargo.DoesNotExist:
+                    except Exception as e:
+                        print(e)
                         return Response({'message': 'ایدی بار ارسال شده اشتباه است'},
                                         status=status.HTTP_400_BAD_REQUEST)
 
