@@ -38,28 +38,19 @@ def check_user_balance(user, processes):
                     'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار ریلی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {rail_cargo_payment_rate}  تومان برسانید .''',
                     "data": wallet,
                 }}
-        if processes == 'بار ماشینی داخلی':
+        if processes == 'بار ماشینی':
             stat = True
-            domestic_truck_payment_rate = home_page_info.domestic_truck_payment_rate
-
-            if domestic_truck_payment_rate > wallet:
-                domestic_truck_payment_rate = num_to_persian_words(domestic_truck_payment_rate)
-                return {'status': stat, 'error': {
-                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار داخلی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {domestic_truck_payment_rate}  تومان برسانید .''',
-                    "data": wallet,
-                }}
-        if processes == 'بار ماشینی خارجی':
-            stat = True
-            international_truck_payment_rate = home_page_info.international_truck_payment_rate
+            international_truck_payment_rate = home_page_info.domestic_truck_payment_rate
 
             if international_truck_payment_rate > wallet:
                 international_truck_payment_rate = num_to_persian_words(international_truck_payment_rate)
                 return {'status': stat, 'error': {
-                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار خارجی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {international_truck_payment_rate}  تومان برسانید .''',
+                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار ماشینی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {international_truck_payment_rate}  تومان برسانید .''',
                     "data": wallet,
                 }}
         stat = False
         return {'status': stat}
+
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -180,6 +171,7 @@ def inner_cargo_view(request):
         inner_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار داخلی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
+
 # تعریف نمای API برای مدیریت عملیات بین‌المللی کارگو
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
@@ -290,6 +282,7 @@ def international_cargo_view(request):
         international_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
 
+
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def wagon_cargo_view(request):
@@ -311,6 +304,9 @@ def wagon_cargo_view(request):
     except GoodsOwner.DoesNotExist:
         return Response({"message": "لطفاً پروفایل خود را تکمیل کنید."}, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'GET':
+        status_wallet = check_user_balance(request.user, 'بار ریلی')
+        if status_wallet['status'] == True:
+            return Response({'message': status_wallet['error']}, status=status.HTTP_400_BAD_REQUEST)
         rail_cargo_id = data.get('rail_cargo_id', None)
         if rail_cargo_id == None:
             rail_cargo = RailCargo.objects.filter(user_id=user.id, goods_owner_id=goods_owner.id, deleted_at=None,
@@ -389,6 +385,7 @@ def wagon_cargo_view(request):
         except:
             return Response({'message': ' شناسه بار ریلی  اشتباه است.'},
                             status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
@@ -495,6 +492,7 @@ def required_wagon_view(request):
             return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as p:
             print(p)
+
 
 # Define the API view for handling RequiredCarrier operations
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])

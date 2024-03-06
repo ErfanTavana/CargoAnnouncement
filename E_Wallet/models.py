@@ -1,15 +1,16 @@
 from django.db import models
 from goods_owner.models import Base_Model
 from django.contrib.auth.models import User
-from accounts.models import Profile   # شاید نیاز به تغییر باشد
+from accounts.models import Profile  # شاید نیاز به تغییر باشد
+
+
 class WalletTransaction(Base_Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر')
-    amount = models.FloatField(verbose_name='مقدار تراکنش')
+    amount = models.IntegerField(verbose_name='مقدار تراکنش')
     is_increase = models.BooleanField(default=True, verbose_name='افزایش موجودی؟')
-    reason = models.CharField(max_length=255, verbose_name='دلیل تراکنش')
+    reason = models.TextField(verbose_name='دلیل تراکنش')
 
     def apply_transaction(self):
-
 
         user_profile = Profile.objects.get(user=self.user)
         if self.is_increase:

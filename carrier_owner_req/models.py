@@ -37,7 +37,6 @@ class SentCollaborationRequestToGoodsOwner(Base_Model):
         verbose_name = 'درخواست همکاری صاحب حمل کننده برای اعلام بار ماشینی'
         verbose_name_plural = 'درخواست های همکاری صاحب حمل کننده برای اعلام بار ماشینی'
 
-
 REQUEST_TYPE_CHOICES = [
     ('دائم', 'دائم'),
     ('موقت', 'موقت'),

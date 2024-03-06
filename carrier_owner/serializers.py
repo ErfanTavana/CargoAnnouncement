@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import RoadFleet
 from goods_owner.serializers import Base_ModelSerializer
 
+
 # سریالایزر برای مدل RoadFleet
 # نام سریالایزر: RoadFleetSerializer
 class RoadFleetSerializer(Base_ModelSerializer):
@@ -36,6 +37,7 @@ class RoadFleetSerializer(Base_ModelSerializer):
         read_only_fields = Base_ModelSerializer.Meta.read_only_fields + ()
     # اگر نیاز به اعتبارسنجی یا اضافه کردن فیلدهای سفارشی دارید، می‌توانید در اینجا انجام دهید
 
+
 # سریالایزر برای مدل RoadFleet
 class RoadFleet2Serializer(serializers.ModelSerializer):
     class Meta:
@@ -45,10 +47,6 @@ class RoadFleet2Serializer(serializers.ModelSerializer):
             'ownerType',
             'roomType',
             'vehichleType',
-            'semiHeavyVehichle',
-            'semiHeavyVehichleOthers',
-            'HeavyVehichle',
-            'heavy_vehicle_others',
             'plaque_one_num_check',
             'plaque_puller_num_check',
             'plaque_carriage_num_check',

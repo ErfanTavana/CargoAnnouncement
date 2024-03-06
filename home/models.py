@@ -39,15 +39,7 @@ class HomePageInfo(Base_Model):
         null=True,
         default=0,
 
-        verbose_name='نرخ پرداختی بار ماشینی داخلی'
-    )
-
-    international_truck_payment_rate = models.IntegerField(
-        blank=True,
-        null=True,
-        default=0,
-
-        verbose_name='نرخ پرداختی بار ماشینی خارجی'
+        verbose_name='نرخ پرداختی اعلام بار'
     )
 
     wagon_owner_payment_rate = models.IntegerField(

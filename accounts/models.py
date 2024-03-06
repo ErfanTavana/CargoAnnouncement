@@ -150,7 +150,7 @@ type_user_code_mapping = {
     "صاحب حمل کننده": "CC",
     "راننده": "DR",
     "صاحب واگن": "WO",
-    "اتحادیه صادرکنندگان":'EU'
+    "اتحادیه صادرکنندگان": 'EU'
 }
 
 
@@ -175,7 +175,7 @@ class Profile(Base_Model):
     user_type = models.CharField(max_length=255, default='انتخاب نشده', verbose_name="نوع کاربر",
                                  choices=type_user_list)
 
-    wallet = models.FloatField(default=0, verbose_name='کیف پول', blank=True, null=True)
+    wallet = models.IntegerField(default=0, verbose_name='کیف پول', blank=True, null=True)
 
     # Field for a unique code
     # فیلد کد اختصاصی
