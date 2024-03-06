@@ -14,15 +14,52 @@ from accounts.permissions import IsLoggedInAndPasswordSet
 from carrier_owner.models import RoadFleet
 from .models import CargoFleetCoordination, RailCargo
 from home.models import HomePageInfo
+from num2words import num2words
 
 
-def check_user_balance(user):
-    wallet = user.profile.wallet
+def num_to_persian_words(number):
+    persian_text = num2words(number, lang='fa')
+    return persian_text
 
 
-def check_purchase_amount(user):
-    pass
+def check_user_balance(user, processes):
+    stat = False
+    home_page_info = HomePageInfo.objects.first()
+    profile = user.profile
+    wallet = profile.wallet
+    if profile.user_type == 'صاحب بار':
+        if processes == 'بار ریلی':
+            rail_cargo_payment_rate = home_page_info.rail_cargo_payment_rate
 
+            if rail_cargo_payment_rate > wallet:
+                rail_cargo_payment_rate = num_to_persian_words(rail_cargo_payment_rate)
+                stat = True
+                return {'status': stat, 'wallet': wallet, 'error': {
+                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار ریلی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {rail_cargo_payment_rate}  تومان برسانید .''',
+                    "data": wallet,
+                }}
+        if processes == 'بار ماشینی داخلی':
+            stat = True
+            domestic_truck_payment_rate = home_page_info.domestic_truck_payment_rate
+
+            if domestic_truck_payment_rate > wallet:
+                domestic_truck_payment_rate = num_to_persian_words(domestic_truck_payment_rate)
+                return {'status': stat, 'error': {
+                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار داخلی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {domestic_truck_payment_rate}  تومان برسانید .''',
+                    "data": wallet,
+                }}
+        if processes == 'بار ماشینی خارجی':
+            stat = True
+            international_truck_payment_rate = home_page_info.international_truck_payment_rate
+
+            if international_truck_payment_rate > wallet:
+                international_truck_payment_rate = num_to_persian_words(international_truck_payment_rate)
+                return {'status': stat, 'error': {
+                    'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار خارجی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {international_truck_payment_rate}  تومان برسانید .''',
+                    "data": wallet,
+                }}
+        stat = False
+        return {'status': stat}
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -104,9 +141,11 @@ def inner_cargo_view(request):
 
             # بررسی امکان تغییر در این کارگوی داخلی
             if not inner_cargo.is_changeable:
-                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
         except InnerCargo.DoesNotExist:
-            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # افزودن کاربر فعلی و اطلاعات صاحب کالا به داده‌های درخواست
         data_copy = request.data.copy()
@@ -131,7 +170,8 @@ def inner_cargo_view(request):
             # بازیابی کارگوی داخلی بر اساس شناسه و کاربر فعلی
             inner_cargo = InnerCargo.objects.get(id=inner_cargo_id, user_id=user.id, deleted_at=None)
         except InnerCargo.DoesNotExist:
-            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'هیچ بار داخلی با این شناسه وجود ندارد.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if not inner_cargo.is_deletable:
             return Response({'message': "این آیتم قابل حذف نیست", 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
@@ -139,7 +179,6 @@ def inner_cargo_view(request):
         # اجرای حذف نرم با استفاده از متد soft_delete
         inner_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار داخلی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
-
 
 # تعریف نمای API برای مدیریت عملیات بین‌المللی کارگو
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -210,7 +249,8 @@ def international_cargo_view(request):
 
             # بررسی امکان تغییر در این کارگوی بین‌المللی
             if not international_cargo.is_changeable:
-                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": 'این آیتم قابل تغییر نیست', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
         except InternationalCargo.DoesNotExist:
             return Response({'message': 'هیچ بار خارجی با این شناسه وجود ندارد.', 'data': ''},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -249,7 +289,6 @@ def international_cargo_view(request):
         # اجرای حذف نرم با استفاده از متد soft_delete
         international_cargo.soft_delete(deleted_by=user)
         return Response({'message': 'بار خارجی با موفقیت حذف شد.'}, status=status.HTTP_200_OK)
-
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
@@ -292,6 +331,10 @@ def wagon_cargo_view(request):
                                 status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'POST':
+        status_wallet = check_user_balance(request.user, 'بار ریلی')
+        print(status_wallet['status'])
+        if status_wallet['status'] == True:
+            return Response({'message': status_wallet['error']}, status=status.HTTP_400_BAD_REQUEST)
         data_copy = request.data.copy()
         data_copy['user'] = user.id
         data_copy['goods_owner'] = goods_owner.id
@@ -347,7 +390,6 @@ def wagon_cargo_view(request):
             return Response({'message': ' شناسه بار ریلی  اشتباه است.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
 @permission_classes([IsLoggedInAndPasswordSet])
 def required_wagon_view(request):
@@ -391,7 +433,6 @@ def required_wagon_view(request):
     if request.method == 'POST':
         data_list = request.data
         for data in data_list:
-
             rail_cargo_id = data.get('rail_cargo_id')
             try:
                 rail_cargo = RailCargo.objects.get(id=rail_cargo_id, user=user, goods_owner=goods_owner,
@@ -423,7 +464,8 @@ def required_wagon_view(request):
         if required_wagon_id == None:
             return Response({'message': 'شناسه واگن موردنیاز را وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id, goods_owner=goods_owner,
+            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id,
+                                                        goods_owner=goods_owner,
                                                         deleted_at=None,
                                                         is_ok=True)
             data_copy = data.copy()
@@ -436,13 +478,15 @@ def required_wagon_view(request):
             return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as p:
             print(p)
-            return Response({'message': 'خطا در ویرایش واگن مورد نیاز'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'message': 'خطا در ویرایش واگن مورد نیاز'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     if request.method == 'DELETE':
         required_wagon_id = data.get('required_wagon_id', None)
         if required_wagon_id == None:
             return Response({'message': 'شناسه واگن موردنیاز را وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id, goods_owner=goods_owner,
+            required_wagon = RequiredWagons.objects.get(id=required_wagon_id, user_id=user.id,
+                                                        goods_owner=goods_owner,
                                                         deleted_at=None,
                                                         is_ok=True)
             required_wagon.soft_delete(user)
@@ -451,7 +495,6 @@ def required_wagon_view(request):
             return Response({'message': 'شناسه واگن مورد نیاز اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as p:
             print(p)
-
 
 # Define the API view for handling RequiredCarrier operations
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -488,7 +531,8 @@ def required_carrier_view(request):
                 return Response({'message': 'هیچ ایتمی وجود ندارد', 'data': ''}, status=status.HTTP_400_BAD_REQUEST)
         else:
             try:
-                required_carrier = RequiredCarrier.objects.get(deleted_at=None, user_id=user.id, id=required_carrier_id,
+                required_carrier = RequiredCarrier.objects.get(deleted_at=None, user_id=user.id,
+                                                               id=required_carrier_id,
                                                                is_ok=True)
                 serializer = RequiredCarrierSerializer(required_carrier, many=False)
                 return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
@@ -506,7 +550,8 @@ def required_carrier_view(request):
                 international_cargo_id = data.get("international_cargo_id", None)
                 print(international_cargo_id)
                 if international_cargo_id is None and inner_cargo_id is None:
-                    return Response({'message': 'ایدی بار ارسال شده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'message': 'ایدی بار ارسال شده اشتباه است'},
+                                    status=status.HTTP_400_BAD_REQUEST)
                 counter = int(data.get('counter', 1))
                 if counter > limit_requests_in_24_hours:
                     return Response({'message': f'در طول 24 ساعت بیشتر از 50 حمل کننده نمی‌توانید درخواست کنید '})
@@ -528,7 +573,8 @@ def required_carrier_view(request):
 
                 elif international_cargo_id is not None:
                     try:
-                        international_cargo = InternationalCargo.objects.get(id=international_cargo_id, user_id=user.id,
+                        international_cargo = InternationalCargo.objects.get(id=international_cargo_id,
+                                                                             user_id=user.id,
                                                                              deleted_at=None)
                         data_copy['international_cargo'] = international_cargo.id
                         data_copy['cargo_type'] = 'اعلام بار خارجی'

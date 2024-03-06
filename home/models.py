@@ -27,14 +27,14 @@ class HomePageInfo(Base_Model):
     instagram_mz = models.URLField(blank=True, null=True, verbose_name='آدرس اینستاگرام MZ')
     telegram_mz = models.URLField(blank=True, null=True, verbose_name='آدرس تلگرام MZ')
     vichat_mz = models.URLField(blank=True, null=True, verbose_name='ویچت MZ')
-    rail_cargo_payment_rate = models.FloatField(
+    rail_cargo_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
         verbose_name='نرخ پرداختی بار ریلی'
     )
 
-    domestic_truck_payment_rate = models.FloatField(
+    domestic_truck_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
@@ -42,7 +42,7 @@ class HomePageInfo(Base_Model):
         verbose_name='نرخ پرداختی بار ماشینی داخلی'
     )
 
-    international_truck_payment_rate = models.FloatField(
+    international_truck_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
@@ -50,7 +50,7 @@ class HomePageInfo(Base_Model):
         verbose_name='نرخ پرداختی بار ماشینی خارجی'
     )
 
-    wagon_owner_payment_rate = models.FloatField(
+    wagon_owner_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
@@ -58,7 +58,7 @@ class HomePageInfo(Base_Model):
         verbose_name='نرخ پرداختی صاحب واگن'
     )
 
-    carrier_owner_payment_rate = models.FloatField(
+    carrier_owner_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
@@ -66,12 +66,17 @@ class HomePageInfo(Base_Model):
         verbose_name='نرخ پرداختی صاحب حمل‌کننده'
     )
 
-    driver_payment_rate = models.FloatField(
+    driver_payment_rate = models.IntegerField(
         blank=True,
         null=True,
         default=0,
 
         verbose_name='نرخ پرداختی راننده'
+    )
+    exporters_union_payment_rate = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='نرخ پرداختی اتحادیه صادرکنندگان',
     )
 
     def __str__(self):
