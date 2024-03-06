@@ -301,6 +301,11 @@ def wagon_cargo_view(request):
         try:
             rail_cargo = RailCargo.objects.get(id=rail_cargo_id, goods_owner_id=goods_owner.id, user_id=user.id,
                                                deleted_at=None, is_ok=True)
+            rail_cargo.approval_status = None
+            rail_cargo.approval_date_time = None
+            rail_cargo.approved_rejected_by = None
+            rail_cargo.rejection_reason = None
+            rail_cargo.save()
             if rail_cargo.is_changeable != True:
                 return Response({'message': 'این ایتم دیگر قابل اپدیت نیست  '}, status=status.HTTP_400_BAD_REQUEST)
         except:
@@ -543,7 +548,6 @@ def required_carrier_view(request):
                     return Response({'message': serializer.errors},
                                     status=status.HTTP_400_BAD_REQUEST)
             return Response({'message': 'حمل‌کننده های درخواستی اضافه شد'}, status=status.HTTP_200_OK)
-
         except Exception as e:
             print(e)
             return Response({'message': 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.', 'data': f"{str(e)}"},

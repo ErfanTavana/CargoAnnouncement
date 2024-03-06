@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from goods_owner.models import InnerCargo, InternationalCargo, CommonCargo, Base_Model, \
-    RequiredCarrier, CargoFleetCoordination, RailCargo, RequiredWagons , CargoWagonCoordination
+    RequiredCarrier, CargoFleetCoordination, RailCargo, RequiredWagons, CargoWagonCoordination
 from django.contrib.auth.models import User
 from accounts.serializers import GoodsOwnerSerializer
 from carrier_owner.models import RoadFleet, CarrierOwner
@@ -156,13 +156,12 @@ class CargoFleetCoordinationSerializer(Base_ModelSerializer):
         )
 
 
-
-
-
 class RailCargoSerializer(Base_ModelSerializer):
     class Meta:
         model = RailCargo
         fields = (
+            'approval_status',
+            'rejection_reason',
             'id',
             'user',
             'goods_owner',
@@ -223,6 +222,10 @@ class RailCargoSerializer(Base_ModelSerializer):
             'need_route_code',
             'route_code',
         )
+        read_only_fields = (
+            'approval_status',
+            'rejection_reason',
+        )
 
 
 class RequiredWagonsSerializer(Base_ModelSerializer):
@@ -239,6 +242,7 @@ class RequiredWagonsSerializer(Base_ModelSerializer):
             'net_weight',
             'counter',
         )
+
 
 class CargoWagonCoordinationSerializer(Base_ModelSerializer):
     class Meta:

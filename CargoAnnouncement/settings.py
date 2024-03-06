@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'wagon_owner',
     'wagon_owner_req',
     'captcha',
+    'exporters_union',
 ]
 
 # میان‌افزارهای اجرایی برنامه

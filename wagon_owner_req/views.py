@@ -40,7 +40,8 @@ def cargo_wagon_coordination(request):
     if request.method == 'GET':
         cargo_wagon_coordination_id = data.get('cargo_wagon_coordination_id', None)
         if cargo_wagon_coordination_id == None:
-            cargo_wagon_coordination = CargoWagonCoordination.objects.filter(is_ok=True, deleted_at=None,
+            cargo_wagon_coordination = CargoWagonCoordination.objects.filter(
+                sentcollaborationrequesttorailcargo__rail_cargo__approval_status='تایید شده',is_ok=True, deleted_at=None,
                                                                              wagon_owner=None,
                                                                              status_result='در انتظار واگذاری')
             serializer = InfoCargoWagonCoordinationShowSerializer(cargo_wagon_coordination, many=True)
@@ -125,7 +126,7 @@ def sent_collaboration_request_to_railCargo(request):
         if cargo_wagon_coordination_id != None:
 
             try:
-                cargo_wagon_coordination = CargoWagonCoordination.objects.get(is_ok=True, deleted_at=None,
+                cargo_wagon_coordination = CargoWagonCoordination.objects.get(sentcollaborationrequesttorailcargo__rail_cargo__approval_status='تایید شده',is_ok=True, deleted_at=None,
                                                                               wagon_owner=None,
                                                                               status_result='در انتظار واگذاری',
                                                                               id=cargo_wagon_coordination_id)

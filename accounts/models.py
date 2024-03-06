@@ -139,6 +139,7 @@ type_user_list = (
     ("راننده", 'راننده'),
     ("صاحب واگن", 'صاحب واگن'),
     ("ادمین", 'ادمین'),
+    ('اتحادیه صادرکنندگان', 'اتحادیه صادرکنندگان'),
 )
 
 # User Type Code Mapping
@@ -148,7 +149,8 @@ type_user_code_mapping = {
     "صاحب بار": "CO",
     "صاحب حمل کننده": "CC",
     "راننده": "DR",
-    "صاحب واگن": "WO"
+    "صاحب واگن": "WO",
+    "اتحادیه صادرکنندگان":'EU'
 }
 
 
@@ -218,6 +220,8 @@ class WagonOwner(Base_Model):
     class Meta:
         verbose_name = 'صاحب  واگن'
         verbose_name_plural = "صاحبان واگن"
+
+
 # مدل صاحب بار
 
 class GoodsOwner(Base_Model):

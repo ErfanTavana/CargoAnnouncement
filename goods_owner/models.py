@@ -331,7 +331,6 @@ class CargoFleetCoordination(Base_Model):
         verbose_name_plural = 'ماشین های مورد نیاز و ارتباطات'
 
 
-
 VEHICLE_TYPE_CHOICES = (
     ('short_edge', 'لبه کوتاه'),
     ('long_edge', 'لبه بلند'),
@@ -344,6 +343,25 @@ class RailCargo(Base_Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر', blank=True, null=True)
     goods_owner = models.ForeignKey(GoodsOwner, blank=True, null=True, on_delete=models.CASCADE,
                                     verbose_name='پروفایل صاحب بار')
+    APPROVAL_STATUS_CHOICES = [
+        ('در انتظار پاسخ', 'در انتظار پاسخ'),
+        ('تایید شده', 'تایید شده'),
+        ('رد شده', 'رد شده'),
+    ]
+    approval_status = models.CharField(
+        max_length=20, choices=APPROVAL_STATUS_CHOICES,
+        verbose_name='تایید یا رد توسط اتحادیه صادرکنندگان', default='در انتظار پاسخ', blank=True, null=True
+    )
+    approval_date_time = models.DateTimeField(
+        verbose_name='تاریخ و ساعت تایید یا رد', blank=True, null=True
+    )
+    approved_rejected_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='approved_rejected_wagons', verbose_name='تایید یا رد توسط کاربر'
+    )
+    rejection_reason = models.TextField(
+        verbose_name='شرح دلیل رد شدن درخواست', blank=True, null=True
+    )
 
     length = models.IntegerField(verbose_name="طول", default=0, blank=True, null=True)
     width = models.IntegerField(verbose_name="عرض", default=0, blank=True, null=True)
@@ -428,7 +446,7 @@ class RailCargo(Base_Model):
     destination_street = models.CharField(max_length=50, verbose_name="خیابان مقصد", blank=True, null=True)
     destination_address = models.CharField(max_length=100, verbose_name="آدرس دقیق مقصد", blank=True, null=True)
     destination_area = models.CharField(max_length=100, choices=(
-        ('گمرگ', 'گمرگ'),
+        ('گمرک', 'گمرک'),
         ('بندر', 'بندر'),
         ('ایستگاه', 'ایستگاه'),
         ('گمرک/ایستگاه', 'گمرک/ایستگاه'),
@@ -473,6 +491,13 @@ class RailCargo(Base_Model):
     need_route_code = models.BooleanField(default=False, verbose_name="آیا نیاز به کد مسیر دارید؟")
     route_code = models.CharField(max_length=20, verbose_name="کد مسیر", blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        if self.cargo_procedure_type != 'صادراتی':
+            self.approval_status = 'تایید شده'
+            self.approval_date_time = timezone.now()
+            self.approved_rejected_by = self.user
+            self.rejection_reason = 'فقط بار های صادراتی نیاز به تایید اتحادیه صادرکنندگان دارند'
+        super(RailCargo, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'اعلام بار ریلی'
