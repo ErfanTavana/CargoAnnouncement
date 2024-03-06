@@ -35,9 +35,8 @@ def rail_cargo_confirmation(request):
         rail_cargo_id = data.get('rail_cargo_id', None)
         if rail_cargo_id != None:
             try:
-                # اعمال شرایط به جستجوی دیتابیس
-                # اعمال شرایط به جستجوی دیتابیس
                 rail_cargo = RailCargo.objects.filter(
+                    Q(approval_date_time__isnull=True) | Q(approval_date_time__gte=six_months_ago),
                     is_ok=True,
                     deleted_at=None,
                     approval_status=approval_status,
@@ -50,6 +49,7 @@ def rail_cargo_confirmation(request):
                 return Response({"message": 'شناسه اعلام بار ریلی اشتباه است', 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
         rail_cargo = RailCargo.objects.filter(
+            Q(approval_date_time__isnull=True) | Q(approval_date_time__gte=six_months_ago),
             is_ok=True,
             deleted_at=None,
             approval_status=approval_status,
