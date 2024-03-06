@@ -9,6 +9,7 @@ from .serializers import RequestReceivedFromTheWagonOwnerSerializer, RequestRece
 from carrier_owner_req.models import SentCollaborationRequestToGoodsOwner
 from wagon_owner_req.models import CargoWagonCoordination
 from goods_owner.views import check_user_balance
+from home.models import HomePageInfo
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -100,7 +101,6 @@ def requests_received_carrier_owner(request):
                 item.is_changeable = False
                 item.is_deletable = False
                 item.save()
-
             cargo_wagon_coordination = CargoWagonCoordination.objects.get(
                 id=sent_collaboration_request_to_rail_cargo.cargo_wagon_coordination.id)
             print(sent_collaboration_request_to_rail_cargo_id)
@@ -108,7 +108,11 @@ def requests_received_carrier_owner(request):
             cargo_wagon_coordination.is_deletable = False
             cargo_wagon_coordination.status_result = 'وارگذار شده'
             cargo_wagon_coordination.wagon_owner = sent_collaboration_request_to_rail_cargo.wagon_owner
+            home_page_info = HomePageInfo.objects.first()
+            user.profile.wallet = user.profile.wallet - home_page_info.rail_cargo_payment_rate
+            user.profile.save()
             cargo_wagon_coordination.save()
+
             sent_collaboration_request_to_rail_cargo.save()
 
             return Response({"message": 'درخواست با موفقیت تایید شد'}, status=status.HTTP_200_OK)
