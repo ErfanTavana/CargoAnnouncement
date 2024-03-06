@@ -37,13 +37,10 @@ class DriverReqCarrierOwner(Base_Model):
 
     # قیمت پیشنهادی
     proposed_price = models.FloatField(default=0.0, verbose_name='قیمت پیشنهادی')
-
     # نتیجه درخواست
     request_result = models.CharField(max_length=30, choices=REQUEST_RESULT_CHOICES, verbose_name='نتیجه درخواست')
-
     # زمان لغو درخواست
     cancellation_time = models.DateTimeField(null=True, blank=True, verbose_name='زمان لغو درخواست')
-
     # مبدا و مقصد
     source = models.CharField(max_length=255, blank=True, null=True, verbose_name='مبدا')
     destination = models.CharField(max_length=255, blank=True, null=True, verbose_name='مقصد')

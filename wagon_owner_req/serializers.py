@@ -91,6 +91,7 @@ class SentCollaborationRequestToRailCargoSerializer(Base_ModelSerializer):
             'wagon_owner',
             'wagon_details',
             'rail_cargo',
+            'goods_owner',
             'required_wagons',
             'proposed_price',
             'cargo_wagon_coordination',

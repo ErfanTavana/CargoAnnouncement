@@ -41,11 +41,25 @@ def cargo_wagon_coordination(request):
         cargo_wagon_coordination_id = data.get('cargo_wagon_coordination_id', None)
         if cargo_wagon_coordination_id == None:
             cargo_wagon_coordination = CargoWagonCoordination.objects.filter(
-                sentcollaborationrequesttorailcargo__rail_cargo__approval_status='تایید شده',is_ok=True, deleted_at=None,
-                                                                             wagon_owner=None,
-                                                                             status_result='در انتظار واگذاری')
+                rail_cargo__approval_status='تایید شده', is_ok=True,
+                deleted_at=None,
+                wagon_owner=None,
+                status_result='در انتظار واگذاری')
             serializer = InfoCargoWagonCoordinationShowSerializer(cargo_wagon_coordination, many=True)
             return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            try:
+                cargo_wagon_coordination = CargoWagonCoordination.objects.get(
+                    rail_cargo__approval_status='تایید شده', is_ok=True,
+                    deleted_at=None,
+                    wagon_owner=None,
+                    status_result='در انتظار واگذاری',
+                    id=cargo_wagon_coordination_id)
+                serializer = InfoCargoWagonCoordinationShowSerializer(cargo_wagon_coordination)
+                return Response({'message': 'ok', 'data': serializer.data}, status=status.HTTP_200_OK)
+            except:
+                return Response({"message": 'شناسه واگن مورد نیاز اشتباه است', 'data': ''},
+                                status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST', 'GET', 'PUT', 'DELETE'])
@@ -126,13 +140,16 @@ def sent_collaboration_request_to_railCargo(request):
         if cargo_wagon_coordination_id != None:
 
             try:
-                cargo_wagon_coordination = CargoWagonCoordination.objects.get(sentcollaborationrequesttorailcargo__rail_cargo__approval_status='تایید شده',is_ok=True, deleted_at=None,
+                cargo_wagon_coordination = CargoWagonCoordination.objects.get(rail_cargo__approval_status='تایید شده',
+                                                                              is_ok=True, deleted_at=None,
                                                                               wagon_owner=None,
                                                                               status_result='در انتظار واگذاری',
                                                                               id=cargo_wagon_coordination_id)
                 data['cargo_wagon_coordination'] = cargo_wagon_coordination.id
                 data['required_wagons'] = cargo_wagon_coordination.required_wagons.id
                 data['rail_cargo'] = cargo_wagon_coordination.rail_cargo.id
+                data['goods_owner'] = cargo_wagon_coordination.rail_cargo.id
+
             except Exception as e:
                 print(e)
                 return Response({"message": "واگن مورد نیازه صاحب بار با این شناسه وجود ندارد."},
@@ -142,8 +159,8 @@ def sent_collaboration_request_to_railCargo(request):
                             status=status.HTTP_400_BAD_REQUEST)
         data['user'] = user.id
         data['wagon_owner'] = wagon_owner.id
+        data['goods_owner'] = cargo_wagon_coordination.rail_cargo.goods_owner.id
         data['request_result'] = 'در انتظار پاسخ'
-
         serializer = SentCollaborationRequestToRailCargoSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -154,7 +171,6 @@ def sent_collaboration_request_to_railCargo(request):
     if request.method == 'PUT':
         sent_collaboration_request_to_rail_cargo_id = data.get('sent_collaboration_request_to_rail_cargo_id')
         request_result = data.get('request_result', None)
-
 
         try:
             sent_collaboration_request_to_rail_cargo = SentCollaborationRequestToRailCargo.objects.get(
