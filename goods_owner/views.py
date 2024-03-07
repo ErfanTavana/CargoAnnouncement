@@ -37,6 +37,7 @@ def check_user_balance(user, processes):
                 return {'status': stat, 'wallet': wallet, 'error': {
                     'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار ریلی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {rail_cargo_payment_rate}  تومان برسانید .''',
                     "data": wallet,
+                    'wallet': wallet,
                 }}
         if processes == 'بار ماشینی':
             stat = True
@@ -47,7 +48,19 @@ def check_user_balance(user, processes):
                 return {'status': stat, 'error': {
                     'message': f'''کاربر گرامی لطفا برای ثبت اعلام بار ماشینی واستفاده از سایرخدمات سامانه ،اعتبار کیف پول خود را به مبلغ {international_truck_payment_rate}  تومان برسانید .''',
                     "data": wallet,
+                    'wallet': wallet,
                 }}
+    if processes == 'راننده':
+        stat = True
+        driver_payment_rate = home_page_info.driver_payment_rate
+
+        if driver_payment_rate > wallet:
+            driver_payment_rate = num_to_persian_words(driver_payment_rate)
+            return {'status': stat, 'error': {
+                'message': f'''کاربر گرامی لطفا برای استفاده از خدمات سامانه ،اعتبار کیف پول خود را به مبلغ {driver_payment_rate}  تومان برسانید .''',
+                "data": wallet,
+                'wallet': wallet,
+            }}
         stat = False
         return {'status': stat}
 

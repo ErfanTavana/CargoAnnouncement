@@ -79,7 +79,6 @@ def requests_received_carrier_owner(request):
                 return Response({'message': 'درخواست همکاری ای با این شناسه وجود ندارد'},
                                 status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'POST':
-
         sent_collaboration_request_to_rail_cargo_id = data.get('sent_collaboration_request_to_rail_cargo_id', None)
         sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
         if sent_collaboration_request_to_rail_cargo_id != None:
@@ -118,12 +117,10 @@ def requests_received_carrier_owner(request):
                     wallet_transaction = WalletTransaction.objects.create(user_id=user.id,
                                                                           amount=home_page_info.rail_cargo_payment_rate,
                                                                           is_increase=False, reason=reason)
-                    wallet_transaction.save()
                 except Exception as e:
                     print(e)
                 cargo_wagon_coordination.save()
                 sent_collaboration_request_to_rail_cargo.save()
-                user.profile.wallet = user.profile.wallet - home_page_info.rail_cargo_payment_rate
                 return Response({"message": 'درخواست با موفقیت تایید شد'}, status=status.HTTP_200_OK)
             except Exception as e:
                 print(e)
@@ -165,7 +162,6 @@ def requests_received_carrier_owner(request):
                     wallet_transaction = WalletTransaction.objects.create(user_id=user.id,
                                                                           amount=home_page_info.domestic_truck_payment_rate,
                                                                           is_increase=False, reason=reason)
-                    wallet_transaction.save()
                 except Exception as e:
                     print(e)
                 user.profile.save()
