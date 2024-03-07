@@ -417,7 +417,7 @@ def profile_view(request):
                 driver.origin = origin
                 driver.cooperate_with_carrier_owners = cooperate_with_carrier_owners
                 driver.save()
-                return Response({'message': 'فرم اعلام همکاری اپدیت شد'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'فرم اعلام همکاری اپدیت شد'}, status=status.HTTP_200_OK)
             except Driver.DoesNotExist:
                 return Response({'message': 'لطفا اول پروفایل خود را تکمیل کنید'}, status=status.HTTP_400_BAD_REQUEST)
                 # If the driver does not exist, create one
