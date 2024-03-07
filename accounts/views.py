@@ -57,7 +57,7 @@ def Create_a_verification_code(phone_number):
 @api_view(["POST", 'GET'])
 def Send_verification_code(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -106,7 +106,7 @@ def Send_verification_code(request):
 @api_view(["POST"])
 def register(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -166,7 +166,7 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def set_password(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -197,7 +197,7 @@ def set_password(request):
 @api_view(["POST"])
 def login(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -236,7 +236,7 @@ def login(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def logout(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -256,7 +256,7 @@ def logout(request):
 @api_view(["POST"])
 def forget_password(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -318,7 +318,7 @@ def forget_password(request):
 @permission_classes([IsLoggedInAndPasswordSet])
 def profile_view(request):
     is_body = bool(request.body)
-    if request.method =='GET' and not is_body:
+    if request.method == 'GET' and not is_body:
         data = request.GET
     else:
         data = request.data
@@ -357,8 +357,8 @@ def profile_view(request):
             return Response({'message': user.profile.user_type}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"message": 'اطلاعات پروفایل', 'data': serializer.data, 'user_type': user.profile.user_type})
-
+            {"message": 'اطلاعات پروفایل', 'data': serializer.data, 'user_type': user.profile.user_type,
+             'wallet': user.profile.wallet})
 
     if request.method == 'POST':
         if user.profile.user_type in ["صاحب واگن"]:

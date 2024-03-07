@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Profile, GoodsOwner, Driver, CarrierOwner, WagonOwner
 import random
 
-
 class WagonOwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = WagonOwner
@@ -19,7 +18,6 @@ class WagonOwnerSerializer(serializers.ModelSerializer):
             'state',
             'city',
             'address',
-
         )
 
 
