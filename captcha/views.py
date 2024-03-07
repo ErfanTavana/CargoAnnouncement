@@ -1,4 +1,3 @@
-
 from .models import Captcha
 from django.utils import timezone
 from rest_framework.response import Response
@@ -27,7 +26,7 @@ def captcha_validation(id_captcha, captcha_answer):
         captcha.is_valid = False
         captcha.save()
         # Check if the user's response matches the captcha answer
-        if captcha.answer == captcha_answer:
+        if captcha.answer.lower() == captcha_answer.lower():
             return True
         else:
             return False
@@ -71,6 +70,8 @@ def generate_new_captcha():
     captcha = Captcha.generate_random_captcha()
     captcha.save()
     return captcha
+
+
 # Function to create a new captcha
 @api_view(['GET'])
 def create_captcha(request):
