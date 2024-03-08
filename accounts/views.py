@@ -409,7 +409,7 @@ def profile_view(request):
     if request.method == 'PUT':
         type_of_cooperation = data.get('type_of_cooperation')
         origin = data.get('origin', None)
-        cooperate_with_carrier_owners = data.get('cooperate_with_carrier_owners', False)
+        cooperate_with_carrier_owners = True
         if user.profile.user_type in ['راننده']:
             try:
                 driver = user.driver

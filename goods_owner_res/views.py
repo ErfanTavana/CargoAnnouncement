@@ -128,7 +128,6 @@ def requests_received_carrier_owner(request):
                                 status=status.HTTP_400_BAD_REQUEST)
         if sent_collaboration_request_to_goods_owner_id != None:
             status_wallet = check_user_balance(request.user, 'بار ماشینی')
-            print(status_wallet['status'])
             if status_wallet['status'] == True:
                 return Response({'message': status_wallet['error']}, status=status.HTTP_400_BAD_REQUEST)
             try:

@@ -61,8 +61,8 @@ def check_user_balance(user, processes):
                 "data": wallet,
                 'wallet': wallet,
             }}
-        stat = False
-        return {'status': stat}
+    stat = False
+    return {'status': stat}
 
 
 # نمای API برای مدیریت عملیات کارگوی داخلی
