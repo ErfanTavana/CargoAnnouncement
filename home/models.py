@@ -3,6 +3,11 @@ from goods_owner.models import Base_Model
 
 
 class HomePageInfo(Base_Model):
+    num_sessions = models.IntegerField(verbose_name='تعداد جلسات آموزش', default=0)
+    num_participants = models.IntegerField(verbose_name='تعداد شرکت‌کنندگان', default=0)
+    training_hours = models.IntegerField(verbose_name='تعداد ساعات آموزش', default=0)
+    completed_projects = models.IntegerField(verbose_name='تعداد پروژه‌های تکمیل شده', default=0)
+    qrcode_image = models.ImageField(verbose_name='عکس کیو آر کد', upload_to='qrcodes/', null=True, blank=True)
     ready_to_work_drivers = models.PositiveIntegerField(blank=True, null=True,
                                                         verbose_name='تعداد راننده‌های آماده به کار')
     distance_covered = models.PositiveIntegerField(blank=True, null=True, verbose_name='کیلومتر مسیر طی شده')

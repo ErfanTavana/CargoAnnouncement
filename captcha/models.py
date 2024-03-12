@@ -32,7 +32,7 @@ class Captcha(Base_Model):
     # Unique identifier for the captcha
     id = models.CharField(primary_key=True, default=generate_complex_id, max_length=18, unique=True)
     # Image field to store the captcha image
-    image = models.ImageField(blank=True, null=True)
+    image = models.ImageField(upload_to='captcha/',blank=True, null=True)
     # Text associated with the captcha
     text = models.CharField(max_length=200, blank=True, null=True)
     # Guide or hint for the user regarding the captcha
@@ -45,6 +45,8 @@ class Captcha(Base_Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # Timestamp for when the captcha expires
     expires_at = models.DateTimeField(blank=True, null=True)
+
+    ip = models.CharField(max_length=100, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         """
@@ -96,7 +98,7 @@ class Captcha(Base_Model):
         # Save image and update model fields
         image_buffer = BytesIO()
         captcha_image.save(image_buffer, format="PNG")
-        image_name = f"{random.randint(1, 100000)}.png"
+        image_name = f"{self.id}.png"
         self.image.save(image_name, content=BytesIO(image_buffer.getvalue()), save=False)
         self.text = captcha_text
         self.answer = captcha_text
@@ -159,7 +161,7 @@ class Captcha(Base_Model):
         # Save image and update model fields
         image_buffer = BytesIO()
         captcha_image.save(image_buffer, format="PNG")
-        image_name = f"{random.randint(1, 100000)}.png"
+        image_name = f"{self.id}.png"
         self.image.save(image_name, content=BytesIO(image_buffer.getvalue()), save=False)
         self.text = text
         self.answer = str(result)
