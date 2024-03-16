@@ -79,18 +79,27 @@ def sent_collaboration_request_to_goods_owner(request):
     if request.method == 'GET':
         sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
         sent_collaboration_request_to_goods_owner_id = data.get('sent_collaboration_request_to_goods_owner_id', None)
-        request_result = data.get('request_result', 'در انتظار پاسخ')
+        request_result = data.get('request_result', None)
 
         if sent_collaboration_request_to_driver_id == None and sent_collaboration_request_to_goods_owner_id == None:
-            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(user_id=user.id,
-                                                                                                   is_ok=True,
-                                                                                                   deleted_at=None,
-                                                                                                   request_result=request_result)
-            # ذخیره نتایج در یک متغیر
-            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
-                user_id=user.id,
-                request_result=request_result,
-                deleted_at=None, is_ok=True)
+            if request_result == None:
+                sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(user_id=user.id,
+                                                                                                       is_ok=True,
+                                                                                                       deleted_at=None, )
+                # ذخیره نتایج در یک متغیر
+                sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                    user_id=user.id,
+                    deleted_at=None, is_ok=True)
+            else:
+                sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.filter(user_id=user.id,
+                                                                                                       is_ok=True,
+                                                                                                       deleted_at=None,
+                                                                                                       request_result=request_result)
+                # ذخیره نتایج در یک متغیر
+                sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+                    user_id=user.id,
+                    request_result=request_result,
+                    deleted_at=None, is_ok=True)
 
             # اجرای سریالایزر بر روی نتایج
 
@@ -104,20 +113,18 @@ def sent_collaboration_request_to_goods_owner(request):
                 sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(
                     id=sent_collaboration_request_to_driver_id, user_id=user.id,
                     is_ok=True,
-                    deleted_at=None,
-                    request_result=request_result)
+                    deleted_at=None, )
                 serializer = SentCollaborationRequestToDriverSerializer(sent_collaboration_request_to_driver)
                 return Response({"message": 'OK', 'data': serializer.data})
             except:
                 return Response({"message": 'شناسه درخواست همکاری به راننده اشتباه است', 'data': ''},
                                 status=status.HTTP_400_BAD_REQUEST)
         if sent_collaboration_request_to_goods_owner_id != None:
-            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.filter(
+            sent_collaboration_request_to_goods_owner = SentCollaborationRequestToGoodsOwner.objects.get(
+                id=sent_collaboration_request_to_goods_owner_id,
                 user_id=user.id,
-                request_result=request_result,
                 deleted_at=None, is_ok=True)
-            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner,
-                                                                         many=True)
+            serializer2 = SentCollaborationRequestToGoodsOwnerSerializer(sent_collaboration_request_to_goods_owner)
             return Response({"message": 'OK', 'data': serializer2.data})
     if request.method == 'POST':
         data = request.data.copy()
