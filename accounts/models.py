@@ -274,7 +274,7 @@ class GoodsOwner(Base_Model):
     # فیلد کدپستی صاحب بار یا شرکت
     postal_code = models.CharField(max_length=15, verbose_name="کدپستی صاحب بار / شرکت", blank=True, null=True)
 
-    def __save__(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         self.phone_number = self.user.username
         super().save(*args, **kwargs)
 
@@ -343,7 +343,7 @@ class CarrierOwner(Base_Model):
         ("حقوقی", "حقوقی"),
     ), blank=True, null=True)
 
-    def __save__(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         self.owner_mobile_number = self.user.username
 
         super().save(*args, **kwargs)
