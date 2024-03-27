@@ -96,10 +96,12 @@ def requests_received_carrier_owner_DRIVER(request):
     if request.method == "DELETE":
         sent_collaboration_request_to_driver_id = data.get('sent_collaboration_request_to_driver_id', None)
         try:
-            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(driver=driver,
-                                                                                                is_ok=True,
-                                                                                                deleted_at=None,
-                                                                                                request_result='در انتظار پاسخ')
+            sent_collaboration_request_to_driver = SentCollaborationRequestToDriver.objects.get(
+                id=sent_collaboration_request_to_driver_id,
+                driver=driver,
+                is_ok=True,
+                deleted_at=None,
+                request_result='در انتظار پاسخ')
             sent_collaboration_request_to_driver.request_result = 'رد شده'
             sent_collaboration_request_to_driver.is_changeable = False
             sent_collaboration_request_to_driver.save()
