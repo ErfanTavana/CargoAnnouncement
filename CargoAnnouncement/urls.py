@@ -47,4 +47,7 @@ urlpatterns = [
 
                   path('', include("exporters_union.urls")),
 
-              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+              ]
+# Debug mode-specific URL patterns for serving media files
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

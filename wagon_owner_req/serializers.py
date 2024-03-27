@@ -87,6 +87,7 @@ class SentCollaborationRequestToRailCargoSerializer(Base_ModelSerializer):
     class Meta:
         model = SentCollaborationRequestToRailCargo
         fields = (
+            'id',
             'user',
             'wagon_owner',
             'wagon_details',

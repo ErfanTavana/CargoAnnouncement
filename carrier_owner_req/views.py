@@ -150,7 +150,6 @@ def sent_collaboration_request_to_goods_owner(request):
             print(e)
             return Response({'message': 'شناسه حمل کننده اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            print(cargo_fleet_coordination_id)
             cargo_fleet_coordination = CargoFleetCoordination.objects.get(id=cargo_fleet_coordination_id, is_ok=True,
                                                                           deleted_at=None,
                                                                           road_fleet=None,

@@ -223,7 +223,7 @@ def login(request):
             response = Response({'message': 'ok', 'Authorization': f"Token {token.key}"},
                                 status=status.HTTP_200_OK)
             response.set_cookie('Authorization', f"Token {token.key}",
-                                httponly=True, secure=True)
+                                httponly=True, samesite=None, secure=False)
             return response
 
         else:
