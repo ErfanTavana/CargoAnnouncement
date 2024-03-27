@@ -71,7 +71,8 @@ def Send_verification_code(request):
         type_user = data.get('type_user')
         captcha_id = data.get('captcha_id')
         captcha_answer = data.get('captcha_answer')
-        captcha = captcha_validation(captcha_id, captcha_answer)
+        # captcha = captcha_validation(captcha_id, captcha_answer)
+        captcha = True
         if not captcha:
             return Response({'message': 'کپچا وارد شده اشتباه میباشد '}, status=status.HTTP_400_BAD_REQUEST)
         if not phone_number.isdigit() or len(phone_number) != 11 or not phone_number.startswith('09'):
